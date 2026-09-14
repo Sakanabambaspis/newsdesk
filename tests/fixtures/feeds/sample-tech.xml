@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Tech Wire</title>
+    <link>https://techwire.example.com</link>
+    <description>Technology news, wire style</description>
+    <item>
+      <title>Chip export rules tighten ahead of trade talks</title>
+      <link>https://techwire.example.com/chip-export-rules-tighten</link>
+      <guid>tech-0001</guid>
+      <pubDate>Sun, 13 Sep 2026 07:15:00 GMT</pubDate>
+      <description>Regulators added two fabs to the restricted list, a move
+        analysts expect to reshape supply contracts next quarter.</description>
+    </item>
+    <item>
+      <title>Grid operator declares emergency as heat wave strains network</title>
+      <link>https://techwire.example.com/wire/grid-emergency-heat-wave</link>
+      <guid>tech-0002</guid>
+      <pubDate>Sun, 13 Sep 2026 10:05:00 GMT</pubDate>
+      <description>The regional grid operator declared a level-two emergency on Sunday
+        evening as a sustained heat wave pushed electricity demand to a
+        record high. Operators invoked emergency protocols for the first time in four
+        years, asking industrial customers to curtail consumption. Reserve
+        margins fell below six percent for three consecutive hours. The operator
+        said rotating outages were avoided but that the
+        network remains under stress until temperatures drop.</description>
+    </item>
+  </channel>
+</rss>

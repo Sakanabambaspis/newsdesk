@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Example Energy Desk</title>
+    <link>https://energy.example.com</link>
+    <description>Energy policy and markets coverage</description>
+    <item>
+      <title>Grid operator declares emergency as heat wave strains network</title>
+      <link>https://energy.example.com/stories/grid-emergency?utm_source=rss</link>
+      <guid>energy-0001</guid>
+      <pubDate>Sun, 13 Sep 2026 09:00:00 GMT</pubDate>
+      <author>desk@energy.example.com (Example Energy Desk)</author>
+      <content:encoded><![CDATA[
+        <p>The regional grid operator declared a level-two emergency on Sunday
+        evening as a sustained heat wave pushed electricity demand to a
+        record high.</p>
+        <p>Operators invoked emergency protocols for the first time in four
+        years, asking industrial customers to curtail consumption. Reserve
+        margins fell below six percent for three consecutive hours.</p>
+        <script>ignore_me()</script>
+        <p>The operator said rotating outages were avoided but that the
+        network remains under stress until temperatures drop.</p>
+      ]]></content:encoded>
+    </item>
+    <item>
+      <title>Offshore wind auction attracts record bids</title>
+      <link>https://energy.example.com/stories/offshore-wind-auction</link>
+      <guid>energy-0002</guid>
+      <pubDate>Sat, 12 Sep 2026 14:30:00 GMT</pubDate>
+      <description>The latest offshore wind lease auction closed with record
+        bids totaling 2.1 billion, signaling renewed developer confidence in
+        the energy transition pipeline.</description>
+    </item>
+    <item>
+      <title>Energy market podcast: summer outlook</title>
+      <link>https://energy.example.com/audio/summer-outcast-episode-12</link>
+      <guid>energy-0003</guid>
+      <pubDate>Fri, 11 Sep 2026 08:00:00 GMT</pubDate>
+      <description>Analysts discuss gas storage levels, heat-driven demand
+        forecasts, and what the emergency declaration means for prices.</description>
+      <enclosure url="https://cdn.example.com/audio/summer-outlook-ep12.mp3"
+                 type="audio/mpeg" length="24000000"/>
+    </item>
+  </channel>
+</rss>

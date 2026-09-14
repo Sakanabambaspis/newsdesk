@@ -1,0 +1,57 @@
+"""Runtime configuration, loaded from environment variables with local-first defaults."""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+DEFAULT_USER_AGENT = "NewsdeskBot/0.1 (local research agent; respects robots.txt)"
+
+
+@dataclass
+class Settings:
+    """All runtime knobs. Local single-user defaults; Postgres/remote LLM drop in via env."""
+
+    home: Path
+    db_url: str | None = None
+    user_agent: str = DEFAULT_USER_AGENT
+    request_timeout: float = 20.0
+    min_request_interval: float = 5.0
+    max_retries: int = 2
+    max_items_per_feed: int = 200
+    llm_base_url: str | None = None
+    llm_api_key: str | None = None
+    llm_model: str | None = None
+
+    @property
+    def snapshots_dir(self) -> Path:
+        return self.home / "snapshots"
+
+    @property
+    def database_url(self) -> str:
+        if self.db_url:
+            return self.db_url
+        return f"sqlite:///{(self.home / 'newsdesk.db').as_posix()}"
+
+    def ensure_dirs(self) -> None:
+        self.home.mkdir(parents=True, exist_ok=True)
+        self.snapshots_dir.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def from_env(cls) -> "Settings":
+        home = Path(os.environ.get("NEWSDESK_HOME", str(Path.home() / ".newsdesk")))
+        return cls(
+            home=home,
+            db_url=os.environ.get("NEWSDESK_DB_URL"),
+            user_agent=os.environ.get("NEWSDESK_USER_AGENT", DEFAULT_USER_AGENT),
+            request_timeout=float(os.environ.get("NEWSDESK_REQUEST_TIMEOUT", "20")),
+            min_request_interval=float(os.environ.get("NEWSDESK_MIN_INTERVAL", "5")),
+            llm_base_url=(
+                os.environ.get("NEWSDESK_LLM_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
+            ),
+            llm_api_key=(
+                os.environ.get("NEWSDESK_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY")
+            ),
+            llm_model=os.environ.get("NEWSDESK_LLM_MODEL", "gpt-4o-mini"),
+        )
