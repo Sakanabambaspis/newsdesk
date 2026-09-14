@@ -1,10 +1,33 @@
-.venv/
+# Python
 __pycache__/
 *.pyc
-.pytest_cache/
-dist/
-build/
+*.pyo
 *.egg-info/
+build/
+dist/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data & runtime artifacts
 data/
 tmp-smoke/
+*.log
+
+# Secrets
 .env
+.env.*
+
+# Editor / OS junk
+.zcode/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
