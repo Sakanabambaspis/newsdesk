@@ -176,6 +176,8 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
     briefing["material_pack"] = {
         "method": pack["method"], "verdict_filter": pack["verdict_filter"],
         "verdict_counts": verdict_counts, **pack["stats"],
+        # the full pack: exactly what the briefing writer may see (ADR 0001)
+        "items": pack["items"],
     }
     briefing.update({
         "generated_at": datetime.now(timezone.utc).isoformat(),

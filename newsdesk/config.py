@@ -37,6 +37,10 @@ class Settings:
         return self.home / "media"
 
     @property
+    def morning_dir(self) -> Path:
+        return self.home / "morning"
+
+    @property
     def database_url(self) -> str:
         if self.db_url:
             return self.db_url

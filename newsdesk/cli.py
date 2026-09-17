@@ -7,6 +7,7 @@
     newsdesk item <item_id>       full canonical record as JSON
     newsdesk summarize <item_id>  grounded summary (extractive without an LLM)
     newsdesk digest <item_id>     watch a video: transcript + vision + summary
+    newsdesk script               stage the spoken-briefing script (+ sidecar)
     newsdesk log                  tail the immutable activity log
     newsdesk serve                run the local HTTP API + agent tools
     newsdesk mcp                  run the MCP server (stdio) for agent harnesses
@@ -203,6 +204,45 @@ def digest_daily(
                                f"({dive['item_id']}) ---")
                     for claim in dive["claims"]:
                         typer.echo(f"  • {claim}")
+
+
+@app.command("script")
+def write_script(
+    hours: int = typer.Option(24, help="How far back the digest window looks"),
+    json_out: bool = typer.Option(False, "--json", help="Emit the script as JSON"),
+) -> None:
+    """Stage the spoken-briefing script: digest -> script-writer -> sidecar."""
+    settings = _settings()
+    db = Database(settings)
+    with db.session() as session:
+        from .morning.registries import SCRIPTWRITERS, load_plugins
+        from .morning.script import write_sidecar
+        from .pipeline.digest import build_daily_digest
+
+        load_plugins()
+        digest = build_daily_digest(session, settings, hours=hours)
+        brief = SCRIPTWRITERS.get()(settings, digest)
+        sidecar = write_sidecar(settings, brief["date"], brief)
+        LogRepo(session).append("morning_brief_built", {
+            "date": brief["date"], "method": brief["method"],
+            "stats": brief["stats"],
+            "sections": [{"type": s["type"], "item_ids": s["item_ids"],
+                          "est_seconds": s["est_seconds"]}
+                         for s in brief["sections"]],
+            "sidecar": str(sidecar),
+        })
+    if json_out:
+        typer.echo(json.dumps({**brief, "sidecar": str(sidecar)}, indent=2,
+                              ensure_ascii=False))
+    else:
+        stats = brief["stats"]
+        typer.echo(f"{brief['date']} script ({brief['method']}): "
+                   f"{len(brief['sections'])} sections, {stats['words']} words, "
+                   f"~{stats['est_seconds'] // 60}:{stats['est_seconds'] % 60:02d}")
+        for s in brief["sections"]:
+            ids = ",".join(s["item_ids"]) or "-"
+            typer.echo(f"  {s['type']:<10} {s['est_seconds']:>4}s  {ids}")
+        typer.echo(f"sidecar: {sidecar}")
 
 
 @app.command("serve")
