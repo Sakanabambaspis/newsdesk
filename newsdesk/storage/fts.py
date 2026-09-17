@@ -3,8 +3,21 @@ fall back to a LIKE search (storage.repo.ItemRepo.search)."""
 
 from __future__ import annotations
 
+import re
+
 from sqlalchemy import text
 from sqlmodel import Session
+
+# Scripts without whitespace word boundaries (CJK, Thai, Lao): the unicode61
+# tokenizer indexes each run as one long token, so a short query can never
+# match a longer indexed run and only substring search can find it.
+_UNSEGMENTED_RE = re.compile(
+    r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff"
+    r"\uac00-\ud7af\u0e00-\u0e7f]")
+
+
+def has_unsegmented_script(query: str) -> bool:
+    return bool(_UNSEGMENTED_RE.search(query))
 
 
 def _quote(token: str) -> str:

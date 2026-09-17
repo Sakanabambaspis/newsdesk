@@ -12,6 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine
 
 from ..config import Settings
+from ..core import models  # noqa: F401  -- registers tables on SQLModel.metadata
 
 _FTS_STATEMENTS = [
     "CREATE VIRTUAL TABLE IF NOT EXISTS items_fts USING fts5("
@@ -35,8 +36,6 @@ class Database:
         self.engine: Engine = create_engine(settings.database_url, echo=False)
         if self.engine.url.get_backend_name() == "sqlite":
             event.listen(self.engine, "connect", _sqlite_on_connect)
-        # Import models so they register on the metadata before create_all.
-        from .. import core  # noqa: F401
         SQLModel.metadata.create_all(self.engine)
         self.fts_enabled = self._init_fts()
 

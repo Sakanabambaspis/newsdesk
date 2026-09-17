@@ -61,9 +61,9 @@ Component map (mirrors the package layout):
 | Ingestion | `newsdesk.ingest` | politeness, fetching, raw capture, parsing |
 | Pipeline | `newsdesk.pipeline` | normalization, dedup, scoring, orchestration |
 | Storage | `newsdesk.storage` | repositories, schema, full-text index, log |
-| Models | `newsdesk.core` | adapters for LLM access, domain records |
+| Core | `newsdesk.core` | domain records, source kinds, identity (URLs, hashes, ids) |
 | LLM | `newsdesk.llm` | extraction / embedding / ranking / summarization adapters |
-| Interface | `newsdesk.api`, `newsdesk.agents`, `newsdesk.cli` | HTTP API, agent protocol, command line |
+| Interface | `newsdesk.api`, `newsdesk.agents`, `newsdesk.mcp_server`, `newsdesk.cli` | HTTP API, agent protocol + MCP, command line |
 
 Each pipeline stage has a contract: defined input, defined output, defined failure
 mode (skip item / skip source / abort run), and a log entry on anything noteworthy.
@@ -166,7 +166,7 @@ repeated syndication*, and removals become tombstones.
 | 5 | Dedup/clustering | items → created / unchanged / revised / duplicate | never destructive |
 | 6 | Scoring | items + watchlist terms → relevance signal | missing terms → null relevance |
 | 7 | Summarization *(M3)* | item cluster → evidence-linked summary | model failure → stored error, items remain |
-| 8 | Log & index | outcomes → `LogEntry[]`, FTS rows | trigger-maintained, atomic with item writes |
+| 8 | Log & index | outcomes → `LogEntry[]`, FTS rows | FTS is trigger-maintained; log rows commit separately from items (a crash between the two commits can leave one without the other — acceptable for v1, revisit with the Postgres move) |
 | 9 | Outputs *(M4)* | log + watchlists → alerts, digests, exports | delivery failure retried, logged |
 
 The runner (`pipeline/runner.py`) creates one `Job` per pass, processes every
@@ -181,19 +181,20 @@ appends log entries for `job_started`, `item_created`, `item_revised`,
 
 ### 5.1 Adapter kinds and rollout order
 
-1. **RSS/Atom** (M0, shipped) — preferred low-cost path with conditional GET.
-2. **HTML extraction** (M2) — readability-style extraction on permitted pages.
-3. **Sitemap discovery** (M2) — structured metadata for publishers without feeds.
-4. **Publisher APIs** (M2+) — where offered.
-5. **YouTube / podcast / video metadata** (M5) — titles, descriptions, captions.
-6. **Transcription** (M5) — audio/video → timestamped, speaker-labeled text.
-7. **Newsletter forwarding** (M6) — inbound email address per user.
-8. **Forum APIs & webhooks** (M6).
-9. **Manual uploads** (M6) — PDFs, screenshots, audio, video.
+Shipped adapters (M0/M0.5): **RSS/Atom** (conditional GET), **arXiv API**
+(§19 etiquette), **video platforms** via yt-dlp (YouTube channels, Bilibili
+spaces, caption transcripts), and **account-linked** email/X (§18).
+
+Planned, in order: HTML extraction (M2) → sitemap discovery (M2) →
+publisher APIs (M2+) → transcription depth & podcast feeds (M5) →
+newsletter forwarding (M6) → forum APIs & webhooks (M6) → manual uploads
+(M6).
 
 Every adapter implements `Fetcher.fetch(source, settings, http) -> RawCapture`
 and registers itself in `ingest.base._REGISTRY`; nothing downstream knows how
-bytes arrived.
+bytes arrived. Kind names are defined once (`core.models.SOURCE_KINDS`) and
+validated at add time; kinds whose fetcher is still staged are rejected at
+collect time with `error:no-fetcher`.
 
 ### 5.2 Politeness contract (implemented in `ingest/fetcher.py`)
 
@@ -210,9 +211,11 @@ bytes arrived.
 ### 5.3 Raw capture & snapshots
 
 Every successful fetch persists the raw payload to
-`$NEWSDESK_HOME/snapshots/src{id}_{timestamp}_{hash}.xml` before parsing.
-Items reference the snapshot. Snapshotting is best-effort: an item is still
-stored if the snapshot write fails, with `snapshot_path = null` marking the gap.
+`$NEWSDESK_HOME/snapshots/src{id}_{timestamp}_{hash}.{ext}` (the extension
+reflects the payload format: `.xml`, `.atom`, `.json`, `.email.json`,
+`.x.json`). Items reference the snapshot. Snapshotting is best-effort: an
+item is still stored if the snapshot write fails, with `snapshot_path = null`
+marking the gap.
 
 ---
 
@@ -303,19 +306,22 @@ watchlist relevance, and are budgeted per day.
 
 ## 10. Agent protocol
 
-Nine tools, harness-independent, exposed as plain HTTP today and MCP later:
+Eleven tools, harness-independent, exposed as plain HTTP and as MCP tools
+(`newsdesk mcp`):
 
-| Tool | HTTP (M0) | Status |
+| Tool | HTTP | Status |
 |---|---|---|
 | `list_sources` | `GET /tools/list_sources` | wired |
 | `add_source` | `POST /sources` | wired |
 | `run_collection` | `POST /tools/run_collection` | wired |
 | `search_items` | `GET /tools/search_items?query=` | wired |
 | `get_item` | `GET /items/{id}` | wired |
+| `summarize_item` | `POST /tools/summarize_item` | wired |
+| `digest_item` | `POST /tools/digest_item` | wired |
+| `create_digest` | `GET /tools/daily_digest` | wired |
+| `export_log` | `GET /tools/export_log` | wired |
 | `get_cluster` | — | planned (M2) |
 | `summarize_cluster` | — | planned (M3) |
-| `create_digest` | — | planned (M4) |
-| `export_log` | `GET /tools/export_log` | wired |
 
 `GET /tools` returns the machine-readable spec above (name, description, args,
 status, HTTP binding) so any caller can discover the surface.
@@ -392,12 +398,14 @@ Guardrail metrics (summary fluency is explicitly *not* the goal):
 | Milestone | Scope | Status |
 |---|---|---|
 | **M0** | Scaffold: RSS ingestion, canonical records, exact dedup, FTS, immutable log, CLI, HTTP API, agent protocol seed, LLM adapter (null-mode safe) | **shipped (this repo)** |
+| **M0.5** | Video ingestion (yt-dlp: YouTube + Bilibili + caption transcripts), item-level summarization with extractive fallback, vision/audio adapters, MCP server for harnesses | **shipped** |
 | **M1** | Scheduling (interval-driven collection), source health dashboard, HTML extraction fetcher | next |
 | **M2** | Near-dup + entity clustering, `get_cluster`, Postgres path, sitemap discovery | planned |
-| **M3** | LLM wiring: entity/topic extraction, semantic relevance, `summarize_cluster` | planned |
-| **M4** | Digests, alert rules, feedback events, preference learning, tombstones | planned |
-| **M5** | Multimedia: YouTube/podcast metadata, transcription, OCR, embeddings, timestamped grounding | planned |
-| **M6** | MCP transport, harness adapters, newsletter/forum ingestion, manual uploads, export formats | planned |
+| **M3** | LLM wiring at scale: entity/topic extraction, semantic relevance, `summarize_cluster` (item-level summarize shipped in M0.5) | planned |
+| **M4** | Alert rules, feedback events, preference learning, per-watchlist digest scoping, tombstones (basic daily digest shipped in M0.5) | planned |
+| **M5** | Multimedia depth: podcast feeds, OCR, embeddings, timestamped grounding (metadata+transcripts+vision shipped in M0.5) | planned |
+| **M6** | Harness adapters beyond MCP, newsletter/forum ingestion, manual uploads, export formats | planned |
+| **M7** | Account-linked ingestion (section 18) | planned |
 
 ---
 
@@ -433,10 +441,79 @@ Shipped in this repository:
   fallback), repositories, append-only log.
 - `newsdesk.llm` — adapter interface, grounded summarizer with injection
   defenses, OpenAI-compatible adapter, null-mode stub.
-- `newsdesk.api` + `newsdesk.agents` — FastAPI endpoints, 9-tool protocol
-  (5 wired), `/tools` discovery.
-- `newsdesk.cli` — add-source / list-sources / collect / search / item / log /
-  serve.
+- `newsdesk.api` + `newsdesk.agents` — FastAPI endpoints, 11-tool protocol
+  (9 wired), `/tools` discovery.
+- `newsdesk.cli` — add-source / list-sources / collect / search / item /
+  summarize / digest / digest-daily / log / serve / mcp / accounts.
 - Tests: 30+ offline tests over fixture feeds and mocked transports covering
   identity hashing, normalization, all dedup paths, FTS, log shape, CLI
   end-to-end, API flow, LLM contract.
+
+---
+
+## 18. Account-linked ingestion (M7)
+
+Linking personal accounts (Twitter/X, YouTube account, email) so the agent
+can read from them follows the same RawCapture contract as public-web
+fetchers, with an added credential discipline. Implementation:
+`newsdesk/accounts/` (base contracts, credential resolution, grant manager,
+email + twitter fetchers, youtube subscription sync). CLI surface:
+`newsdesk accounts list|grant|revoke|test|sync-youtube`.
+
+Principles (enforced in code, not just docs):
+
+1. **Credentials never enter the database or the log.** A provider receives
+   an `AccountSession` — a credential handle resolved per-run from the OS
+   keyring (service `newsdesk/<kind>/<ref>`, optional `keyring` extra) or
+   environment. Rows store only `account_ref`, an opaque label.
+2. **Capability-scoped consent.** A linked account grants exactly the
+   capabilities chosen at link time, stored in `$NEWSDESK_HOME/accounts.json`
+   (user-editable metadata, never credentials). Providers refuse anything
+   broader; unknown capabilities are rejected at grant time.
+3. **Authenticated actions are actor-tagged.** Every account fetch writes
+   `source_collected` under actor `account:<kind>/<ref>`, so "what did the
+   agent do under my identity" is always answerable from the immutable log.
+4. **Same downstream pipeline.** Account items flow through normalize /
+   dedupe / provenance unchanged — an email newsletter and an RSS feed of
+   the same bulletin dedupe to one event.
+
+Shipped providers:
+
+- **email** — read-only IMAP folder collection. `BODY.PEEK` (never marks
+  messages seen), UID high-water mark for incremental runs, RFC 2392
+  `mid:` message URLs, raw RFC822 snapshots. Source URL:
+  `imap://host/Folder?account=ref` (port 993 = TLS; other ports plaintext,
+  for local/test servers only).
+  Credentials: `NEWSDESK_EMAIL_HOST/PORT/USER/PASSWORD` (or
+  `NEWSDESK_ACCOUNT__EMAIL__<REF>__*` per account).
+- **twitter/X** — reverse-chronological home timeline via API v2 with an
+  OAuth 2.0 user-context token (`read` scope); the documented, consented
+  read path — never headless credentialed scraping. Incremental via
+  `since_id`; author/media expansions included. Source URL:
+  `x://timeline/home?account=ref`.
+  Credential: `NEWSDESK_TWITTER_ACCESS_TOKEN`.
+- **youtube-account** — Data API v3 subscription sync: registers each
+  public subscription as a `youtube` source (idempotent, actor-tagged);
+  the video fetcher then collects them like any channel. Requires
+  subscriptions to be public and an API key + your channel id:
+  `NEWSDESK_YOUTUBE_API_KEY`, `NEWSDESK_YOUTUBE_CHANNEL_ID`.
+
+Remaining before production account use: OAuth token refresh flows
+(twitter tokens expire), JMAP as a second email path, quota caps per
+capability, and a `revoke` that also propagates credential deletion from
+the keyring.
+
+## 19. The arXiv robots exception
+
+export.arxiv.org serves `User-agent: * Disallow: /` — a blanket anti-crawler
+rule adopted after large-scale AI scraping. The RSS paths are therefore
+off-limits to newsdesk's robots-compliant RSS fetcher and stay that way.
+
+However, arXiv *publishes* an Atom API as its programmatic interface, with
+documented terms (identify your agent, >= 3 seconds between requests, small
+result pages). `newsdesk/ingest/arxiv.py` (kind `arxiv`, source URLs
+`arxiv://<category>`) implements exactly that etiquette and deliberately
+skips the robots check for API endpoints only. The policy line being drawn:
+robots.txt governs crawling *web pages*; a published API is consent by
+design, governed by its own terms. 429 responses are honored with
+bounded retries (Retry-After aware).

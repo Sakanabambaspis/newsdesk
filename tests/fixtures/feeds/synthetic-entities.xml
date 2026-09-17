@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic HTML-entity and CDATA edge-case fixture.
+     - Item 1: double-escaped entities in a plain description (&amp;amp;).
+     - Item 2: CDATA-wrapped HTML with script/style tags and entities that
+       must NOT be re-decoded inside CDATA.
+     - Item 3: numeric character references (em dash, bullet) in the title.
+     - Item 4: attributes containing quotes/apostrophes.
+-->
+<rss version="2.0">
+  <channel>
+    <title>Edge Case Gazette</title>
+    <link>https://edgecase.example</link>
+    <description>Markup stress cases for the parser</description>
+    <item>
+      <title>The double-escaped ampersand story</title>
+      <link>https://edgecase.example/2026/double-escape</link>
+      <guid>edge-3001</guid>
+      <pubDate>Mon, 14 Sep 2026 09:00:00 GMT</pubDate>
+      <description>The utility reported that AT&amp;amp;T costs rose &amp;mdash; a first for the region &amp;lt;this year&amp;gt;.</description>
+    </item>
+    <item>
+      <title>CDATA body with embedded markup</title>
+      <link>https://edgecase.example/2026/cdata-body</link>
+      <guid>edge-3002</guid>
+      <pubDate>Mon, 14 Sep 2026 10:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Rates fell 3&nbsp;percent &amp; the board
+      <strong>unanimously</strong> approved the freeze.</p>
+      <script>pixel_tracker()</script>
+      <style>.hidden { display: none; }</style>
+      <p>Credits expire in June.</p>]]></description>
+    </item>
+    <item>
+      <title>Bulletin &#8212; three items approved &#8226; unanimous</title>
+      <link>https://edgecase.example/2026/numeric-refs</link>
+      <guid>edge-3003</guid>
+      <pubDate>Sun, 13 Sep 2026 09:00:00 GMT</pubDate>
+      <description>Numeric character references in the title decode to an em dash and a bullet.</description>
+    </item>
+    <item>
+      <title>A title with "quotes" and 'apostrophes'</title>
+      <link>https://edgecase.example/2026/quoted-attrs?edition=morning&amp;region=west</link>
+      <guid>edge-3004</guid>
+      <pubDate>Sat, 12 Sep 2026 09:00:00 GMT</pubDate>
+      <description>Quoted attribute values survive parsing; query params keep their order after canonicalization.</description>
+    </item>
+  </channel>
+</rss>

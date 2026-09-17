@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic Atom 1.0 fixture. The first entry republishes the Meridian Wire
+     "power auction" story verbatim (identical normalized title + text) at a
+     different URL, so tier-1 dedup must classify it as a duplicate of the
+     original, not a new event.
+     Parsed by feedparser through the RSS fetcher (feedparser handles Atom).
+-->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom Tribune</title>
+  <link href="https://atom-tribune.example"/>
+  <updated>2026-09-14T10:00:00Z</updated>
+  <id>tag:atom-tribune.example,2026:feed</id>
+  <entry>
+    <title>Regional power auction clears at record price</title>
+    <link href="https://atom-tribune.example/wire/power-auction"/>
+    <id>tag:atom-tribune.example,2026:post-5001</id>
+    <published>2026-09-14T09:30:00Z</published>
+    <updated>2026-09-14T09:30:00Z</updated>
+    <author><name>Tribune Wire Desk</name></author>
+    <summary>Capacity auction for the 2027 delivery year cleared at 94 dollars per megawatt day, double last year's price, as two retirements tightened the supply cushion.</summary>
+  </entry>
+  <entry>
+    <title>Harbor ferry line returns after storm repairs</title>
+    <link href="https://atom-tribune.example/local/ferry-returns"/>
+    <id>tag:atom-tribune.example,2026:post-5002</id>
+    <published>2026-09-13T16:45:00Z</published>
+    <updated>2026-09-13T16:45:00Z</updated>
+    <author><name>Casey Ferreira</name></author>
+    <summary>The cross-harbor ferry resumed full schedule on Monday after dock repairs finished two days ahead of estimate, ending a six week substitute bus bridge.</summary>
+  </entry>
+</feed>

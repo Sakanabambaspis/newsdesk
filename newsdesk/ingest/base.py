@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Any, Type
 
 from ..config import Settings
-from ..core.models import Source
+from ..core.models import SOURCE_KINDS, Source
 
 
 class FetchError(Exception):
@@ -29,6 +29,7 @@ class RawEntry:
     published_at: datetime | None = None
     author: str | None = None
     media: list[dict[str, Any]] = field(default_factory=list)
+    transcript: str | None = None  # caption/transcript text when the source carries it
 
 
 @dataclass
@@ -41,6 +42,7 @@ class RawCapture:
     entries: list[RawEntry] = field(default_factory=list)
     status: str = "ok"  # ok | not_modified | skipped
     meta: dict[str, Any] = field(default_factory=dict)  # feed_title, etag, last_modified, ...
+    content_kind: str = "article"  # Item.kind for normalized entries (article | video | post | document)
 
 
 class Fetcher(ABC):
@@ -55,6 +57,8 @@ _REGISTRY: dict[str, Type[Fetcher]] = {}
 
 
 def register(cls: Type[Fetcher]) -> Type[Fetcher]:
+    if cls.kind not in SOURCE_KINDS:
+        raise ValueError(f"fetcher kind '{cls.kind}' is not in SOURCE_KINDS")
     _REGISTRY[cls.kind] = cls
     return cls
 

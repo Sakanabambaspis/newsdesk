@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic arXiv API (Atom) response, served to ArxivFetcher through a
+     mocked HttpHelper transport — the same shape export.arxiv.org's
+     /api/query returns. Two entries: one with two authors, one with a
+     versioned abs link and multi-line title (arXiv folds titles).
+-->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <link href="http://arxiv.example/api/query" rel="self" type="application/atom+xml"/>
+  <title type="html">arXiv Query: cat:cs.LG</title>
+  <id>http://arxiv.example/api/query?search_query=cat:cs.LG</id>
+  <updated>2026-09-14T00:00:00-04:00</updated>
+  <opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">2</opensearch:totalResults>
+  <entry>
+    <id>http://arxiv.example/abs/2609.10001v1</id>
+    <updated>2026-09-14T12:00:00Z</updated>
+    <published>2026-09-14T12:00:00Z</published>
+    <title>Scaling Deliberation Improves Robot Policy Transfer
+    </title>
+    <summary>We study how test-time deliberation budgets transfer across
+    robot policy domains, finding mixture-of-experts routing recovers most
+    of the gains at a fraction of the compute.</summary>
+    <author><name>A. Researcher</name></author>
+    <author><name>B. Second</name></author>
+    <link href="http://arxiv.example/abs/2609.10001v1" rel="alternate" type="text/html"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.example/abs/2609.10002v2</id>
+    <updated>2026-09-13T09:00:00Z</updated>
+    <published>2026-09-12T09:00:00Z</published>
+    <title>Sparse Retrieval for Long Context Windows</title>
+    <summary>A single-author study of sparse retrievers over long context
+    windows with citation-grounded evaluation.</summary>
+    <author><name>C. Solo</name></author>
+    <link href="http://arxiv.example/abs/2609.10002v2" rel="alternate" type="text/html"/>
+  </entry>
+</feed>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic RSS 2.0 fixture: deterministic dates, no network needed.
+     Publisher "Meridian Wire" is the ORIGINAL of the wire story that
+     synthetic-atom.xml ("Atom Tribune") republishes verbatim, driving the
+     cross-feed syndication -> duplicate path.
+     Item 3 has a RELATIVE link: documents how the pipeline anchors provenance
+     for relative links in locally-imported feeds (see fixture-findings doc).
+-->
+<rss version="2.0">
+  <channel>
+    <title>Meridian Wire</title>
+    <link>https://meridian-wire.example</link>
+    <description>General assignment wire stories</description>
+    <item>
+      <title>Regional power auction clears at record price</title>
+      <link>https://meridian-wire.example/stories/power-auction</link>
+      <guid>meridian-1001</guid>
+      <pubDate>Mon, 14 Sep 2026 08:00:00 GMT</pubDate>
+      <description>Capacity auction for the 2027 delivery year cleared at 94 dollars per megawatt day, double last year's price, as two retirements tightened the supply cushion.</description>
+    </item>
+    <item>
+      <title>Transit agency expands overnight service</title>
+      <link>https://meridian-wire.example/stories/night-service</link>
+      <guid>meridian-1002</guid>
+      <pubDate>Sun, 13 Sep 2026 21:15:00 GMT</pubDate>
+      <description>Starting next month, six bus corridors will run every thirty minutes around the clock, funded by a two year pilot the board approved unanimously.</description>
+    </item>
+    <item>
+      <title>Story published with a relative link</title>
+      <link>stories/relative-path</link>
+      <guid>meridian-1003</guid>
+      <pubDate>Sat, 12 Sep 2026 12:00:00 GMT</pubDate>
+      <description>The link element carries a site-relative path, which locally-imported feeds cannot resolve against the publisher host.</description>
+    </item>
+  </channel>
+</rss>

@@ -12,6 +12,7 @@ from ..core.ids import sha256_hex
 from ..core.models import Source
 from .base import FetchError, Fetcher, RawCapture, RawEntry, register
 from .fetcher import HttpHelper, read_local, resolve_local
+from .snapshots import save_snapshot
 from .textutil import strip_html
 
 
@@ -87,7 +88,9 @@ class RSSFetcher(Fetcher):
             last_modified = response_headers.get("last-modified")
 
         payload_hash = sha256_hex(payload)
-        snapshot_path = self._snapshot(source, payload, payload_hash, settings)
+        snapshot_path = save_snapshot(settings, source_id=source.id,
+                                      payload=payload, ext="xml",
+                                      when=fetched_at)
 
         parsed = feedparser.parse(payload)
         bozo = getattr(parsed, "bozo", 0)
@@ -95,12 +98,19 @@ class RSSFetcher(Fetcher):
             raise FetchError(f"unparseable feed {source.url}: {parsed.get('bozo_exception')}")
 
         entries: list[RawEntry] = []
+        # Site-relative links resolve against the publisher's web base. A local
+        # file import has no host of its own, so only the feed's own <link>
+        # can anchor them (otherwise the entry is skipped — no anchorable
+        # provenance).
+        link_base = source.url if local is None else (parsed.feed.get("link") or "")
         for entry in parsed.entries[: settings.max_items_per_feed]:
             link = entry.get("link", "")
             if not link:
                 continue  # nothing to anchor provenance to
             if not urlsplit(link).scheme:
-                link = urljoin(source.url, link)
+                if not link_base:
+                    continue
+                link = urljoin(link_base, link)
             entries.append(RawEntry(
                 url=link,
                 title=strip_html(entry.get("title", "") or ""),
@@ -126,17 +136,3 @@ class RSSFetcher(Fetcher):
                 "bozo": bool(bozo),
             },
         )
-
-    @staticmethod
-    def _snapshot(source: Source, payload: bytes, payload_hash: str,
-                  settings: Settings) -> str | None:
-        """Persist the raw payload so later claims can be re-verified."""
-        try:
-            settings.snapshots_dir.mkdir(parents=True, exist_ok=True)
-            stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-            name = f"src{source.id or 0}_{stamp}_{payload_hash[:8]}.xml"
-            path = settings.snapshots_dir / name
-            path.write_bytes(payload)
-            return str(path)
-        except OSError:
-            return None  # snapshotting is best-effort; the item is still stored

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic non-English fixture: Japanese, German, and Arabic items with
+     fixed dates. Exercises UTF-8 round-tripping, identity hashing of
+     non-ASCII canonical URLs, and FTS unicode61 search over CJK/Latin/RTL
+     text. All content is synthetic and deterministic.
+-->
+<rss version="2.0">
+  <channel>
+    <title>世界通信 / Welt-Nachrichten / الأخبار العالمية</title>
+    <link>https://i18n-news.example</link>
+    <description>Multilingual synthetic coverage</description>
+    <item>
+      <title>再生可能エネルギーの導入が過去最高を更新</title>
+      <link>https://i18n-news.example/jp/2026/09/energieshift</link>
+      <guid>i18n-jp-0001</guid>
+      <pubDate>Mon, 14 Sep 2026 06:00:00 GMT</pubDate>
+      <description>経済産業省は月曜日、今年上半期の再生可能エネルギー導入量が前年同期比で過去最高を更新したと発表しました。太陽光と洋上風力が牽引しました。</description>
+    </item>
+    <item>
+      <title>Wasserstoffnetz nimmt Probebetrieb auf</title>
+      <link>https://i18n-news.example/de/2026/09/wasserstoffnetz</link>
+      <guid>i18n-de-0001</guid>
+      <pubDate>Sun, 13 Sep 2026 10:30:00 GMT</pubDate>
+      <description>Der erste Abschnitt des regionalen Wasserstoffnetzes ging diese Woche in den Probebetrieb. Betreiber erwarten die volle Kapazität bis zum Frühjahr 2027.</description>
+    </item>
+    <item>
+      <title>مشروع للطاقة الشمسية يبدأ التشغيل التجريبي</title>
+      <link>https://i18n-news.example/ar/2026/09/solar-pilot</link>
+      <guid>i18n-ar-0001</guid>
+      <pubDate>Sat, 12 Sep 2026 08:00:00 GMT</pubDate>
+      <description>بدأ أول مشروع للطاقة الشمسية على مستوى المنطقة تشغيله التجريبي صباح اليوم، ومن المتوقع أن يغطي خمس احتياجات المدينة من الكهرباء بنهاية العام.</description>
+    </item>
+  </channel>
+</rss>

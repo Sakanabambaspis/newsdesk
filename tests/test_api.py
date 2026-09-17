@@ -16,11 +16,14 @@ def test_health_and_tools(settings):
 
     tools = client.get("/tools").json()
     names = [t["name"] for t in tools]
-    assert len(tools) == 9
+    assert len(tools) == 11  # digest_item wired alongside summarize_item
     assert names[:4] == ["list_sources", "add_source", "run_collection", "search_items"]
     by_name = {t["name"]: t for t in tools}
     assert by_name["add_source"]["http"] == "POST /sources"
     assert by_name["get_cluster"]["status"].startswith("planned")
+    assert by_name["summarize_item"]["status"] == "wired"
+    assert by_name["digest_item"]["http"] == "POST /tools/digest_item"
+    assert "arxiv" in by_name["add_source"]["args"]["kind"]
 
 
 def test_api_collect_and_search_flow(settings, energy_feed):
@@ -70,3 +73,17 @@ def test_watchlist_flow(settings):
     assert attached.status_code == 201
 
     assert client.get("/watchlists").json()[0]["name"] == "energy-policy"
+
+
+def test_summarize_item_endpoint(settings, energy_feed):
+    client = TestClient(create_app(settings))
+    client.post("/sources", json={"url": energy_feed.as_uri()})
+    client.post("/tools/run_collection", json={})
+    item_id = client.get("/items?limit=1").json()[0]["id"]
+
+    summary = client.post("/tools/summarize_item", json={"item_id": item_id}).json()
+    assert summary["method"] == "extractive"  # no LLM configured in tests
+    assert summary["headline"]
+
+    missing = client.post("/tools/summarize_item", json={"item_id": "item_nope"})
+    assert missing.status_code == 404

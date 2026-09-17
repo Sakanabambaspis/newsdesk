@@ -1,16 +1,14 @@
 """Normalization: RawCapture entries -> canonical item records.
 
 The canonical record shape is the storage contract from docs/DESIGN.md
-section 4.2 (id / source / timestamps / content / analysis / provenance).
+section 3.2 (id / source / timestamps / content / analysis / provenance).
 """
 
 from __future__ import annotations
 
-from typing import Any
-
 from ..core.ids import canonical_url, content_hash, item_id_for, simhash64
+from ..core.models import CanonicalItem, Source
 from ..ingest.base import RawCapture
-from ..core.models import Source
 
 
 def relevance_score(title: str, text: str,
@@ -18,7 +16,7 @@ def relevance_score(title: str, text: str,
     """Naive keyword relevance for v1: weighted fraction of include-terms present.
 
     This is a bootstrapping signal only — never presented as an objective
-    credibility measure (see DESIGN.md section 8). None when no watchlist
+    credibility measure (see DESIGN.md section 7). None when no watchlist
     terms exist yet.
     """
     if not include_terms:
@@ -30,7 +28,8 @@ def relevance_score(title: str, text: str,
 
 
 def normalize_capture(capture: RawCapture, source: Source,
-                      include_terms: list[tuple[str, float]] | None = None) -> list[dict[str, Any]]:
+                      include_terms: list[tuple[str, float]] | None = None) \
+        -> list[CanonicalItem]:
     publisher = source.publisher or capture.meta.get("feed_title") or source.title
     items: list[dict[str, Any]] = []
     seen_urls: set[str] = set()
@@ -38,6 +37,8 @@ def normalize_capture(capture: RawCapture, source: Source,
         url_canonical = canonical_url(entry.url)
         if url_canonical in seen_urls:  # same story twice inside one feed
             continue
+        if not (entry.title or entry.text or entry.transcript):
+            continue  # nothing to anchor a claim or a content hash to
         seen_urls.add(url_canonical)
         text = entry.text or ""
         items.append({
@@ -45,7 +46,7 @@ def normalize_capture(capture: RawCapture, source: Source,
             "source": {
                 "publisher": publisher,
                 "url": entry.url,
-                "kind": "article",
+                "kind": capture.content_kind,
                 "author": entry.author,
             },
             "timestamps": {
@@ -56,7 +57,7 @@ def normalize_capture(capture: RawCapture, source: Source,
                 "title": entry.title or "",
                 "text": text,
                 "media": entry.media,
-                "transcript": None,
+                "transcript": entry.transcript,
             },
             "analysis": {
                 "topics": [],

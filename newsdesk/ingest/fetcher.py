@@ -1,6 +1,6 @@
 """Polite HTTP helper shared by all network fetchers.
 
-Implements the politeness contract from docs/DESIGN.md section 6:
+Implements the politeness contract from docs/DESIGN.md section 5.2:
 identified user agent, robots.txt compliance, per-host rate limiting,
 conditional GET, bounded retries. Local files (file:// or plain paths,
 used by fixtures and manual imports) bypass all of it.
@@ -17,6 +17,10 @@ import httpx
 from urllib.robotparser import RobotFileParser
 
 from ..config import Settings
+
+
+class FetchStatusError(Exception):
+    """A retryable HTTP status (e.g. 5xx) persisted across all attempts."""
 
 
 class HttpHelper:
@@ -90,6 +94,13 @@ class HttpHelper:
             self._rate_limit(parts.netloc)
             try:
                 response = self.client.get(url, headers=headers)
+                if response.status_code == 429 and attempt < attempts - 1:
+                    # Throttled: honor Retry-After (capped), then back off.
+                    retry_after = response.headers.get("retry-after")
+                    delay = min(float(retry_after), 60.0) if retry_after and \
+                        retry_after.replace(".", "", 1).isdigit() else 1.5 ** attempt
+                    time.sleep(delay)
+                    continue
                 if response.status_code >= 500 and attempt < attempts - 1:
                     last_error = FetchStatusError(response.status_code)
                     time.sleep(1.5 ** attempt)

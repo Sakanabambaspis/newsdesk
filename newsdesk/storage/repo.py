@@ -9,11 +9,12 @@ syndicated duplicate (kept, linked via duplicate_of, never silently dropped).
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Iterable
+from typing import Any
 
 from sqlmodel import Session, col, or_, select
 
-from ..core.models import Item, Job, LogEntry, Source, Watchlist, WatchlistSource, WatchlistTerm
+from ..core.models import (SOURCE_KINDS, CanonicalItem, Item, Job, LogEntry,
+                           Source, Watchlist, WatchlistSource, WatchlistTerm)
 from . import fts
 
 
@@ -27,6 +28,15 @@ class SourceRepo:
 
     def add(self, url: str, kind: str = "rss", title: str | None = None,
             publisher: str | None = None, fetch_interval_minutes: int = 30) -> tuple[Source, bool]:
+        """Register a source; idempotent on (url, kind).
+
+        Unknown kinds are rejected here, at add time, per the DESIGN.md
+        stage-1 contract ("invalid source rejected at add time") — never
+        silently deferred to collection.
+        """
+        if kind not in SOURCE_KINDS:
+            raise ValueError(
+                f"unknown source kind '{kind}' (known: {', '.join(SOURCE_KINDS)})")
         existing = self.session.exec(
             select(Source).where(Source.url == url, Source.kind == kind)
         ).first()
@@ -73,7 +83,7 @@ class ItemRepo:
     def __init__(self, session: Session):
         self.session = session
 
-    def upsert(self, item: dict[str, Any], source_id: int) -> tuple[str, Item]:
+    def upsert(self, item: CanonicalItem, source_id: int) -> tuple[str, Item]:
         """Store a normalized canonical item. Returns (outcome, row).
 
         outcome: created | updated (revision) | unchanged | duplicate.
@@ -148,6 +158,39 @@ class ItemRepo:
     def get(self, item_id: str) -> Item | None:
         return self.session.get(Item, item_id)
 
+    def patch_analysis(self, item_id: str, patch: dict[str, Any]) -> Item | None:
+        """Merge keys into an item's analysis JSON (summaries, visual notes).
+
+        Enrichment only — never touches content or provenance, so revisions
+        from re-collection are unaffected.
+        """
+        row = self.get(item_id)
+        if not row:
+            return None
+        analysis = dict(row.analysis or {})
+        analysis.update(patch)
+        row.analysis = analysis
+        self.session.add(row)
+        self.session.commit()
+        self.session.refresh(row)
+        return row
+
+    def set_transcript(self, item_id: str, transcript: str) -> Item | None:
+        """Backfill a transcript (audio transcription after collection).
+
+        How the transcript was obtained is recorded in analysis by the caller
+        (e.g. analysis["transcript_source"]); provenance.extraction_method
+        keeps describing how the item itself arrived.
+        """
+        row = self.get(item_id)
+        if not row:
+            return None
+        row.transcript = transcript
+        self.session.add(row)
+        self.session.commit()
+        self.session.refresh(row)
+        return row
+
     def recent(self, limit: int = 20) -> list[Item]:
         stmt = (
             select(Item)
@@ -159,19 +202,26 @@ class ItemRepo:
     def search(self, query: str, limit: int = 20) -> list[Item]:
         ids = fts.search_ids(self.session, query, limit=limit)
         if ids is None:  # FTS unavailable -> LIKE fallback
-            like = f"%{query.strip()}%"
-            stmt = (
-                select(Item)
-                .where(or_(col(Item.title).contains(like), col(Item.text).contains(like)))
-                .order_by(col(Item.published_at).desc().nullslast())
-                .limit(limit)
-            )
-            return list(self.session.exec(stmt))
+            return self._like_search(query, limit)
+        if not ids and fts.has_unsegmented_script(query):
+            # unicode61 cannot segment CJK etc.: FTS is honestly empty while
+            # the text really does contain the query, so match substrings.
+            return self._like_search(query, limit)
         if not ids:
             return []
         rows = self.session.exec(select(Item).where(col(Item.id).in_(ids))).all()
         by_id = {r.id: r for r in rows}
         return [by_id[i] for i in ids if i in by_id]
+
+    def _like_search(self, query: str, limit: int) -> list[Item]:
+        like = f"%{query.strip()}%"
+        stmt = (
+            select(Item)
+            .where(or_(col(Item.title).contains(like), col(Item.text).contains(like)))
+            .order_by(col(Item.published_at).desc().nullslast())
+            .limit(limit)
+        )
+        return list(self.session.exec(stmt))
 
 
 def _parse_dt(value: str | None) -> datetime | None:

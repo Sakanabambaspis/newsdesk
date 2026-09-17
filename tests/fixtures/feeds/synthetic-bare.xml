@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic "bare items" fixture: entries with links/guids but NO title
+     and NO description. Two genuinely unrelated stories, both content-empty.
+     Both normalize to title="" text="", so their content_hash values are
+     IDENTICAL, and tier-1 dedup links the second as a duplicate of the first.
+     This fixture pins observed behavior and is the input for the
+     empty-content dedup collision finding in
+     docs/reviews/fixture-findings-20260917.md (recorded, not fixed).
+-->
+<rss version="2.0">
+  <channel>
+    <title>Bare Wires</title>
+    <link>https://bare.example</link>
+    <description>Headline-only feed with no item bodies</description>
+    <item>
+      <link>https://bare.example/2026/headline-a</link>
+      <guid>bare-9001</guid>
+      <pubDate>Mon, 14 Sep 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <link>https://bare.example/2026/headline-b</link>
+      <guid>bare-9002</guid>
+      <pubDate>Mon, 14 Sep 2026 08:05:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

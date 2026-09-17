@@ -7,7 +7,7 @@ docs/DESIGN.md; ``Item.to_canonical()`` emits exactly that JSON shape.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TypedDict
 
 from sqlalchemy import Column, JSON
 from sqlmodel import Field, SQLModel
@@ -15,6 +15,22 @@ from sqlmodel import Field, SQLModel
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class CanonicalItem(TypedDict):
+    """The canonical record (docs/DESIGN.md 3.2) — the system's central
+    contract. ``normalize_capture`` produces it, ``ItemRepo.upsert`` consumes
+    it, and ``Item.to_canonical`` emits the same shape back out.
+
+    Section keys are fixed; the values inside each section are deliberately
+    plain dicts (the sections are storage-shaped, not object-shaped)."""
+
+    id: str
+    source: dict[str, Any]      # publisher, url, kind, author
+    timestamps: dict[str, Any]  # published_at, retrieved_at (ISO strings)
+    content: dict[str, Any]     # title, text, media, transcript
+    analysis: dict[str, Any]    # topics, entities, relevance, claims (+ enrichments)
+    provenance: dict[str, Any]  # content_hash, extraction_method, url_canonical, snapshot_path, simhash, revision, duplicate_of
 
 
 def _iso(dt: datetime | None) -> str | None:
@@ -29,17 +45,26 @@ def _empty_analysis() -> dict[str, Any]:
     return {"topics": [], "entities": [], "relevance": None, "claims": []}
 
 
+# Every source kind newsdesk knows. Fetchers exist for the first group
+# (registered in newsdesk.ingest.base); the rest are staged kinds, accepted
+# at add time and rejected at collect time until their fetcher ships.
+SOURCE_KINDS: tuple[str, ...] = (
+    "rss", "arxiv", "youtube", "video", "email", "twitter",
+    "html", "sitemap", "api", "forum", "newsletter", "manual",
+)
+
+
 class Source(SQLModel, table=True):
     __tablename__ = "sources"
 
     id: int | None = Field(default=None, primary_key=True)
     url: str = Field(index=True)  # feed/channel URL exactly as registered
-    kind: str = Field(default="rss")  # rss | html | sitemap | youtube | api | forum | newsletter | manual
+    kind: str = Field(default="rss")  # one of SOURCE_KINDS
     title: str | None = None  # human label, usually the feed title
     publisher: str | None = None
     enabled: bool = Field(default=True)
     fetch_interval_minutes: int = Field(default=30)
-    etag: str | None = None  # conditional-GET state
+    etag: str | None = None  # conditional-GET state, or fetcher state token (e.g. imap-uid:<n>)
     last_modified: str | None = None
     last_fetched_at: datetime | None = None
     last_status: str | None = None  # ok | not_modified | error:<msg> | skipped:<reason>
@@ -99,8 +124,8 @@ class Item(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 
-    def to_canonical(self) -> dict[str, Any]:
-        """Emit the canonical record contract from docs/DESIGN.md section 4.2."""
+    def to_canonical(self) -> CanonicalItem:
+        """Emit the canonical record contract from docs/DESIGN.md section 3.2."""
         return {
             "id": self.id,
             "source": {

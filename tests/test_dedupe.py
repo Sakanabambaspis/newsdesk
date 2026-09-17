@@ -2,38 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 from sqlmodel import select
 
-from newsdesk.core.ids import canonical_url, content_hash, item_id_for, simhash64
 from newsdesk.core.models import Item
 from newsdesk.pipeline.runner import run_collection
 from newsdesk.storage.repo import ItemRepo, SourceRepo
-
-
-def _make_item(*, url="https://x.example.com/a", title="Title", text="Body text"):
-    return {
-        "id": item_id_for(url),
-        "source": {"publisher": "X", "url": url, "kind": "article", "author": None},
-        "timestamps": {"published_at": datetime.now(timezone.utc).isoformat(),
-                        "retrieved_at": datetime.now(timezone.utc).isoformat()},
-        "content": {"title": title, "text": text, "media": [], "transcript": None},
-        "analysis": {"topics": [], "entities": [], "relevance": None, "claims": []},
-        "provenance": {
-            "content_hash": content_hash(title=title, text=text),
-            "extraction_method": "rss",
-            "url_canonical": canonical_url(url),
-            "snapshot_path": None,
-            "simhash": simhash64(title + "\n" + text),
-            "revision": 0,
-        },
-    }
+from tests.conftest import make_canonical_item
 
 
 def test_created_then_unchanged(session, settings, energy_source):
     repo = ItemRepo(session)
-    item = _make_item()
+    item = make_canonical_item()
     outcome, row = repo.upsert(item, source_id=energy_source.id)
     assert outcome == "created" and row.revision == 0
 
@@ -43,9 +22,9 @@ def test_created_then_unchanged(session, settings, energy_source):
 
 def test_revision_on_changed_text(session, settings, energy_source):
     repo = ItemRepo(session)
-    repo.upsert(_make_item(), source_id=energy_source.id)
+    repo.upsert(make_canonical_item(), source_id=energy_source.id)
 
-    revised = _make_item(text="Body text, corrected figures")
+    revised = make_canonical_item(text="Body text, corrected figures")
     outcome, row = repo.upsert(revised, source_id=energy_source.id)
     assert outcome == "updated"
     assert row.revision == 1
@@ -54,9 +33,9 @@ def test_revision_on_changed_text(session, settings, energy_source):
 
 def test_syndicated_duplicate_across_urls(session, settings, energy_source):
     repo = ItemRepo(session)
-    _, first = repo.upsert(_make_item(url="https://a.example.com/wire"),
+    _, first = repo.upsert(make_canonical_item(url="https://a.example.com/wire"),
                            source_id=energy_source.id)
-    outcome, second = repo.upsert(_make_item(url="https://b.example.com/wire"),
+    outcome, second = repo.upsert(make_canonical_item(url="https://b.example.com/wire"),
                                   source_id=energy_source.id)
     assert outcome == "duplicate"
     assert second.duplicate_of == first.id  # kept, linked — never dropped
@@ -64,9 +43,9 @@ def test_syndicated_duplicate_across_urls(session, settings, energy_source):
 
 def test_distinct_content_is_not_duplicate(session, settings, energy_source):
     repo = ItemRepo(session)
-    repo.upsert(_make_item(), source_id=energy_source.id)
+    repo.upsert(make_canonical_item(), source_id=energy_source.id)
     outcome, _ = repo.upsert(
-        _make_item(url="https://x.example.com/b", text="A completely different story"),
+        make_canonical_item(url="https://x.example.com/b", text="A completely different story"),
         source_id=energy_source.id)
     assert outcome == "created"
 

@@ -1,8 +1,9 @@
 """Agent protocol: the small, harness-independent tool surface.
 
 The intelligence layer is deliberately independent of any agent framework.
-These nine tools are the contract; they are exposed as plain HTTP today
-(see api.app) and as MCP later (M6). Thin adapters for OpenAI Agents SDK /
+These tools are the contract; they are exposed as plain HTTP (see api.app)
+and as MCP tools (see mcp_server) for harness addons — ZCode, Claude Code,
+Codex, and friends all speak MCP. Thin adapters for OpenAI Agents SDK /
 LangGraph / CrewAI / AutoGen wrap this same protocol; workflow state stays
 in the Newsdesk database, never in harness-specific memory.
 """
@@ -10,6 +11,10 @@ in the Newsdesk database, never in harness-specific memory.
 from __future__ import annotations
 
 from typing import Any
+
+from ..core.models import SOURCE_KINDS
+
+_KINDS_ARG = "string (" + "|".join(SOURCE_KINDS) + ")"
 
 TOOL_SPECS: list[dict[str, Any]] = [
     {
@@ -21,8 +26,9 @@ TOOL_SPECS: list[dict[str, Any]] = [
     },
     {
         "name": "add_source",
-        "description": "Register a new source to monitor.",
-        "args": {"url": "string (feed or page URL)", "kind": "string (rss|html|youtube|api|forum|newsletter|manual)",
+        "description": "Register a new source to monitor; unknown kinds are rejected.",
+        "args": {"url": "string (feed or page URL)",
+                 "kind": _KINDS_ARG,
                  "title": "string (optional)", "publisher": "string (optional)"},
         "status": "wired",
         "http": "POST /sources",
@@ -56,6 +62,23 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "http": None,
     },
     {
+        "name": "summarize_item",
+        "description": "Summarize one item (text, transcript, visual notes combined); "
+                       "extractive fallback when no LLM is configured.",
+        "args": {"item_id": "string", "force": "boolean (optional)"},
+        "status": "wired",
+        "http": "POST /tools/summarize_item",
+    },
+    {
+        "name": "digest_item",
+        "description": "Watch a video item: transcript (captions or audio "
+                       "transcription) + keyframe descriptions (vision) + grounded "
+                       "summary. Long-running; downloads media.",
+        "args": {"item_id": "string", "force": "boolean (optional)"},
+        "status": "wired",
+        "http": "POST /tools/digest_item",
+    },
+    {
         "name": "summarize_cluster",
         "description": "Evidence-linked summary of a cluster; every claim cites item IDs.",
         "args": {"cluster_id": "string", "format": "brief|detailed|timeline|comparison|raw"},
@@ -64,10 +87,11 @@ TOOL_SPECS: list[dict[str, Any]] = [
     },
     {
         "name": "create_digest",
-        "description": "Build a digest (daily/weekly/imm) for a watchlist.",
-        "args": {"watchlist_id": "int", "period": "daily|weekly"},
-        "status": "planned (M4)",
-        "http": None,
+        "description": "The daily briefing: AI-ranked summary of what is worth "
+                       "following, grounded in collected items with drill-down IDs.",
+        "args": {"hours": "int (optional, default 24)", "limit": "int (optional, default 30)"},
+        "status": "wired",
+        "http": "GET /tools/daily_digest",
     },
     {
         "name": "export_log",

@@ -21,9 +21,25 @@ dependencies = [
 dev = [
     "pytest>=8.0",
 ]
+media = [
+    "yt-dlp>=2025.1",           # video-platform fetcher (youtube, bilibili, ...)
+]
+vision = [
+    "imageio-ffmpeg>=0.5",      # static ffmpeg for keyframe extraction
+]
+mcp = [
+    "mcp>=1.2",                 # agent-harness addon surface (stdio)
+]
+accounts = [
+    "keyring>=24",              # optional OS-keyring credential storage
+]
+all = [
+    "newsdesk[media,vision,mcp,accounts]",
+]
 
 [project.scripts]
 newsdesk = "newsdesk.cli:main"
+newsdesk-mcp = "newsdesk.mcp_server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["newsdesk"]

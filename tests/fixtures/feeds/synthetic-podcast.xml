@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic podcast fixture (RSS 2.0 + itunes namespace + enclosures).
+     Episodes exercise the enclosure -> content.media[] mapping and the
+     content:encoded show-notes path. Episode 2 is enclosure-only (no title
+     body beyond the tag and no description): see fixture-findings for the
+     empty-content dedup interaction this exposes.
+-->
+<rss version="2.0"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Signal Path Weekly</title>
+    <link>https://signalpath.example</link>
+    <description>A podcast about infrastructure engineering</description>
+    <item>
+      <title>Episode 41: The queue that ate the batch job</title>
+      <link>https://signalpath.example/episodes/41</link>
+      <guid isPermaLink="false">signalpath-0041</guid>
+      <pubDate>Tue, 08 Sep 2026 06:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.signalpath.example/audio/ep41.mp3"
+                 type="audio/mpeg" length="52428800"/>
+      <itunes:duration>54:12</itunes:duration>
+      <itunes:author>M. Okafor</itunes:author>
+      <content:encoded><![CDATA[
+        <p>Why a retry storm turned one delayed batch into a twelve hour
+        backlog, and the idempotency key pattern that finally fixed it.</p>
+        <script>tracking_beacon()</script>
+      ]]></content:encoded>
+    </item>
+    <item>
+      <title>Episode 42: Reading outage postmortems</title>
+      <link>https://signalpath.example/episodes/42</link>
+      <guid isPermaLink="false">signalpath-0042</guid>
+      <pubDate>Tue, 15 Sep 2026 06:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.signalpath.example/audio/ep42.mp3"
+                 type="audio/mpeg" length="48168960"/>
+      <itunes:duration>50:03</itunes:duration>
+      <description>A guided tour of three public postmortems and what each team measured before declaring the incident over.</description>
+    </item>
+  </channel>
+</rss>

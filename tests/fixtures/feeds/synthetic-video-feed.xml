@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic video-platform feed: the RSS-with-media:content shape that
+     YouTube channel feeds actually use. Exercises the media:content ->
+     content.media[] mapping in the RSS fetcher for kind="rss" video feeds
+     (the yt-dlp kind="youtube" path is separate and covered by
+     test_video_fetcher.py via its own seams).
+-->
+<rss version="2.0"
+     xmlns:media="http://search.yahoo.com/mrss/"
+     xmlns:yt="http://www.youtube.com/xml/schemas/2015">
+  <channel>
+    <title>Field Notes Channel</title>
+    <link>https://videos.example.com/channel/fieldnotes</link>
+    <description>Short field engineering videos</description>
+    <item>
+      <title>Inside a substation upgrade</title>
+      <link>https://videos.example.com/watch?v=fn0042</link>
+      <guid isPermaLink="false">yt:video:fn0042</guid>
+      <pubDate>Mon, 14 Sep 2026 15:00:00 GMT</pubDate>
+      <media:content url="https://videos.example.com/embed/fn0042"
+                     type="application/x-shockwave-flash" duration="412"/>
+      <media:thumbnail url="https://videos.example.com/thumbs/fn0042.jpg"
+                       width="480" height="360"/>
+      <media:description>A walk through the switching sequence for a 2026 substation upgrade, with commentary on clearance distances.</media:description>
+    </item>
+    <item>
+      <title>Why culverts fail in freeze-thaw cycles</title>
+      <link>https://videos.example.com/watch?v=fn0043</link>
+      <guid isPermaLink="false">yt:video:fn0043</guid>
+      <pubDate>Thu, 10 Sep 2026 15:00:00 GMT</pubDate>
+      <media:content url="https://videos.example.com/embed/fn0043"
+                     type="application/x-shockwave-flash" duration="655"/>
+      <media:thumbnail url="https://videos.example.com/thumbs/fn0043.jpg"
+                       width="480" height="360"/>
+    </item>
+  </channel>
+</rss>

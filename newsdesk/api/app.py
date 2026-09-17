@@ -29,6 +29,11 @@ class CollectIn(BaseModel):
     source_ids: list[int] | None = None
 
 
+class SummarizeIn(BaseModel):
+    item_id: str
+    force: bool = False
+
+
 class WatchlistIn(BaseModel):
     name: str
     description: str | None = None
@@ -65,11 +70,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/sources", status_code=201)
     def add_source(payload: SourceIn) -> dict[str, Any]:
         with session() as s:
-            source, created = SourceRepo(s).add(
-                payload.url, kind=payload.kind, title=payload.title,
-                publisher=payload.publisher,
-                fetch_interval_minutes=payload.fetch_interval_minutes,
-            )
+            try:
+                source, created = SourceRepo(s).add(
+                    payload.url, kind=payload.kind, title=payload.title,
+                    publisher=payload.publisher,
+                    fetch_interval_minutes=payload.fetch_interval_minutes,
+                )
+            except ValueError as exc:  # unknown kind: rejected at add time
+                raise HTTPException(422, str(exc))
             if created:
                 LogRepo(s).append("source_added", {"source_id": source.id, "url": source.url,
                                                    "kind": source.kind}, actor="user")
@@ -160,6 +168,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/tools/search_items")
     def tool_search_items(query: str, limit: int = 20) -> list[dict[str, Any]]:
         return items(query=query, limit=limit)
+
+    @app.get("/tools/daily_digest")
+    def tool_daily_digest(hours: int = 24, limit: int = 30) -> dict[str, Any]:
+        with session() as s:
+            from ..pipeline.digest import build_daily_digest
+            return build_daily_digest(s, settings, hours=hours, limit=limit)
+
+    @app.post("/tools/summarize_item")
+    def tool_summarize_item(payload: SummarizeIn) -> dict[str, Any]:
+        with session() as s:
+            from ..pipeline.summarize import summarize_item
+            summary = summarize_item(s, settings, payload.item_id, force=payload.force)
+        if summary.get("error") == "not_found":
+            raise HTTPException(404, "item not found")
+        return summary
+
+    @app.post("/tools/digest_item")
+    def tool_digest_item(payload: SummarizeIn) -> dict[str, Any]:
+        with session() as s:
+            from ..pipeline.summarize import digest_item
+            report = digest_item(s, settings, payload.item_id, force=payload.force)
+        if report.get("error") == "not_found":
+            raise HTTPException(404, "item not found")
+        return report
 
     @app.get("/tools/export_log")
     def tool_export_log(limit: int = 500) -> list[dict[str, Any]]:

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic sitemap (urlset) fixture. Newsdesk has NO sitemap fetcher yet
+     (DESIGN.md places sitemap discovery in M2), so the runnable expectation
+     today is: get_fetcher("sitemap") is None and a sitemap source reports
+     error:no-fetcher in the runner. This fixture pins that staged contract.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://sitemap-publisher.example/news/first-story</loc>
+    <lastmod>2026-09-14T07:00:00+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://sitemap-publisher.example/news/second-story</loc>
+    <lastmod>2026-09-13T18:30:00+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://sitemap-publisher.example/news/third-story</loc>
+    <lastmod>2026-09-12T09:10:00+00:00</lastmod>
+  </url>
+</urlset>

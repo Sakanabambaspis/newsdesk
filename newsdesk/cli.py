@@ -5,8 +5,12 @@
     newsdesk collect              run one collection pass
     newsdesk search <query>
     newsdesk item <item_id>       full canonical record as JSON
+    newsdesk summarize <item_id>  grounded summary (extractive without an LLM)
+    newsdesk digest <item_id>     watch a video: transcript + vision + summary
     newsdesk log                  tail the immutable activity log
     newsdesk serve                run the local HTTP API + agent tools
+    newsdesk mcp                  run the MCP server (stdio) for agent harnesses
+    newsdesk accounts ...         link/inspect personal accounts (email, X, YouTube)
 """
 
 from __future__ import annotations
@@ -17,12 +21,19 @@ from typing import Optional
 import typer
 
 from .config import Settings
+from .core.models import SOURCE_KINDS
 from .pipeline.runner import run_collection
+from .pipeline.summarize import digest_item, summarize_item
 from .storage.db import Database
 from .storage.repo import ItemRepo, LogRepo, SourceRepo
 
 app = typer.Typer(help="Newsdesk — watchlist-driven news collection agent",
                   no_args_is_help=True, add_completion=False)
+
+accounts_app = typer.Typer(help="Manage linked accounts (credentials via env/"
+                                "keyring; consent grants stored locally)",
+                           no_args_is_help=True)
+app.add_typer(accounts_app, name="accounts")
 
 
 def _settings() -> Settings:
@@ -34,19 +45,23 @@ def _settings() -> Settings:
 @app.command("add-source")
 def add_source(
     url: str = typer.Argument(..., help="Feed URL, file:// URI, or local file path"),
-    kind: str = typer.Option("rss", help="Source kind: rss|html|youtube|api|forum|newsletter|manual"),
+    kind: str = typer.Option("rss", help=f"Source kind: {'|'.join(SOURCE_KINDS)}"),
     title: Optional[str] = typer.Option(None, help="Human label"),
     publisher: Optional[str] = typer.Option(None, help="Publisher name"),
 ) -> None:
     settings = _settings()
     db = Database(settings)
-    with db.session() as session:
-        source, created = SourceRepo(session).add(url, kind=kind, title=title,
-                                                  publisher=publisher)
-        if created:
-            LogRepo(session).append("source_added", {"source_id": source.id, "url": url,
-                                                     "kind": kind}, actor="user")
-        source_id, source_kind = source.id, source.kind
+    try:
+        with db.session() as session:
+            source, created = SourceRepo(session).add(url, kind=kind, title=title,
+                                                      publisher=publisher)
+            if created:
+                LogRepo(session).append("source_added", {"source_id": source.id, "url": url,
+                                                         "kind": kind}, actor="user")
+            source_id, source_kind = source.id, source.kind
+    except ValueError as exc:  # unknown kind: rejected at add time
+        typer.echo(f"error: {exc}")
+        raise typer.Exit(code=2)
     state = "added" if created else "already registered"
     typer.echo(f"[{source_id}] {url} ({state}, kind={source_kind})")
 
@@ -117,6 +132,32 @@ def item(item_id: str = typer.Argument(..., help="Item id, e.g. item_abc123")) -
     typer.echo(json.dumps(row.to_canonical(), indent=2, ensure_ascii=False))
 
 
+@app.command("summarize")
+def summarize(
+    item_id: str = typer.Argument(..., help="Item id to summarize"),
+    force: bool = typer.Option(False, help="Re-summarize even if a summary exists"),
+) -> None:
+    settings = _settings()
+    db = Database(settings)
+    with db.session() as session:
+        summary = summarize_item(session, settings, item_id, force=force)
+    typer.echo(json.dumps(summary, indent=2, ensure_ascii=False))
+
+
+@app.command("digest")
+def digest(
+    item_id: str = typer.Argument(..., help="Video item id to watch and digest"),
+    force: bool = typer.Option(False, help="Redo transcript/vision/summary"),
+    no_vision: bool = typer.Option(False, help="Skip keyframe extraction + vision"),
+) -> None:
+    settings = _settings()
+    db = Database(settings)
+    with db.session() as session:
+        report = digest_item(session, settings, item_id, force=force,
+                             with_vision=not no_vision)
+    typer.echo(json.dumps(report, indent=2, ensure_ascii=False))
+
+
 @app.command("log")
 def log(limit: int = typer.Option(20, help="Number of entries")) -> None:
     db = Database(_settings())
@@ -124,6 +165,44 @@ def log(limit: int = typer.Option(20, help="Number of entries")) -> None:
         rows = LogRepo(session).recent(limit=limit)
     for e in rows:
         typer.echo(f"#{e.id} {e.ts.isoformat()} [{e.actor}] {e.action} {json.dumps(e.detail, ensure_ascii=False)}")
+
+
+@app.command("digest-daily")
+def digest_daily(
+    hours: int = typer.Option(24, help="How far back to look"),
+    limit: int = typer.Option(24, help="Max items considered"),
+    json_out: bool = typer.Option(False, "--json", help="Emit raw JSON briefing"),
+    deep: int = typer.Option(0, help="Also inline per-item summaries for the top N items"),
+) -> None:
+    """The daily briefing: what is worth following, with drill-down ids."""
+    settings = _settings()
+    db = Database(settings)
+    with db.session() as session:
+        from .pipeline.digest import build_daily_digest, render_markdown
+        digest = build_daily_digest(session, settings, hours=hours, limit=limit)
+        if deep > 0:
+            from .pipeline.summarize import summarize_item
+            for section in digest.get("worth_following", [])[:3]:
+                for item_id in section.get("item_ids", [])[:deep]:
+                    summary = summarize_item(session, settings, item_id)
+                    claims = summary.get("what_happened") or []
+                    section.setdefault("deep_dives", []).append({
+                        "item_id": item_id,
+                        "headline": summary.get("headline"),
+                        "claims": claims[:4],
+                    })
+            digest["deep"] = True
+    if json_out:
+        typer.echo(json.dumps(digest, indent=2, ensure_ascii=False))
+    else:
+        typer.echo(render_markdown(digest))
+        if digest.get("deep"):
+            for section in digest.get("worth_following", []):
+                for dive in section.get("deep_dives", []):
+                    typer.echo(f"\n--- deep dive: {dive['headline']} "
+                               f"({dive['item_id']}) ---")
+                    for claim in dive["claims"]:
+                        typer.echo(f"  • {claim}")
 
 
 @app.command("serve")
@@ -135,6 +214,102 @@ def serve(
 
     typer.echo(f"Serving Newsdesk API on http://{host}:{port} (docs at /docs)")
     uvicorn.run("newsdesk.api.app:app", host=host, port=port, log_level="info")
+
+
+@app.command("mcp")
+def mcp() -> None:
+    """Run the MCP server over stdio (for agent harness integration)."""
+    from .mcp_server import main as mcp_main
+
+    mcp_main()
+
+
+# -- accounts -------------------------------------------------------------
+
+
+@accounts_app.command("list")
+def accounts_list() -> None:
+    """Show grants + credential presence (values are never printed)."""
+    from .accounts.manager import AccountManager
+
+    rows = AccountManager(_settings()).status()
+    typer.echo(f"{'ACCOUNT':<24} {'CAPABILITIES':<28} CREDENTIALS")
+    for row in rows:
+        caps = ",".join(row["capabilities"]) or "-"
+        cred = row.get("credentials") or {}
+        cred_state = "all set" if cred and all(cred.values()) else (
+            "missing: " + ",".join(k for k, v in cred.items() if not v) if cred else "-")
+        note = f"  ({row['note']})" if row.get("note") else ""
+        typer.echo(f"{row['account']:<24} {caps:<28} {cred_state}{note}")
+
+
+@accounts_app.command("grant")
+def accounts_grant(
+    kind: str = typer.Argument(..., help="email | twitter | youtube-account"),
+    ref: str = typer.Argument("default", help="Account label"),
+    capability: list[str] = typer.Option(..., "--cap",
+                                         help="Capability to grant (repeatable)"),
+) -> None:
+    """Link an account by granting capabilities (consent record)."""
+    from .accounts.manager import AccountManager
+
+    entry = AccountManager(_settings()).grant(kind, ref, capability)
+    typer.echo(f"granted {kind}/{ref}: {', '.join(entry['capabilities'])}")
+
+
+@accounts_app.command("revoke")
+def accounts_revoke(
+    kind: str = typer.Argument(...),
+    ref: str = typer.Argument("default"),
+) -> None:
+    from .accounts.manager import AccountManager
+
+    ok = AccountManager(_settings()).revoke(kind, ref)
+    typer.echo(f"revoked {kind}/{ref}" if ok else f"no grant for {kind}/{ref}")
+    if not ok:
+        raise typer.Exit(code=1)
+
+
+@accounts_app.command("test")
+def accounts_test(
+    kind: str = typer.Argument(..., help="email | twitter | youtube-account"),
+    ref: str = typer.Argument("default"),
+) -> None:
+    """Verify the grant + credentials connect (read-only, one request)."""
+    from .accounts import email as email_provider
+    from .accounts import twitter as twitter_provider
+    from .accounts import youtube_account as youtube_provider
+    from .accounts.manager import PROVIDERS, AccountManager
+
+    probes = {"email": email_provider.test_connection,
+              "twitter": twitter_provider.test_connection,
+              "youtube-account": youtube_provider.test_connection}
+    probe = probes.get(kind)
+    if probe is None:
+        typer.echo(f"unknown kind '{kind}' (known: {', '.join(sorted(probes))})")
+        raise typer.Exit(code=2)
+    try:
+        session = AccountManager(_settings()).connect(
+            kind, ref, PROVIDERS[kind]["capabilities"][0])
+        typer.echo(f"{kind}/{ref}: {probe(session)}")
+    except Exception as exc:
+        typer.echo(f"{kind}/{ref}: FAILED — {exc}")
+        raise typer.Exit(code=1)
+
+
+@accounts_app.command("sync-youtube")
+def accounts_sync_youtube(
+    ref: str = typer.Argument("default"),
+) -> None:
+    """Register every public subscription of the linked channel as a source."""
+    from .accounts.youtube_account import sync_subscriptions
+
+    db = Database(_settings())
+    with db.session() as session:
+        report = sync_subscriptions(session, _settings(), ref)
+    typer.echo(f"{report['account']}: {report['registered']} sources registered, "
+               f"{report['already_present']} already present "
+               f"({report['subscriptions']} subscriptions seen)")
 
 
 def main() -> None:
