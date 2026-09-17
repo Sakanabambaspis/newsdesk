@@ -9,6 +9,7 @@
     newsdesk digest <item_id>     watch a video: transcript + vision + summary
     newsdesk script               stage the spoken-briefing script (+ sidecar)
     newsdesk audio                synthesize the staged script into the day's MP3
+    newsdesk morning              the whole morning: collect through notify
     newsdesk log                  tail the immutable activity log
     newsdesk serve                run the local HTTP API + agent tools
     newsdesk mcp                  run the MCP server (stdio) for agent harnesses
@@ -221,25 +222,16 @@ def write_script(
     settings = _settings()
     db = Database(settings)
     with db.session() as session:
-        from .morning.registries import SCRIPTWRITERS, load_plugins
-        from .morning.script import write_sidecar
+        from .morning.orchestrator import stage_script
+        from .morning.registries import load_plugins
+        from .morning.script import episode_date
         from .pipeline.digest import build_daily_digest
 
         load_plugins()
         digest = build_daily_digest(session, settings, hours=hours)
-        brief = SCRIPTWRITERS.get()(settings, digest)
-        sidecar = write_sidecar(settings, brief["date"], brief)
-        LogRepo(session).append("morning_brief_built", {
-            "date": brief["date"], "method": brief["method"],
-            "stats": brief["stats"],
-            "sections": [{"type": s["type"], "item_ids": s["item_ids"],
-                          "est_seconds": s["est_seconds"]}
-                         for s in brief["sections"]],
-            "sidecar": str(sidecar),
-        })
+        brief = stage_script(session, settings, digest, episode_date())
     if json_out:
-        typer.echo(json.dumps({**brief, "sidecar": str(sidecar)}, indent=2,
-                              ensure_ascii=False))
+        typer.echo(json.dumps(brief, indent=2, ensure_ascii=False))
     else:
         stats = brief["stats"]
         typer.echo(f"{brief['date']} script ({brief['method']}): "
@@ -248,7 +240,7 @@ def write_script(
         for s in brief["sections"]:
             ids = ",".join(s["item_ids"]) or "-"
             typer.echo(f"  {s['type']:<10} {s['est_seconds']:>4}s  {ids}")
-        typer.echo(f"sidecar: {sidecar}")
+        typer.echo(f"sidecar: {brief['sidecar']}")
 
 
 @app.command("audio")
@@ -283,6 +275,46 @@ def render_audio(
                    f"{_mmss(report['duration_seconds'])} "
                    f"(voice {', '.join(report['voices'])})")
         typer.echo(f"mp3: {report['mp3']}")
+
+
+@app.command("morning")
+def morning(
+    json_out: bool = typer.Option(False, "--json", help="Emit the run report as JSON"),
+) -> None:
+    """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
+    from .morning.orchestrator import MorningError, run_morning
+
+    settings = _settings()
+    db = Database(settings)
+    with db.session() as session:
+        try:
+            report = run_morning(session, settings)
+        except MorningError as exc:
+            typer.echo(f"error: {exc}")
+            raise typer.Exit(code=1)
+    if json_out:
+        typer.echo(json.dumps(report, indent=2, ensure_ascii=False))
+        return
+    if report["outcome"] == "already_published":
+        typer.echo(f"morning {report['date']}: already published — nothing to do")
+        return
+    stages = report["stages"]
+    typer.echo(f"morning {report['date']}: published")
+    typer.echo(f"  collect   {stages['collect']['sources']} sources, "
+               f"{stages['collect']['status']}")
+    typer.echo(f"  digest    {stages['digest']['method']}, "
+               f"{stages['digest']['items_in_window']} items in window "
+               f"(verdicts: {stages['digest']['verdict_method']})")
+    typer.echo(f"  script    {stages['script']['method']}, "
+               f"{stages['script']['words']} words, "
+               f"~{_mmss(stages['script']['est_seconds'])}")
+    typer.echo(f"  tts       {stages['tts']['chunks']} chunks, "
+               f"{_mmss(stages['tts']['duration_seconds'])}")
+    typer.echo(f"  publish   {stages['publish']['publisher']}")
+    typer.echo(f"    episode: {stages['publish']['episode_url']}")
+    typer.echo(f"    feed:    {stages['publish']['feed_url']}")
+    typer.echo(f"  notify    {stages['notify']['outcome']} "
+               f"({', '.join(stages['notify']['notifiers']) or 'none registered'})")
 
 
 @app.command("serve")

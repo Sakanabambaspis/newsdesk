@@ -96,3 +96,17 @@ def publish_local(settings, episode: dict[str, Any],
 
 
 PUBLISHERS.register("local-dir", publish_local)
+
+
+def already_published(settings, date: str) -> bool:
+    """Idempotency guard: has ``date`` been published? (Checks the manifest
+    before the orchestrator does any work, so re-runs exit early.)"""
+    token = settings.feed_token
+    if not token:
+        return False
+    manifest = _load_manifest(
+        (settings.publish_dir / token).resolve() / "episodes.json")
+    return any(e["date"] == date for e in manifest)
+
+
+publish_local.already_published = already_published

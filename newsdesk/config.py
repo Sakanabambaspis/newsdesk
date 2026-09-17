@@ -34,6 +34,8 @@ class Settings:
     morning_voice_alt: str = "en-US-EmmaMultilingualNeural"  # per-chunk fallback
     tts_retries: int = 4  # 4 retries + first try = 5 attempts per voice
     tts_pace: float = 1.5  # seconds between chunk requests (research band: 1–3 s)
+    morning_tts: str = "edge-tts"  # TTS_ENGINES selection for `newsdesk morning`
+    morning_publisher: str = "local-dir"  # PUBLISHERS selection; CI sets cloudflare-pages
 
     @property
     def snapshots_dir(self) -> Path:
@@ -90,4 +92,6 @@ class Settings:
                 "NEWSDESK_MORNING_VOICE_ALT", "en-US-EmmaMultilingualNeural"),
             tts_retries=int(os.environ.get("NEWSDESK_TTS_RETRIES", "4")),
             tts_pace=float(os.environ.get("NEWSDESK_TTS_PACE", "1.5")),
+            morning_tts=os.environ.get("NEWSDESK_TTS_ENGINE", "edge-tts"),
+            morning_publisher=os.environ.get("NEWSDESK_PUBLISHER", "local-dir"),
         )
