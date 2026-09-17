@@ -104,9 +104,8 @@ def _digest(session, settings, world, verdicts_for):
 def test_registries_defaults_and_loud_failure():
     load_plugins()
     assert SCRIPTWRITERS.get().__name__ == "llm_brief"
+    assert TTS_ENGINES.get().__name__ == "edge_tts_synth"  # plugin landed in 03
     assert NOTIFIERS.names() == []  # ships empty by design
-    with pytest.raises(KeyError, match="edge-tts"):
-        TTS_ENGINES.get()  # default named, plugin lands in ticket 03
     with pytest.raises(KeyError, match="cloudflare-pages"):
         PUBLISHERS.get()  # default named, plugin lands in ticket 06
     with pytest.raises(KeyError, match="unknown SCRIPTWRITERS plugin 'nope'"):

@@ -76,11 +76,15 @@ def script_stats(sections: list[dict[str, Any]]) -> dict[str, int]:
             "est_seconds": sum(s["est_seconds"] for s in sections)}
 
 
+def sidecar_path(settings: Any, date: str) -> Path:
+    """Where the sidecar ``<morning_dir>/<date>/<date>-script.json`` lives."""
+    return settings.morning_dir / date / f"{date}-script.json"
+
+
 def write_sidecar(settings: Any, date: str, brief: dict[str, Any]) -> Path:
     """Persist the sidecar ``<morning_dir>/<date>/<date>-script.json``."""
-    directory = settings.morning_dir / date
-    directory.mkdir(parents=True, exist_ok=True)
-    path = directory / f"{date}-script.json"
+    path = sidecar_path(settings, date)
+    path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"date": date, "generated_at": datetime.now(MORNING_TZ).isoformat(),
                "method": brief.get("method"), "stats": brief.get("stats"),
                "sections": brief["sections"]}

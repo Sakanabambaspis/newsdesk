@@ -8,6 +8,7 @@
     newsdesk summarize <item_id>  grounded summary (extractive without an LLM)
     newsdesk digest <item_id>     watch a video: transcript + vision + summary
     newsdesk script               stage the spoken-briefing script (+ sidecar)
+    newsdesk audio                synthesize the staged script into the day's MP3
     newsdesk log                  tail the immutable activity log
     newsdesk serve                run the local HTTP API + agent tools
     newsdesk mcp                  run the MCP server (stdio) for agent harnesses
@@ -35,6 +36,11 @@ accounts_app = typer.Typer(help="Manage linked accounts (credentials via env/"
                                 "keyring; consent grants stored locally)",
                            no_args_is_help=True)
 app.add_typer(accounts_app, name="accounts")
+
+
+def _mmss(seconds: float) -> str:
+    total = round(seconds)
+    return f"{total // 60}:{total % 60:02d}"
 
 
 def _settings() -> Settings:
@@ -238,11 +244,45 @@ def write_script(
         stats = brief["stats"]
         typer.echo(f"{brief['date']} script ({brief['method']}): "
                    f"{len(brief['sections'])} sections, {stats['words']} words, "
-                   f"~{stats['est_seconds'] // 60}:{stats['est_seconds'] % 60:02d}")
+                   f"~{_mmss(stats['est_seconds'])}")
         for s in brief["sections"]:
             ids = ",".join(s["item_ids"]) or "-"
             typer.echo(f"  {s['type']:<10} {s['est_seconds']:>4}s  {ids}")
         typer.echo(f"sidecar: {sidecar}")
+
+
+@app.command("audio")
+def render_audio(
+    date: Optional[str] = typer.Option(None, help="Episode date (default: today in HKT)"),
+    json_out: bool = typer.Option(False, "--json", help="Emit the render report as JSON"),
+) -> None:
+    """Synthesize the staged script into the day's MP3 (edge-tts engine)."""
+    from .morning.edgetts import TTSError
+    from .morning.registries import TTS_ENGINES, load_plugins
+    from .morning.script import episode_date, sidecar_path
+
+    load_plugins()
+    settings = _settings()
+    d = date or episode_date()
+    script_path = sidecar_path(settings, d)
+    db = Database(settings)
+    try:
+        with db.session() as session:
+            report = TTS_ENGINES.get()(settings, script_path)
+            LogRepo(session).append("morning_audio_rendered", {
+                "date": report["date"], "engine": report["engine"],
+                "duration_seconds": report["duration_seconds"],
+                "chunks": report["chunks"], "mp3": report["mp3"]})
+    except TTSError as exc:
+        typer.echo(f"error: {exc}")
+        raise typer.Exit(code=1)
+    if json_out:
+        typer.echo(json.dumps(report, indent=2, ensure_ascii=False))
+    else:
+        typer.echo(f"{report['date']} audio: {report['chunks']} chunks, "
+                   f"{_mmss(report['duration_seconds'])} "
+                   f"(voice {', '.join(report['voices'])})")
+        typer.echo(f"mp3: {report['mp3']}")
 
 
 @app.command("serve")

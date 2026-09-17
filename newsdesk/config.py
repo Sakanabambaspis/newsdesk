@@ -30,6 +30,10 @@ class Settings:
     vision_model: str | None = None  # defaults to llm_model; must accept image inputs
     transcribe_audio: bool = False  # download+transcribe caption-less audio (costly)
     keyframe_interval: float = 30.0  # seconds between extracted keyframes
+    morning_voice: str = "en-US-AriaNeural"  # all-English script (impl ticket 08)
+    morning_voice_alt: str = "en-US-EmmaMultilingualNeural"  # per-chunk fallback
+    tts_retries: int = 4  # 4 retries + first try = 5 attempts per voice
+    tts_pace: float = 1.5  # seconds between chunk requests (research band: 1–3 s)
 
     @property
     def snapshots_dir(self) -> Path:
@@ -81,4 +85,9 @@ class Settings:
             transcribe_audio=os.environ.get("NEWSDESK_TRANSCRIBE_AUDIO", "").lower()
             in ("1", "true", "yes"),
             keyframe_interval=float(os.environ.get("NEWSDESK_KEYFRAME_INTERVAL", "30")),
+            morning_voice=os.environ.get("NEWSDESK_MORNING_VOICE", "en-US-AriaNeural"),
+            morning_voice_alt=os.environ.get(
+                "NEWSDESK_MORNING_VOICE_ALT", "en-US-EmmaMultilingualNeural"),
+            tts_retries=int(os.environ.get("NEWSDESK_TTS_RETRIES", "4")),
+            tts_pace=float(os.environ.get("NEWSDESK_TTS_PACE", "1.5")),
         )

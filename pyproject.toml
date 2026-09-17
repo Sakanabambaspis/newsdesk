@@ -30,11 +30,14 @@ vision = [
 mcp = [
     "mcp>=1.2",                 # agent-harness addon surface (stdio)
 ]
+tts = [
+    "edge-tts>=7.2,<8",         # morning-briefing TTS engine (unofficial endpoint)
+]
 accounts = [
     "keyring>=24",              # optional OS-keyring credential storage
 ]
 all = [
-    "newsdesk[media,vision,mcp,accounts]",
+    "newsdesk[media,vision,mcp,tts,accounts]",
 ]
 
 [project.scripts]

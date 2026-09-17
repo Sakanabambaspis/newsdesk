@@ -27,6 +27,9 @@ def test_defaults_are_local_first(tmp_path):
     assert s.vision_model is None                 # falls back to llm_model in code
     assert s.transcribe_audio is False            # costly: opt-in
     assert s.keyframe_interval == 30.0
+    assert s.morning_voice == "en-US-AriaNeural"  # all-English script default
+    assert s.morning_voice_alt == "en-US-EmmaMultilingualNeural"
+    assert s.tts_retries == 4 and s.tts_pace == 1.5
 
 
 def test_database_url_defaults_to_sqlite_in_home(tmp_path):
@@ -56,6 +59,10 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     monkeypatch.setenv("NEWSDESK_VISION_MODEL", "vision-x")
     monkeypatch.setenv("NEWSDESK_TRANSCRIBE_AUDIO", "1")
     monkeypatch.setenv("NEWSDESK_KEYFRAME_INTERVAL", "15")
+    monkeypatch.setenv("NEWSDESK_MORNING_VOICE", "en-US-GuyNeural")
+    monkeypatch.setenv("NEWSDESK_MORNING_VOICE_ALT", "zh-CN-YunyangNeural")
+    monkeypatch.setenv("NEWSDESK_TTS_RETRIES", "2")
+    monkeypatch.setenv("NEWSDESK_TTS_PACE", "2.5")
 
     s = Settings.from_env()
     assert s.home == tmp_path
@@ -70,6 +77,9 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     assert s.vision_model == "vision-x"
     assert s.transcribe_audio is True
     assert s.keyframe_interval == 15.0
+    assert s.morning_voice == "en-US-GuyNeural"
+    assert s.morning_voice_alt == "zh-CN-YunyangNeural"
+    assert s.tts_retries == 2 and s.tts_pace == 2.5
 
 
 def test_openai_env_fallbacks(tmp_path, monkeypatch):

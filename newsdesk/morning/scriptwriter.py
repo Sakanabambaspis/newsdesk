@@ -89,13 +89,16 @@ def _extractive_deep_dive(item: dict[str, Any]) -> str:
 
 def _assemble(method: str, date: str, deep: dict[str, Any] | None,
               heads: list[dict[str, Any]], deep_text: str,
-              head_texts: list[str]) -> dict[str, Any]:
-    sections = [make_section("cold_open", cold_open_text(date))]
+              head_texts: list[str], voice: str) -> dict[str, Any]:
+    # voice comes from config and is stamped here so the sidecar records
+    # exactly what the TTS stage will speak (impl ticket 03)
+    sections = [make_section("cold_open", cold_open_text(date), voice=voice)]
     for item, text in zip(heads, head_texts):
-        sections.append(make_section("headline", text, [item["id"]]))
+        sections.append(make_section("headline", text, [item["id"]], voice=voice))
     if deep is not None:
-        sections.append(make_section("deep_dive", deep_text, [deep["id"]]))
-    sections.append(make_section("close", CLOSE))
+        sections.append(make_section("deep_dive", deep_text, [deep["id"]],
+                                     voice=voice))
+    sections.append(make_section("close", CLOSE, voice=voice))
     return {"method": method, "date": date, "sections": sections,
             "stats": script_stats(sections)}
 
@@ -108,7 +111,8 @@ def llm_brief(settings: Any, digest: dict[str, Any], *, adapter: Any = None,
     deep = pack_items[0] if pack_items else None
     heads = pack_items[1:4]
     if deep is None:  # quiet day: a short episode, never padded
-        return _assemble("extractive", date, None, [], "", [])
+        return _assemble("extractive", date, None, [], "", [],
+                         settings.morning_voice)
 
     if adapter is None:
         adapter = get_adapter(settings)
@@ -120,7 +124,8 @@ def llm_brief(settings: Any, digest: dict[str, Any], *, adapter: Any = None,
     except LLMError:
         return _assemble("extractive", date, deep, heads,
                          _extractive_deep_dive(deep),
-                         [_extractive_headline(h) for h in heads])
+                         [_extractive_headline(h) for h in heads],
+                         settings.morning_voice)
 
     try:
         parsed = json.loads(raw)
@@ -146,7 +151,8 @@ def llm_brief(settings: Any, digest: dict[str, Any], *, adapter: Any = None,
     # honest label: extractive when the model contributed nothing usable
     method = (f"llm:{adapter.name}" if (deep_from_model or head_by_id)
               else "extractive")
-    return _assemble(method, date, deep, heads, deep_text, head_texts)
+    return _assemble(method, date, deep, heads, deep_text, head_texts,
+                     settings.morning_voice)
 
 
 SCRIPTWRITERS.register("llm-brief", llm_brief)
