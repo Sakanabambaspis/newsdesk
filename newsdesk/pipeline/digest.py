@@ -13,8 +13,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from ..config import Settings
-from ..llm.base import LLMError, get_adapter
+from ..llm.base import VERDICT_VALUES, LLMError, get_adapter
 from ..storage.repo import ItemRepo, LogRepo, WatchlistRepo
+from .material import build_material_pack
 from .normalize import relevance_score
 
 SNIPPET_CHARS = 400
@@ -119,6 +120,15 @@ def _fallback_digest(items: list[dict[str, Any]],
     }
 
 
+def _guard_verdicts(entries: Any, items_by_id: dict[str, Any]) -> dict[str, dict[str, str]]:
+    """Editorial guard (ADR 0001): only provided ids may carry a verdict."""
+    guarded: dict[str, dict[str, str]] = {}
+    for entry in entries or []:
+        if isinstance(entry, dict) and entry.get("id") in items_by_id:
+            guarded[entry["id"]] = {"verdict": entry["verdict"], "reason": entry["reason"]}
+    return guarded
+
+
 def build_daily_digest(session, settings: Settings, *, hours: int = 24,
                        limit: int = 30, adapter: Any = None) -> dict[str, Any]:
     """Build the briefing and log it. Returns the digest dict."""
@@ -130,6 +140,21 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
 
     items_by_id = {i["id"]: i for i in selected}
     adapter = adapter or get_adapter(settings)
+
+    verdicts: dict[str, dict[str, str]] = {}
+    if not selected:
+        verdict_method = "skipped:no_items"
+    else:
+        try:
+            result = adapter.classify_verdicts(selected)
+        except LLMError:
+            result = {"error": "llm_error"}
+        if result.get("error"):
+            verdict_method = f"skipped:{result['error']}"
+        else:
+            verdicts = _guard_verdicts(result.get("verdicts"), items_by_id)
+            verdict_method = f"llm:{adapter.name}"
+
     try:
         briefing = adapter.summarize_digest(selected)
     except LLMError:
@@ -143,6 +168,15 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
                                    if i in items_by_id]
         briefing.setdefault("method", f"llm:{adapter.name}")
 
+    verdict_counts = {v: sum(1 for x in verdicts.values() if x["verdict"] == v)
+                      for v in VERDICT_VALUES}
+    pack = build_material_pack(selected, verdicts or None)
+
+    briefing["verdict_method"] = verdict_method
+    briefing["material_pack"] = {
+        "method": pack["method"], "verdict_filter": pack["verdict_filter"],
+        "verdict_counts": verdict_counts, **pack["stats"],
+    }
     briefing.update({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "window_hours": hours,
@@ -153,12 +187,19 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
             "id": i["id"], "title": i["title"], "publisher": i["publisher"],
             "url": i["url"], "relevance": i["relevance"],
             "matched_terms": i["matched_terms"], "published_at": i["published_at"],
+            "verdict": (verdicts.get(i["id"]) or {}).get("verdict"),
+            "verdict_reason": (verdicts.get(i["id"]) or {}).get("reason"),
         } for i in selected],
     })
     LogRepo(session).append("daily_digest_built", {
         "window_hours": hours, "items_in_window": window_count,
         "items_considered": len(selected), "method": briefing.get("method"),
         "overview": (briefing.get("overview") or "")[:300],
+        "verdict_method": verdict_method,
+        "verdict_counts": verdict_counts,
+        "verdicts": [{"id": i["id"], **verdicts[i["id"]]}
+                     for i in selected if i["id"] in verdicts],
+        "material_pack": briefing["material_pack"],
     })
     return briefing
 
@@ -171,6 +212,13 @@ def render_markdown(digest: dict[str, Any]) -> str:
                  f"{digest['items_in_window']} items in window)")
     lines.append("")
     lines.append(digest.get("overview", ""))
+    if digest.get("verdict_method"):
+        counts = (digest.get("material_pack") or {}).get("verdict_counts") or {}
+        lines.append("")
+        lines.append(f"_Verdicts: {counts.get('technical', 0)} technical / "
+                     f"{counts.get('hype', 0)} hype / "
+                     f"{counts.get('tangential', 0)} tangential — "
+                     f"{digest['verdict_method']}_")
     lines.append("")
     lines.append("## Worth following")
     for section in digest.get("worth_following", []):
