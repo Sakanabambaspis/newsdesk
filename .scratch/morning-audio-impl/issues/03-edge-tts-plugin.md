@@ -67,3 +67,20 @@ with "run `newsdesk script` first").
   `all`; the network seam is the injectable `engine` callable, so unit tests
   run fully offline with a fake engine; `test_live_edge_tts_synthesis` does
   a real synthesis and skips when offline (run: `pytest -k live -rs`).
+
+## Comments (second worker run, same day)
+
+A concurrent frontier run overlapped this one: the code was already
+committed (`0a948c4`) and the tree closed by the time this run picked up
+state, so this run **verified instead of re-implementing** — full suite 209
+passed; live check green (edge-tts 7.2.8, real synthesis); real end-to-end
+demo re-run: today's 234-word script → 1:29 MP3, 7 chunks, 536 KB, measured
+duration matching the estimate.
+
+⚠ **Gate note:** this ticket was started before the ticket-02 review gate
+was released — `Reviewed: yes` is still absent from ticket 02. The review is
+still owed and now covers what 03 consumed: the sidecar/section shape in
+`morning/script.py`, the voice knobs (`NEWSDESK_MORNING_VOICE`,
+`NEWSDESK_MORNING_VOICE_ALT`, `NEWSDESK_TTS_RETRIES`, `NEWSDESK_TTS_PACE`),
+and the `tts` extra. To keep two runs from colliding again, only one
+frontier worker should run at a time.
