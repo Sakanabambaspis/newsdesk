@@ -18,17 +18,50 @@ tickets, and stays useful as a local archive/fallback.
 
 **Blocked by:** 02 — Plugin registries + `llm-brief` script-writer + script sidecar
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Publishing an episode writes MP3 + feed under `<out>/<feed-token>/…`,
+- [x] Publishing an episode writes MP3 + feed under `<out>/<feed-token>/…`,
       token as a path segment from config/env, never logged.
-- [ ] Feed parses as valid RSS 2.0 + itunes (feedparser or equivalent) and
+- [x] Feed parses as valid RSS 2.0 + itunes (feedparser or equivalent) and
       carries the required itunes tags, duration, guid, pubDate, enclosure.
-- [ ] Metadata is anonymous/generic per ticket 07; no item lists or show
+- [x] Metadata is anonymous/generic per ticket 07; no item lists or show
       notes anywhere in the XML.
-- [ ] Re-running the same date yields exactly one episode for that date;
+- [x] Re-running the same date yields exactly one episode for that date;
       GUIDs and enclosure URLs of prior episodes are unchanged.
-- [ ] Feed lists every published episode (append-only; no pruning).
-- [ ] Artwork asset ships at 1400–3000px.
-- [ ] Tests cover idempotency, append behavior, URL/GUID stability, and
+- [x] Feed lists every published episode (append-only; no pruning).
+- [x] Artwork asset ships at 1400–3000px.
+- [x] Tests cover idempotency, append behavior, URL/GUID stability, and
       metadata minimization.
+
+## Comments
+
+Implemented 2026-09-18 (frontier worker). 192 tests pass (9 new). Demo
+verified: two episodes published with production-style env → clean
+`https://<host>/<token>/audio/<date>.mp3` URLs and a bozo-free feedparser
+parse, newest-first.
+
+- **`morning/feed.py`** owns the anonymous feed artifact: whole-feed
+  regeneration from the manifest (newest first), itunes tags
+  (image/category/owner/explicit/duration), date-only titles, permanent
+  GUIDs `morning-briefing-<date>` (isPermaLink=false), RFC-2822 pubDate.
+  Artwork is code-generated (stdlib PNG writer, 1400×1400 neutral solid) —
+  no binary asset in the repo.
+- **`morning/publish.py`** (`local-dir`, first PUBLISHERS member):
+  idempotent per date (audio replaced, first-published timestamp kept so
+  pubDate/GUID are stable), append-only across dates, no prune code.
+  Manifest `episodes.json` holds host-neutral rows only.
+- **URL design (emerged here, serves 06 too):** `NEWSDESK_FEED_BASE_URL` —
+  when set, feed/enclosure URLs are `<base>/<token>/…` (the production
+  posture, no local paths in the XML); when unset, local file URIs for the
+  archive case. The tests caught a real leak class here: file URIs embedded
+  machine paths into the feed, so the anonymity test pins base-URL mode.
+- **Config:** `NEWSDESK_FEED_TOKEN` (required, loud failure with generation
+  hint), `NEWSDESK_FEED_BASE_URL`, `NEWSDESK_FEED_OWNER_EMAIL` (alias for
+  Apple's owner email, generic fallback).
+- **For ticket 05:** publish via `PUBLISHERS.get("local-dir")` /
+  `cloudflare-pages`; log the outcome without URLs or tokens (URLs embed the
+  token by design — that is the only place it appears).
+- **For ticket 06 (cloudflare-pages):** reuse `feed.build_feed_xml` +
+  `episode_guid`; replace only the transport (upload MP3 + feed + artwork to
+  the Pages project) and return the same URL contract.
+

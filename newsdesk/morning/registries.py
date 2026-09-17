@@ -47,4 +47,5 @@ def load_plugins() -> None:
     Plugin modules import this package's registries, so they are loaded here
     rather than at module import time to keep imports acyclic.
     """
+    from . import publish  # noqa: F401  (registration side effect)
     from . import scriptwriter  # noqa: F401  (registration side effect)

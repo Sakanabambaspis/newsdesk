@@ -23,6 +23,9 @@ class Settings:
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
+    feed_token: str | None = None  # the morning feed's only auth (path segment)
+    feed_base_url: str | None = None  # public host base (e.g. https://x.pages.dev)
+    feed_owner_email: str | None = None  # alias for Apple's required owner email
     llm_audio_model: str = "whisper-1"  # OpenAI-compatible /audio/transcriptions model
     vision_model: str | None = None  # defaults to llm_model; must accept image inputs
     transcribe_audio: bool = False  # download+transcribe caption-less audio (costly)
@@ -39,6 +42,10 @@ class Settings:
     @property
     def morning_dir(self) -> Path:
         return self.home / "morning"
+
+    @property
+    def publish_dir(self) -> Path:
+        return self.morning_dir / "publish"
 
     @property
     def database_url(self) -> str:
@@ -66,6 +73,9 @@ class Settings:
                 os.environ.get("NEWSDESK_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY")
             ),
             llm_model=os.environ.get("NEWSDESK_LLM_MODEL", "gpt-4o-mini"),
+            feed_token=os.environ.get("NEWSDESK_FEED_TOKEN"),
+            feed_base_url=os.environ.get("NEWSDESK_FEED_BASE_URL"),
+            feed_owner_email=os.environ.get("NEWSDESK_FEED_OWNER_EMAIL"),
             llm_audio_model=os.environ.get("NEWSDESK_LLM_AUDIO_MODEL", "whisper-1"),
             vision_model=os.environ.get("NEWSDESK_VISION_MODEL"),
             transcribe_audio=os.environ.get("NEWSDESK_TRANSCRIBE_AUDIO", "").lower()
