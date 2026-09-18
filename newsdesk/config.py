@@ -36,6 +36,10 @@ class Settings:
     tts_pace: float = 1.5  # seconds between chunk requests (research band: 1–3 s)
     morning_tts: str = "edge-tts"  # TTS_ENGINES selection for `newsdesk morning`
     morning_publisher: str = "local-dir"  # PUBLISHERS selection; CI sets cloudflare-pages
+    cf_api_token: str | None = None  # Cloudflare Pages:Edit token (secret, env only)
+    cf_account_id: str | None = None
+    cf_project: str | None = None  # Pages project name
+    wrangler_bin: str = "wrangler"  # or "npx wrangler" via a wrapper
 
     @property
     def snapshots_dir(self) -> Path:
@@ -94,4 +98,8 @@ class Settings:
             tts_pace=float(os.environ.get("NEWSDESK_TTS_PACE", "1.5")),
             morning_tts=os.environ.get("NEWSDESK_TTS_ENGINE", "edge-tts"),
             morning_publisher=os.environ.get("NEWSDESK_PUBLISHER", "local-dir"),
+            cf_api_token=os.environ.get("NEWSDESK_CLOUDFLARE_API_TOKEN"),
+            cf_account_id=os.environ.get("NEWSDESK_CLOUDFLARE_ACCOUNT_ID"),
+            cf_project=os.environ.get("NEWSDESK_CLOUDFLARE_PROJECT"),
+            wrangler_bin=os.environ.get("NEWSDESK_WRANGLER_BIN", "wrangler"),
         )

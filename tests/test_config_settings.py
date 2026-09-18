@@ -30,6 +30,10 @@ def test_defaults_are_local_first(tmp_path):
     assert s.morning_voice == "en-US-AriaNeural"  # all-English script default
     assert s.morning_voice_alt == "en-US-EmmaMultilingualNeural"
     assert s.tts_retries == 4 and s.tts_pace == 1.5
+    assert s.morning_tts == "edge-tts"
+    assert s.morning_publisher == "local-dir"  # CI sets cloudflare-pages via env
+    assert s.cf_api_token is None and s.cf_project is None  # secrets: env only
+    assert s.wrangler_bin == "wrangler"
 
 
 def test_database_url_defaults_to_sqlite_in_home(tmp_path):
@@ -63,6 +67,12 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     monkeypatch.setenv("NEWSDESK_MORNING_VOICE_ALT", "zh-CN-YunyangNeural")
     monkeypatch.setenv("NEWSDESK_TTS_RETRIES", "2")
     monkeypatch.setenv("NEWSDESK_TTS_PACE", "2.5")
+    monkeypatch.setenv("NEWSDESK_TTS_ENGINE", "kokoro")
+    monkeypatch.setenv("NEWSDESK_PUBLISHER", "cloudflare-pages")
+    monkeypatch.setenv("NEWSDESK_CLOUDFLARE_API_TOKEN", "cf-token")
+    monkeypatch.setenv("NEWSDESK_CLOUDFLARE_ACCOUNT_ID", "acct")
+    monkeypatch.setenv("NEWSDESK_CLOUDFLARE_PROJECT", "morning-briefing")
+    monkeypatch.setenv("NEWSDESK_WRANGLER_BIN", "npx")
 
     s = Settings.from_env()
     assert s.home == tmp_path
@@ -80,6 +90,9 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     assert s.morning_voice == "en-US-GuyNeural"
     assert s.morning_voice_alt == "zh-CN-YunyangNeural"
     assert s.tts_retries == 2 and s.tts_pace == 2.5
+    assert s.morning_tts == "kokoro" and s.morning_publisher == "cloudflare-pages"
+    assert s.cf_api_token == "cf-token" and s.cf_account_id == "acct"
+    assert s.cf_project == "morning-briefing" and s.wrangler_bin == "npx"
 
 
 def test_openai_env_fallbacks(tmp_path, monkeypatch):

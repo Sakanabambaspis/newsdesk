@@ -106,8 +106,7 @@ def test_registries_defaults_and_loud_failure():
     assert SCRIPTWRITERS.get().__name__ == "llm_brief"
     assert TTS_ENGINES.get().__name__ == "edge_tts_synth"  # plugin landed in 03
     assert NOTIFIERS.names() == []  # ships empty by design
-    with pytest.raises(KeyError, match="cloudflare-pages"):
-        PUBLISHERS.get()  # default named, plugin lands in ticket 06
+    assert PUBLISHERS.get().__name__ == "publish_cloudflare"  # default now real (06)
     with pytest.raises(KeyError, match="unknown SCRIPTWRITERS plugin 'nope'"):
         SCRIPTWRITERS.get("nope")
 
