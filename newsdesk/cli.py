@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Optional
 
 import typer
@@ -280,20 +281,36 @@ def render_audio(
 @app.command("morning")
 def morning(
     json_out: bool = typer.Option(False, "--json", help="Emit the run report as JSON"),
+    date: Optional[str] = typer.Option(
+        None, "--date",
+        help="Backfill: episode date YYYY-MM-DD (morning tz) instead of today"),
 ) -> None:
     """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
     from .morning.orchestrator import MorningError, run_morning
 
+    if date is not None:
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            typer.echo("error: --date must be YYYY-MM-DD")
+            raise typer.Exit(code=1)
+
     settings = _settings()
+
+    def mask(text: str) -> str:
+        # the token-bearing URLs are the feed's only auth; the CLI report
+        # becomes the CI run log, so the token never survives printing
+        return text.replace(settings.feed_token, "***") if settings.feed_token else text
+
     db = Database(settings)
     with db.session() as session:
         try:
-            report = run_morning(session, settings)
+            report = run_morning(session, settings, date=date)
         except MorningError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
     if json_out:
-        typer.echo(json.dumps(report, indent=2, ensure_ascii=False))
+        typer.echo(mask(json.dumps(report, indent=2, ensure_ascii=False)))
         return
     if report["outcome"] == "already_published":
         typer.echo(f"morning {report['date']}: already published — nothing to do")
@@ -311,8 +328,8 @@ def morning(
     typer.echo(f"  tts       {stages['tts']['chunks']} chunks, "
                f"{_mmss(stages['tts']['duration_seconds'])}")
     typer.echo(f"  publish   {stages['publish']['publisher']}")
-    typer.echo(f"    episode: {stages['publish']['episode_url']}")
-    typer.echo(f"    feed:    {stages['publish']['feed_url']}")
+    typer.echo(mask(f"    episode: {stages['publish']['episode_url']}"))
+    typer.echo(mask(f"    feed:    {stages['publish']['feed_url']}"))
     typer.echo(f"  notify    {stages['notify']['outcome']} "
                f"({', '.join(stages['notify']['notifiers']) or 'none registered'})")
 

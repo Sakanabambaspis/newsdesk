@@ -1,0 +1,77 @@
+# The morning briefing, unattended (morning-audio-impl ticket 07).
+#
+# One cron at 23:07 UTC = 07:07 HKT daily; the publish-by-08:30 deadline has
+# 83 minutes of slack for median runner delays plus the ~10-minute pipeline.
+# Failure visibility is GitHub's automatic workflow-failure email — no retry
+# fire, no dead-man's switch (schedule policy, wayfinder ticket 06). Setup,
+# rehearsal, and cost math: docs/morning-actions.md.
+name: morning
+
+on:
+  schedule:
+    - cron: "7 23 * * *"   # 07:07 Asia/Hong_Kong, every day
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Backfill episode date YYYY-MM-DD (morning tz). Empty = today."
+        required: false
+        type: string
+      fail:
+        description: "Deliberate-failure probe: exit 1 before any work (tests the failure-email channel)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morning
+  cancel-in-progress: false   # overlapping runs queue; the idempotency guard no-ops the loser
+
+jobs:
+  morning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEWSDESK_PUBLISHER: cloudflare-pages
+      NEWSDESK_FEED_BASE_URL: ${{ vars.NEWSDESK_FEED_BASE_URL }}
+      NEWSDESK_FEED_TOKEN: ${{ secrets.NEWSDESK_FEED_TOKEN }}
+      NEWSDESK_CLOUDFLARE_API_TOKEN: ${{ secrets.NEWSDESK_CLOUDFLARE_API_TOKEN }}
+      NEWSDESK_CLOUDFLARE_ACCOUNT_ID: ${{ vars.NEWSDESK_CLOUDFLARE_ACCOUNT_ID }}
+      NEWSDESK_CLOUDFLARE_PROJECT: ${{ vars.NEWSDESK_CLOUDFLARE_PROJECT }}
+      # Optional: no key => NullAdapter => extractive episode still publishes.
+      NEWSDESK_LLM_API_KEY: ${{ secrets.NEWSDESK_LLM_API_KEY }}
+      NEWSDESK_LLM_BASE_URL: ${{ vars.NEWSDESK_LLM_BASE_URL }}
+      NEWSDESK_LLM_MODEL: ${{ vars.NEWSDESK_LLM_MODEL }}
+      # dispatch inputs reach the script only via env (never inline) — injection-safe
+      MORNING_DATE: ${{ inputs.date }}
+      MORNING_FAIL_PROBE: ${{ inputs.fail }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install newsdesk (with the tts extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[tts]
+
+      - name: Install wrangler (cloudflare-pages transport)
+        run: npm install -g wrangler
+
+      - name: Run the morning
+        run: |
+          set -euo pipefail
+          if [ "$MORNING_FAIL_PROBE" = "true" ]; then
+            echo "deliberate-failure probe: no work done, job fails on purpose"
+            exit 1
+          fi
+          args=()
+          if [ -n "$MORNING_DATE" ]; then
+            args+=(--date "$MORNING_DATE")
+          fi
+          newsdesk morning --json "${args[@]}"

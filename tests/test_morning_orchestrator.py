@@ -169,10 +169,14 @@ def test_cli_morning_twice_is_idempotent(session, morning_env, monkeypatch):
     result = runner.invoke(app, ["morning", "--json"])
     assert result.exit_code == 0, result.output
     assert json.loads(result.output)["outcome"] == "published"
+    # the printed report becomes the CI run log: the token never survives
+    assert TOKEN not in result.output
+    assert "***" in result.output
 
     result = runner.invoke(app, ["morning"])
     assert result.exit_code == 0, result.output
     assert "already published" in result.output
+    assert TOKEN not in result.output
 
 
 def test_cli_morning_failure_exits_nonzero(session, morning_env, monkeypatch):
@@ -184,3 +188,36 @@ def test_cli_morning_failure_exits_nonzero(session, morning_env, monkeypatch):
     result = runner.invoke(app, ["morning"])
     assert result.exit_code == 1
     assert "unknown PUBLISHERS plugin 'nope'" in result.output
+
+
+def test_cli_morning_date_backfills_a_past_episode(session, morning_env,
+                                                   monkeypatch):
+    monkeypatch.setenv("NEWSDESK_HOME", str(morning_env.home))
+    monkeypatch.setenv("NEWSDESK_FEED_TOKEN", TOKEN)
+    monkeypatch.setenv("NEWSDESK_TTS_PACE", "0")
+    monkeypatch.setenv("NEWSDESK_MIN_INTERVAL", "0")
+
+    result = runner.invoke(app, ["morning", "--json", "--date", "2026-09-01"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.output)
+    assert report["date"] == "2026-09-01"
+
+    # non-padded input normalizes to the same episode key (no duplicate dates)
+    result = runner.invoke(app, ["morning", "--json", "--date", "2026-9-1"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["outcome"] == "already_published"
+
+    d = feedparser.parse(_feed_path(morning_env).read_text())
+    assert [e.title for e in d.entries] == ["2026-09-01"]
+    # the sidecar and audio land under the backfill date, not today
+    assert (morning_env.morning_dir / "2026-09-01"
+            / "2026-09-01-script.json").exists()
+    assert Path(report["stages"]["tts"]["mp3"]).parent.name == "2026-09-01"
+
+
+def test_cli_morning_date_rejects_non_iso(session, morning_env, monkeypatch):
+    monkeypatch.setenv("NEWSDESK_HOME", str(morning_env.home))
+
+    result = runner.invoke(app, ["morning", "--date", "09/01/2026"])
+    assert result.exit_code == 1
+    assert "--date must be YYYY-MM-DD" in result.output

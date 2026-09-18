@@ -117,6 +117,15 @@ Mail is fetched read-only (`BODY.PEEK`, never marks messages seen), items use
 stable `mid:` message-id URLs, and every authenticated action is logged under
 an `account:<kind>/<ref>` actor. Details in `docs/DESIGN.md` §18.
 
+## The morning briefing
+
+`newsdesk morning` is the whole pipeline in one command: collect → daily
+digest (with verdicts) → spoken script → TTS → publish → notify
+(`--json` for a machine report, `--date YYYY-MM-DD` to backfill). The same
+command runs unattended on GitHub Actions at 07:07 HKT daily and publishes a
+private-token podcast feed to Cloudflare Pages. Setup, secrets, rehearsal:
+**[docs/morning-actions.md](docs/morning-actions.md)**.
+
 ## Development
 
 ```bash
