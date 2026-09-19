@@ -147,8 +147,11 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
     else:
         try:
             result = adapter.classify_verdicts(selected)
-        except LLMError:
-            result = {"error": "llm_error"}
+        except LLMError as exc:
+            # LLMError messages are safe to log by contract, and the report
+            # is the CI log — keep the cause visible so a red LLM stage is
+            # diagnosable from the run alone.
+            result = {"error": f"llm_error:{exc}"[:160]}
         if result.get("error"):
             verdict_method = f"skipped:{result['error']}"
         else:
@@ -157,9 +160,10 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
 
     try:
         briefing = adapter.summarize_digest(selected)
-    except LLMError:
-        briefing = {"error": "llm_error"}
-    if briefing.get("error") in ("llm_not_configured", "llm_error", "no_items"):
+    except LLMError as exc:
+        briefing = {"error": f"llm_error:{exc}"[:160]}
+    if str(briefing.get("error", "")).startswith(
+            ("llm_not_configured", "llm_error", "no_items")):
         briefing = _fallback_digest(selected, themes, loose, window_count)
     else:
         # Grounding guard: keep only citations that refer to provided items.
