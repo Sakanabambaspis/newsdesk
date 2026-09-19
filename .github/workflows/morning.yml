@@ -46,6 +46,8 @@ jobs:
       NEWSDESK_LLM_MODEL: ${{ vars.NEWSDESK_LLM_MODEL }}
       # optional fallback chain (comma-separated model ids); empty = single model
       NEWSDESK_LLM_FALLBACK_MODELS: ${{ vars.NEWSDESK_LLM_FALLBACK_MODELS }}
+      # optional JSON merged into every LLM request body (e.g. reasoning_effort)
+      NEWSDESK_LLM_EXTRA_JSON: ${{ vars.NEWSDESK_LLM_EXTRA_JSON }}
       # dispatch inputs reach the script only via env (never inline) — injection-safe
       MORNING_DATE: ${{ inputs.date }}
       MORNING_FAIL_PROBE: ${{ inputs.fail }}

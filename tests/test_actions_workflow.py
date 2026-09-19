@@ -93,7 +93,8 @@ def test_credentials_wired_by_name_per_wayfinder_ticket_09():
                "NEWSDESK_LLM_API_KEY")
     plain_vars = ("NEWSDESK_FEED_BASE_URL", "NEWSDESK_CLOUDFLARE_ACCOUNT_ID",
                   "NEWSDESK_CLOUDFLARE_PROJECT", "NEWSDESK_LLM_BASE_URL",
-                  "NEWSDESK_LLM_MODEL", "NEWSDESK_LLM_FALLBACK_MODELS")
+                  "NEWSDESK_LLM_MODEL", "NEWSDESK_LLM_FALLBACK_MODELS",
+                  "NEWSDESK_LLM_EXTRA_JSON")
     for name in secrets:
         assert ("${{ secrets." + name + " }}") in text, name
     for name in plain_vars:
