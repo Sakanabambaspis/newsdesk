@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
@@ -29,9 +29,15 @@ class MorningError(Exception):
 
 
 def stage_script(session, settings: Any, digest: dict[str, Any],
-                 date: str) -> dict[str, Any]:
-    """Run the script-writer, persist the sidecar, log the artifact."""
-    brief = SCRIPTWRITERS.get()(settings, digest, date=date)
+                 date: str, *, writer: Callable[..., Any] | None = None
+                 ) -> dict[str, Any]:
+    """Run the script-writer, persist the sidecar, log the artifact.
+
+    ``writer`` overrides the registry default (the workflow engine's
+    pinned-plugin path, ticket 02); ``run_morning`` keeps resolving via
+    SCRIPTWRITERS.
+    """
+    brief = (writer or SCRIPTWRITERS.get())(settings, digest, date=date)
     sidecar = write_sidecar(settings, brief["date"], brief)
     LogRepo(session).append("morning_brief_built", {
         "date": brief["date"], "method": brief["method"],
