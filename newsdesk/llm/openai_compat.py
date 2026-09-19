@@ -90,6 +90,10 @@ class OpenAICompatAdapter(BaseLLMAdapter):
             ) from exc
         if not isinstance(content, str) or not content.strip():
             # reasoning-tuned models answer with content: null and put the
-            # text in a thinking field — contained failure, never None
-            raise LLMError("model returned null or empty content")
-        return content
+            # text in a thinking field — contained failure, never None.
+            # The body snippet makes the cause visible (finish_reason,
+            # reasoning_content presence) without another debug round-trip.
+            raise LLMError(
+                "model returned null or empty content: "
+                + response.text[:300]
+            )
