@@ -2,13 +2,22 @@
 
 Works with any endpoint that speaks the /chat/completions shape:
 OpenAI, GLM, DeepSeek, Ollama (with OpenAI-compat mode), vLLM, etc.
+
+Free endpoints (:free variants) answer 429/502/503 with transient
+upstream-capacity blips; the publish-by deadline has far more slack
+than a short backoff chain, so retry before degrading to extractive.
 """
 
 from __future__ import annotations
 
+import time
+
 import httpx
 
 from .base import BaseLLMAdapter, LLMError
+
+RETRY_STATUS = frozenset({429, 502, 503})
+RETRY_DELAYS_S = (5.0, 15.0, 45.0)
 
 
 class OpenAICompatAdapter(BaseLLMAdapter):
@@ -35,10 +44,15 @@ class OpenAICompatAdapter(BaseLLMAdapter):
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
-        try:
-            response = self.client.post("/chat/completions", json=payload)
-        except httpx.HTTPError as exc:
-            raise LLMError(f"LLM request failed: {exc}") from exc
+        for attempt in range(len(RETRY_DELAYS_S) + 1):
+            try:
+                response = self.client.post("/chat/completions", json=payload)
+            except httpx.HTTPError as exc:
+                raise LLMError(f"LLM request failed: {exc}") from exc
+            if response.status_code in RETRY_STATUS and attempt < len(RETRY_DELAYS_S):
+                time.sleep(RETRY_DELAYS_S[attempt])
+                continue
+            break
         if response.status_code >= 400:
             raise LLMError(
                 f"LLM returned HTTP {response.status_code}: {response.text[:300]}"

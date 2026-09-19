@@ -39,6 +39,54 @@ def test_http_401_maps_to_llm_error():
         _adapter(handler).complete("sys", "user")
 
 
+# -- transient-failure retries (free-tier upstream blips) ------------------------
+
+
+def test_429_then_200_retries_and_succeeds(monkeypatch):
+    calls, sleeps = [], []
+
+    def handler(request):
+        calls.append(1)
+        if len(calls) <= 2:
+            return httpx.Response(429, json={"error": {"code": 429}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    monkeypatch.setattr("newsdesk.llm.openai_compat.time.sleep",
+                        lambda s: sleeps.append(s))
+    assert _adapter(handler).complete("sys", "user") == "ok"
+    assert len(calls) == 3
+    assert sleeps == [5.0, 15.0]
+
+
+def test_persistent_429_raises_after_all_retries(monkeypatch):
+    calls, sleeps = [], []
+
+    def handler(request):
+        calls.append(1)
+        return httpx.Response(429, json={"error": {"code": 429}})
+
+    monkeypatch.setattr("newsdesk.llm.openai_compat.time.sleep",
+                        lambda s: sleeps.append(s))
+    with pytest.raises(LLMError, match="429"):
+        _adapter(handler).complete("sys", "user")
+    assert len(calls) == 4                     # initial + 3 retries
+    assert sleeps == [5.0, 15.0, 45.0]
+
+
+def test_401_fails_fast_without_retry(monkeypatch):
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        return httpx.Response(401, text="bad key")
+
+    monkeypatch.setattr("newsdesk.llm.openai_compat.time.sleep",
+                        lambda s: calls.append("slept"))
+    with pytest.raises(LLMError, match="401"):
+        _adapter(handler).complete("sys", "user")
+    assert calls == [1]                        # no retry, no sleep
+
+
 def test_connect_error_maps_to_llm_error():
     def handler(request):
         raise httpx.ConnectError("no route")
