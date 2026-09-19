@@ -40,6 +40,10 @@ def test_default_morning_descriptor_ships_valid():
     # the shipped default encodes today's chain, in order
     assert [s["type"] for s in doc["stages"]] == [
         "collect", "select", "compose", "render", "publish", "notify"]
+    # stage names are the run report's stage keys (ticket 02): the renamed
+    # vocabulary stages keep today's observable names
+    assert [s.get("name") for s in doc["stages"]] == [
+        None, "digest", "script", "tts", None, None]
 
 
 def test_format_version_gate():

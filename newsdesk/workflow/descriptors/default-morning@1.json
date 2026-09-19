@@ -7,14 +7,14 @@
   "loop_policy": {"max_attempts": 2},
   "stages": [
     {"type": "collect", "params": {}},
-    {"type": "select", "params": {"hours": 24}},
-    {"type": "compose", "params": {}, "checks": [
+    {"type": "select", "name": "digest", "params": {"hours": 24}},
+    {"type": "compose", "name": "script", "params": {}, "checks": [
       {"name": "section_allowlist",
        "params": {"allow": ["cold_open", "headline", "deep_dive", "close"]}},
       {"name": "word_budget",
        "params": {"per_section": {"headline": 60, "deep_dive": 460}}}
     ]},
-    {"type": "render", "params": {}},
+    {"type": "render", "name": "tts", "params": {}},
     {"type": "publish", "params": {}, "checks": [
       {"name": "archive_intact", "on_fail": "fail"}
     ]},
