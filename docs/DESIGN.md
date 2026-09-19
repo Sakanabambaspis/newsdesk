@@ -63,6 +63,7 @@ Component map (mirrors the package layout):
 | Storage | `newsdesk.storage` | repositories, schema, full-text index, log |
 | Core | `newsdesk.core` | domain records, source kinds, identity (URLs, hashes, ids) |
 | LLM | `newsdesk.llm` | extraction / embedding / ranking / summarization adapters |
+| Workflow | `newsdesk.workflow` | workflow descriptor schema + deterministic validator (data-defined, versioned workflows) |
 | Interface | `newsdesk.api`, `newsdesk.agents`, `newsdesk.mcp_server`, `newsdesk.cli` | HTTP API, agent protocol + MCP, command line |
 
 Each pipeline stage has a contract: defined input, defined output, defined failure

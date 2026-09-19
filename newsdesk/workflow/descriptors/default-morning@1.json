@@ -1,0 +1,23 @@
+{
+  "format_version": 1,
+  "name": "default-morning",
+  "version": 1,
+  "title": "The daily morning briefing",
+  "params": {},
+  "loop_policy": {"max_attempts": 2},
+  "stages": [
+    {"type": "collect", "params": {}},
+    {"type": "select", "params": {"hours": 24}},
+    {"type": "compose", "params": {}, "checks": [
+      {"name": "section_allowlist",
+       "params": {"allow": ["cold_open", "headline", "deep_dive", "close"]}},
+      {"name": "word_budget",
+       "params": {"per_section": {"headline": 60, "deep_dive": 460}}}
+    ]},
+    {"type": "render", "params": {}},
+    {"type": "publish", "params": {}, "checks": [
+      {"name": "archive_intact", "on_fail": "fail"}
+    ]},
+    {"type": "notify", "params": {}}
+  ]
+}
