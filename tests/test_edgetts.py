@@ -316,9 +316,9 @@ def test_cli_audio_renders_through_real_plugin(settings, monkeypatch):
                             mp3_bytes(40 + len(text))))
     monkeypatch.setenv("NEWSDESK_HOME", str(settings.home))
     monkeypatch.setenv("NEWSDESK_TTS_PACE", "0")  # the command re-reads Settings
-    make_sidecar(settings)
+    make_sidecar(settings)  # sidecar date is the fixture's fixed 2026-09-18
 
-    result = runner.invoke(app, ["audio", "--json"])
+    result = runner.invoke(app, ["audio", "--date", "2026-09-18", "--json"])
     assert result.exit_code == 0, result.output
     body = json.loads(result.output)
     assert body["engine"] == "edge-tts"
