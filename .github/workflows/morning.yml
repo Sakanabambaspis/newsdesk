@@ -63,6 +63,10 @@ jobs:
       - name: Install wrangler (cloudflare-pages transport)
         run: npm install -g wrangler
 
+      # The runner DB starts empty; sources + watchlist ride in the repo.
+      - name: Seed sources + watchlist
+        run: newsdesk seed import seed/newsdesk-seed.json
+
       - name: Run the morning
         run: |
           set -euo pipefail

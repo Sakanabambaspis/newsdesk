@@ -3,8 +3,10 @@
 The cloud half of the morning-audio pipeline (morning-audio-impl ticket 07).
 One scheduled workflow runs the whole local pipeline — `newsdesk morning`:
 collect → digest (with verdicts) → script → tts → publish → notify — with the
-`cloudflare-pages` publisher, unattended. The notify registry ships empty, so
-notify is a logged no-op until a notifier bolts on.
+`cloudflare-pages` publisher, unattended. The workflow first seeds the fresh
+runner database from the committed `seed/newsdesk-seed.json` (sources +
+watchlist terms; re-export locally after changes). The notify registry ships
+empty, so notify is a logged no-op until a notifier bolts on.
 
 **Workflow:** `.github/workflows/morning.yml` · **Config contract tests:**
 `tests/test_actions_workflow.py`
@@ -26,10 +28,20 @@ notify is a logged no-op until a notifier bolts on.
 
 ## One-time setup
 
+Sources and watchlist terms ride into CI via the committed seed file
+(`seed/newsdesk-seed.json`, imported by the workflow before
+`newsdesk morning`). After changing sources or terms locally, re-run
+`newsdesk seed export` and commit the diff — that's the whole sync.
+
 Cloudflare side (details in ticket 06's checklist): create a **Pages**
 project ("Direct Upload", empty — e.g. `morning-briefing`), note the
 **Account ID**, and create an API token with **Account → Cloudflare Pages →
-Edit**. Generate the feed token:
+Edit**. The placeholder deployment must include a `404.html`
+(`pages-placeholder/` in the repo is ready to drag in): a site with a root
+`index.html` and no `404.html` is treated as a single-page app, so every
+unknown path returns the index page at HTTP 200 — the publisher's archive
+guard reads that as a corrupt `episodes.json` and refuses to deploy.
+Generate the feed token:
 
 ```bash
 python3 -c "import secrets; print(secrets.token_hex(16))"

@@ -14,12 +14,14 @@
     newsdesk serve                run the local HTTP API + agent tools
     newsdesk mcp                  run the MCP server (stdio) for agent harnesses
     newsdesk accounts ...         link/inspect personal accounts (email, X, YouTube)
+    newsdesk seed export|import   sources + watchlists as a committed JSON seed
 """
 
 from __future__ import annotations
 
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -38,6 +40,11 @@ accounts_app = typer.Typer(help="Manage linked accounts (credentials via env/"
                                 "keyring; consent grants stored locally)",
                            no_args_is_help=True)
 app.add_typer(accounts_app, name="accounts")
+
+seed_app = typer.Typer(help="Export/import sources + watchlists as a committed "
+                            "JSON seed (bridges fresh databases, e.g. CI)",
+                       no_args_is_help=True)
+app.add_typer(seed_app, name="seed")
 
 
 def _mmss(seconds: float) -> str:
@@ -351,6 +358,59 @@ def mcp() -> None:
     from .mcp_server import main as mcp_main
 
     mcp_main()
+
+
+# -- seed -----------------------------------------------------------------
+
+
+@seed_app.command("export")
+def seed_export(
+    out: Path = typer.Argument(Path("seed/newsdesk-seed.json"),
+                               help="Output JSON path"),
+) -> None:
+    """Write every source + watchlist to a JSON file, ready to commit."""
+    from .seed import export_seed
+
+    db = Database(_settings())
+    with db.session() as session:
+        data = export_seed(session)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+                   encoding="utf-8")
+    terms = sum(len(w["terms"]) for w in data["watchlists"])
+    typer.echo(f"{out}: {len(data['sources'])} sources, {terms} terms "
+               f"across {len(data['watchlists'])} watchlists")
+
+
+@seed_app.command("import")
+def seed_import(
+    path: Path = typer.Argument(..., help="Seed JSON path"),
+) -> None:
+    """Seed the database from a JSON file (idempotent; never deletes)."""
+    from .seed import SeedError, import_seed
+
+    if not path.exists():
+        typer.echo(f"error: no such seed file: {path}")
+        raise typer.Exit(code=1)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        typer.echo(f"error: {path} is not valid JSON: {exc}")
+        raise typer.Exit(code=1)
+    db = Database(_settings())
+    with db.session() as session:
+        try:
+            stats = import_seed(session, data)
+        except SeedError as exc:
+            typer.echo(f"error: {exc}")
+            raise typer.Exit(code=1)
+    typer.echo(f"{path}: +{stats['sources_added']} sources "
+               f"({stats['sources_present']} present), "
+               f"+{stats['terms_added']} terms "
+               f"({stats['terms_present']} present), "
+               f"{stats['watchlists_created']} watchlists created, "
+               f"+{stats['links_added']} links "
+               f"({stats['links_present']} present)")
 
 
 # -- accounts -------------------------------------------------------------

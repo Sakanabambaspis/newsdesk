@@ -75,6 +75,17 @@ def test_installs_audio_extra_and_runs_the_one_command():
             assert re.match(r"\s+MORNING_\w+:\s", line), line
 
 
+def test_seeds_the_fresh_runner_database_before_the_morning():
+    # The runner DB starts empty; the committed seed file must be imported
+    # before the pipeline runs, or the morning is a zero-source quiet day.
+    lines = _lines()
+    seed_idx = next((i for i, ln in enumerate(lines) if "newsdesk seed import" in ln), None)
+    assert seed_idx is not None, "missing seed import step"
+    morning_idx = next(i for i, ln in enumerate(lines) if "newsdesk morning --json" in ln)
+    assert seed_idx < morning_idx, "seed must run before the morning"
+    assert "seed/newsdesk-seed.json" in lines[seed_idx]
+
+
 def test_credentials_wired_by_name_per_wayfinder_ticket_09():
     text = _text()
     assert "NEWSDESK_PUBLISHER: cloudflare-pages" in text

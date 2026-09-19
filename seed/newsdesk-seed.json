@@ -1,0 +1,382 @@
+{
+  "format": 1,
+  "sources": [
+    {
+      "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "kind": "rss",
+      "title": null,
+      "publisher": null,
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
+      "kind": "rss",
+      "title": "Two Minute Papers",
+      "publisher": "Two Minute Papers",
+      "enabled": false,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://fp8.co/rss.xml",
+      "kind": "rss",
+      "title": "fp8.co newsletters",
+      "publisher": "fp8.co",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://space.bilibili.com/22697887",
+      "kind": "manual",
+      "title": "Bilibili 22697887",
+      "publisher": null,
+      "enabled": false,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://space.bilibili.com/103118875/upload/video",
+      "kind": "manual",
+      "title": "Bilibili 103118875",
+      "publisher": null,
+      "enabled": false,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.deeplearning.ai/the-batch",
+      "kind": "html",
+      "title": "The Batch (DeepLearning.AI)",
+      "publisher": null,
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.youtube.com/@TwoMinutePapers",
+      "kind": "youtube",
+      "title": "Two Minute Papers",
+      "publisher": "Two Minute Papers",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://space.bilibili.com/22697887",
+      "kind": "video",
+      "title": "Bilibili 22697887",
+      "publisher": null,
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://space.bilibili.com/103118875",
+      "kind": "video",
+      "title": "Bilibili 103118875",
+      "publisher": null,
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "imap://127.0.0.1/News?account=default",
+      "kind": "email",
+      "title": "Local newsletters",
+      "publisher": "Mail",
+      "enabled": false,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://papers.takara.ai/api/feed",
+      "kind": "rss",
+      "title": "HF Daily Papers (mirror)",
+      "publisher": "Hugging Face Papers",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "arxiv://cs.LG",
+      "kind": "arxiv",
+      "title": "arXiv cs.LG",
+      "publisher": "arXiv",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "arxiv://cs.CL",
+      "kind": "arxiv",
+      "title": "arXiv cs.CL",
+      "publisher": "arXiv",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "arxiv://cs.AI",
+      "kind": "arxiv",
+      "title": "arXiv cs.AI",
+      "publisher": "arXiv",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "arxiv://cs.CV",
+      "kind": "arxiv",
+      "title": "arXiv cs.CV",
+      "publisher": "arXiv",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "arxiv://stat.ML",
+      "kind": "arxiv",
+      "title": "arXiv stat.ML",
+      "publisher": "arXiv",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.interconnects.ai/feed",
+      "kind": "rss",
+      "title": "Interconnects",
+      "publisher": "Nathan Lambert",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://magazine.sebastianraschka.com/feed",
+      "kind": "rss",
+      "title": "Ahead of AI",
+      "publisher": "Sebastian Raschka",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://openai.com/news/rss.xml",
+      "kind": "rss",
+      "title": "OpenAI News",
+      "publisher": "OpenAI",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://deepmind.google/blog/rss.xml",
+      "kind": "rss",
+      "title": "Google DeepMind Blog",
+      "publisher": "Google DeepMind",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://research.google/blog/rss/",
+      "kind": "rss",
+      "title": "Google Research Blog",
+      "publisher": "Google Research",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://huggingface.co/blog/feed.xml",
+      "kind": "rss",
+      "title": "Hugging Face Blog",
+      "publisher": "Hugging Face",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "kind": "rss",
+      "title": "TechCrunch AI",
+      "publisher": "TechCrunch",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+      "kind": "rss",
+      "title": "The Verge AI",
+      "publisher": "The Verge",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://arstechnica.com/ai/feed/",
+      "kind": "rss",
+      "title": "Ars Technica AI",
+      "publisher": "Ars Technica",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://www.marktechpost.com/feed/",
+      "kind": "rss",
+      "title": "MarkTechPost",
+      "publisher": "MarkTechPost",
+      "enabled": false,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    },
+    {
+      "url": "https://qbitai.com/feed",
+      "kind": "rss",
+      "title": "量子位 QbitAI",
+      "publisher": "QbitAI",
+      "enabled": true,
+      "fetch_interval_minutes": 30,
+      "notes": null
+    }
+  ],
+  "watchlists": [
+    {
+      "name": "AI research directions",
+      "description": "Terms that lift promising research directions in relevance scoring",
+      "terms": [
+        {
+          "term": "agent",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "agentic",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "long context",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "reasoning",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "chain of thought",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "mixture of experts",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "moe",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "interpretability",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "world model",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "diffusion",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "reinforcement learning",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "rlhf",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "reinforcement fine-tuning",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "tool use",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "code generation",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "multimodal",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "scaling",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "alignment",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "open weights",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "retrieval",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "vision language",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "test-time compute",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "memory",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "distillation",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "efficient inference",
+          "kind": "include",
+          "weight": 1.0
+        }
+      ],
+      "source_keys": []
+    }
+  ]
+}

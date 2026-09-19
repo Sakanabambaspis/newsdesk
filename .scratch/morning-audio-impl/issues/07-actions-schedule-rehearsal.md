@@ -80,3 +80,24 @@ in `tests/test_actions_workflow.py` + 2 CLI backfill in
   live dispatch, both phones, failure probe, one real scheduled run, log
   scan — then tick the boxes above and set `Status: done`. The live dispatch
   also serves as ticket 06's live-deploy verification.
+
+### Live-verification round 1 (2026-09-19, agent + user)
+
+First dispatch failed fast (~6s in the morning step) and usefully —
+the failure email arrived, so the error channel is proven live:
+
+1. **Publish guard vs SPA fallback:** the placeholder Pages deployment
+   (root `index.html`, no `404.html`) makes Cloudflare serve the index at
+   HTTP 200 for every unknown path, including `<token>/episodes.json` — the
+   guard correctly refused to redeploy over "corrupt JSON". Fix:
+   `pages-placeholder/` (with the required `404.html`) committed for the
+   user to drag into a new dashboard deployment.
+2. **Empty runner DB:** sources (27) + watchlist terms (25) live only in the
+   local DB; CI collected zero items. Fix: `newsdesk seed export|import` +
+   committed `seed/newsdesk-seed.json`, imported by the workflow before the
+   morning (contract pinned in `tests/test_actions_workflow.py`).
+
+Config (secrets/vars) verified correct via API; LLM pair set to
+`https://openrouter.ai/api/v1` + `z-ai/glm-5.2:free` (playground-validated
+for clean JSON + injection resistance). Redeploy + re-dispatch pending the
+user's `404.html` upload.

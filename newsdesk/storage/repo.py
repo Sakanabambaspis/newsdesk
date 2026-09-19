@@ -274,6 +274,20 @@ class WatchlistRepo:
         self.session.commit()
         return True
 
+    def terms(self, watchlist_id: int) -> list[WatchlistTerm]:
+        return list(self.session.exec(
+            select(WatchlistTerm)
+            .where(WatchlistTerm.watchlist_id == watchlist_id)
+            .order_by(col(WatchlistTerm.id))
+        ))
+
+    def source_ids(self, watchlist_id: int) -> list[int]:
+        rows = self.session.exec(
+            select(WatchlistSource)
+            .where(WatchlistSource.watchlist_id == watchlist_id)
+        )
+        return [r.source_id for r in rows]
+
     def include_terms(self) -> list[tuple[str, float]]:
         """All include-terms across watchlists: [(term, weight), ...].
 

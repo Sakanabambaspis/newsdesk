@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morning Briefing</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="stars"></div>
+
+  <header>
+    <nav class="top-nav-index">
+      <a href="/" class="active">🗞️ Briefing</a>
+      <a href="/ai">🤖 AI</a>
+      <a href="/health">🧬 Health</a>
+      <a href="/m/">📱 Mobile</a>
+    </nav>
+    <div class="header-top">
+      <h1 class="logo">
+        <span class="logo-icon">◆</span> Morning Briefing
+      </h1>
+      <div class="meta-info" id="meta-info"></div>
+    </div>
+    <div class="date-nav" id="date-nav">
+      <button class="nav-btn" id="prev-date" aria-label="前の日">&larr;</button>
+      <span class="current-date" id="current-date">読み込み中...</span>
+      <button class="nav-btn" id="next-date" aria-label="次の日">&rarr;</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="キーワードで検索..." autocomplete="off">
+    </div>
+    <nav class="category-tabs" id="category-tabs">
+      <button class="tab active" data-category="">ALL</button>
+      <button class="tab" data-category="AI・テック">AI・テック</button>
+      <button class="tab" data-category="ビジネス・マネジメント">ビジネス</button>
+      <button class="tab" data-category="Obsidian">Obsidian</button>
+      <button class="tab" data-category="本・学び">本・学び</button>
+      <button class="tab tab-producthunt" data-category="PRODUCTHUNT">📱 Product Hunt</button>
+      <button class="tab tab-bookmark" data-category="BOOKMARK"><svg viewBox="0 0 24 24"><path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> Saved <span class="bookmark-count" id="bookmark-count">0</span></button>
+    </nav>
+  </header>
+
+  <main class="articles-grid" id="articles-grid">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>ブリーフィングを読み込み中...</p>
+    </div>
+  </main>
+
+  <!-- モーダル -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <img class="modal-image" id="modal-image" src="" alt="">
+      <div class="modal-body">
+        <span class="modal-category" id="modal-category"></span>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <div class="modal-source-with-favicon">
+          <img class="modal-favicon" id="modal-favicon" alt="" onerror="this.style.display='none'">
+          <span class="modal-source" id="modal-source"></span>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-bookmark-btn" id="modal-bookmark" onclick="toggleBookmarkModal()">
+            <span id="modal-bookmark-icon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></span> <span id="modal-bookmark-label">保存する</span>
+          </button>
+        </div>
+        <p class="modal-summary" id="modal-summary"></p>
+        <a class="modal-link" id="modal-link" href="" target="_blank" rel="noopener">
+          元記事を読む →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Morning Briefing — Xを開かなくてOK</p>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
