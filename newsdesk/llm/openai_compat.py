@@ -97,3 +97,4 @@ class OpenAICompatAdapter(BaseLLMAdapter):
                 "model returned null or empty content: "
                 + response.text[:300]
             )
+        return content
