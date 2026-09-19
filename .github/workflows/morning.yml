@@ -44,6 +44,8 @@ jobs:
       NEWSDESK_LLM_API_KEY: ${{ secrets.NEWSDESK_LLM_API_KEY }}
       NEWSDESK_LLM_BASE_URL: ${{ vars.NEWSDESK_LLM_BASE_URL }}
       NEWSDESK_LLM_MODEL: ${{ vars.NEWSDESK_LLM_MODEL }}
+      # optional fallback chain (comma-separated model ids); empty = single model
+      NEWSDESK_LLM_FALLBACK_MODELS: ${{ vars.NEWSDESK_LLM_FALLBACK_MODELS }}
       # dispatch inputs reach the script only via env (never inline) — injection-safe
       MORNING_DATE: ${{ inputs.date }}
       MORNING_FAIL_PROBE: ${{ inputs.fail }}

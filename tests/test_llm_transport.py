@@ -87,6 +87,68 @@ def test_401_fails_fast_without_retry(monkeypatch):
     assert calls == [1]                        # no retry, no sleep
 
 
+# -- model fallback chain ---------------------------------------------------------
+
+
+def _chained_adapter(handler) -> OpenAICompatAdapter:
+    return OpenAICompatAdapter(base_url="https://llm.test/v1", api_key="k",
+                               model="primary", transport=httpx.MockTransport(handler),
+                               fallback_models=["second", "third"])
+
+
+def test_fallback_answers_when_primary_is_rate_limited(monkeypatch):
+    seen_models, sleeps = [], []
+
+    def handler(request):
+        model = json.loads(request.read().decode())["model"]
+        seen_models.append(model)
+        if model == "primary":
+            return httpx.Response(429, json={"error": {"code": 429}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    monkeypatch.setattr("newsdesk.llm.openai_compat.time.sleep",
+                        lambda s: sleeps.append(s))
+    adapter = _chained_adapter(handler)
+    assert adapter.complete("sys", "user") == "ok"
+    # primary exhausted its retry chain, second answered immediately
+    assert seen_models == ["primary"] * 4 + ["second"]
+    assert sleeps == [5.0, 15.0, 45.0]
+
+
+def test_all_models_failing_aggregates_their_causes(monkeypatch):
+    monkeypatch.setattr("newsdesk.llm.openai_compat.time.sleep", lambda s: None)
+
+    def handler(request):
+        model = json.loads(request.read().decode())["model"]
+        return httpx.Response(429, json={"error": {"message": f"{model} is busy"}})
+
+    with pytest.raises(LLMError) as excinfo:
+        _chained_adapter(handler).complete("sys", "user")
+    message = str(excinfo.value)
+    assert "all 3 model(s) failed" in message
+    for model in ("primary", "second", "third"):
+        assert model in message
+
+
+def test_empty_fallback_entries_are_dropped():
+    adapter = OpenAICompatAdapter(
+        base_url="https://llm.test/v1", api_key="k", model="m",
+        fallback_models=["  ", "", "real:free"],
+        transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={"choices": [
+                {"message": {"content": "ok"}}]})))
+    assert adapter.models == ["m", "real:free"]
+
+
+def test_settings_parse_fallback_models(monkeypatch):
+    monkeypatch.setenv("NEWSDESK_LLM_FALLBACK_MODELS",
+                       "a:free, b:free ,, c:free,")
+    s = Settings.from_env()
+    assert s.llm_fallback_models == ["a:free", "b:free", "c:free"]
+    monkeypatch.delenv("NEWSDESK_LLM_FALLBACK_MODELS")
+    assert Settings.from_env().llm_fallback_models == []
+
+
 def test_connect_error_maps_to_llm_error():
     def handler(request):
         raise httpx.ConnectError("no route")
@@ -101,17 +163,15 @@ def test_wrong_response_shape_maps_to_llm_error():
         _adapter(handler).complete("sys", "user")
 
 
-def test_200_with_non_json_body_raises_raw_json_decode_error():
-    """Characterization (new, recorded in batch-2 notes, code untouched):
-    complete() guards the request and the status code, but response.json()
-    on a 200 with a non-JSON body raises a bare json.JSONDecodeError instead
-    of LLMError — so summarize_item's `except LLMError` containment (DESIGN
-    section 8 'unparseable output is stored as a contained error') does not
-    cover a server that answers 200 text/html."""
+def test_200_with_non_json_body_raises_llm_error():
+    """A 200 with an HTML body used to leak a bare json.JSONDecodeError
+    (recorded as a characterization quirk); the multi-model refactor made
+    content extraction a contained failure so the fallback chain can treat
+    it like any other model-level error."""
     def handler(request):
         return httpx.Response(200, text="<html>gateway splash</html>",
                               headers={"content-type": "text/html"})
-    with pytest.raises(json.JSONDecodeError):
+    with pytest.raises(LLMError, match="unexpected LLM response shape"):
         _adapter(handler).complete("sys", "user")
 
 

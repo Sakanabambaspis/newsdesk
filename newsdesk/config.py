@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT_USER_AGENT = "NewsdeskBot/0.1 (local research agent; respects robots.txt)"
@@ -23,6 +23,7 @@ class Settings:
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
+    llm_fallback_models: list[str] = field(default_factory=list)  # tried in order on failure
     feed_token: str | None = None  # the morning feed's only auth (path segment)
     feed_base_url: str | None = None  # public host base (e.g. https://x.pages.dev)
     feed_owner_email: str | None = None  # alias for Apple's required owner email
@@ -83,6 +84,11 @@ class Settings:
                 os.environ.get("NEWSDESK_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY")
             ),
             llm_model=os.environ.get("NEWSDESK_LLM_MODEL", "gpt-4o-mini"),
+            llm_fallback_models=[
+                m.strip() for m in
+                os.environ.get("NEWSDESK_LLM_FALLBACK_MODELS", "").split(",")
+                if m.strip()
+            ],
             feed_token=os.environ.get("NEWSDESK_FEED_TOKEN"),
             feed_base_url=os.environ.get("NEWSDESK_FEED_BASE_URL"),
             feed_owner_email=os.environ.get("NEWSDESK_FEED_OWNER_EMAIL"),

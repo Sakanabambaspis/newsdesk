@@ -59,7 +59,13 @@ split — the secret/var distinction is deliberate):
 | `NEWSDESK_CLOUDFLARE_ACCOUNT_ID` | Variable | 32-hex | Cloudflare account id (identifier, not a credential) |
 | `NEWSDESK_CLOUDFLARE_PROJECT` | Variable | `morning-briefing` | Pages project name |
 | `NEWSDESK_LLM_BASE_URL` | Variable | `https://…/v1` | OpenAI-compatible endpoint |
-| `NEWSDESK_LLM_MODEL` | Variable | `gpt-4o-mini` | script-writer model |
+| `NEWSDESK_LLM_MODEL` | Variable | `z-ai/glm-5.2:free` | primary model (any OpenRouter `:free` id) |
+| `NEWSDESK_LLM_FALLBACK_MODELS` | Variable | *(empty)* | optional comma-separated fallback chain, tried in order on failure |
+
+The LLM adapter retries transient upstream blips (429/502/503, 5/15/45 s
+backoff) per model, then walks `NEWSDESK_LLM_FALLBACK_MODELS` in order —
+set it to stay on free capacity when one provider has a bad hour. The
+digest report's `verdict_method` names the model outcome either way.
 
 Credential discipline (DESIGN.md §18, extended to CI by wayfinder ticket 09):
 secrets ride Actions secrets → workflow env only — never argv, never the
