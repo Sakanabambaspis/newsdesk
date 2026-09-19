@@ -30,10 +30,12 @@ class OpenAICompatAdapter(BaseLLMAdapter):
     def __init__(self, base_url: str, api_key: str, model: str,
                  fallback_models: list[str] | None = None,
                  timeout: float = 60.0,
-                 transport: httpx.BaseTransport | None = None):
+                 transport: httpx.BaseTransport | None = None,
+                 extra_payload: dict | None = None):
         self.model = model
         self.models = [model, *(m.strip() for m in (fallback_models or [])
                                 if m.strip())]
+        self.extra_payload = extra_payload or {}
         self.client = httpx.Client(
             base_url=base_url.rstrip("/"),
             headers={"Authorization": f"Bearer {api_key}"},
@@ -50,6 +52,7 @@ class OpenAICompatAdapter(BaseLLMAdapter):
             ],
             "max_tokens": max_tokens,
             "temperature": temperature,
+            **self.extra_payload,
         }
         failures: list[str] = []
         for model in self.models:
@@ -80,8 +83,13 @@ class OpenAICompatAdapter(BaseLLMAdapter):
                 f"{response.text[:_REASON_CAP]}"
             )
         try:
-            return response.json()["choices"][0]["message"]["content"]
+            content = response.json()["choices"][0]["message"]["content"]
         except (ValueError, KeyError, IndexError, TypeError) as exc:
             raise LLMError(
                 f"unexpected LLM response shape: {str(exc)[:_REASON_CAP]}"
             ) from exc
+        if not isinstance(content, str) or not content.strip():
+            # reasoning-tuned models answer with content: null and put the
+            # text in a thinking field — contained failure, never None
+            raise LLMError("model returned null or empty content")
+        return content

@@ -9,6 +9,20 @@ from pathlib import Path
 DEFAULT_USER_AGENT = "NewsdeskBot/0.1 (local research agent; respects robots.txt)"
 
 
+def _extra_json(raw: str | None) -> dict | None:
+    """Parse NEWSDESK_LLM_EXTRA_JSON; malformed values fail loudly, by name."""
+    import json
+    if not raw or not raw.strip():
+        return None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"NEWSDESK_LLM_EXTRA_JSON is not valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ValueError("NEWSDESK_LLM_EXTRA_JSON must be a JSON object")
+    return value
+
+
 @dataclass
 class Settings:
     """All runtime knobs. Local single-user defaults; Postgres/remote LLM drop in via env."""
@@ -24,6 +38,7 @@ class Settings:
     llm_api_key: str | None = None
     llm_model: str | None = None
     llm_fallback_models: list[str] = field(default_factory=list)  # tried in order on failure
+    llm_extra_payload: dict | None = None  # merged into every LLM request body
     feed_token: str | None = None  # the morning feed's only auth (path segment)
     feed_base_url: str | None = None  # public host base (e.g. https://x.pages.dev)
     feed_owner_email: str | None = None  # alias for Apple's required owner email
@@ -89,6 +104,7 @@ class Settings:
                 os.environ.get("NEWSDESK_LLM_FALLBACK_MODELS", "").split(",")
                 if m.strip()
             ],
+            llm_extra_payload=_extra_json(os.environ.get("NEWSDESK_LLM_EXTRA_JSON")),
             feed_token=os.environ.get("NEWSDESK_FEED_TOKEN"),
             feed_base_url=os.environ.get("NEWSDESK_FEED_BASE_URL"),
             feed_owner_email=os.environ.get("NEWSDESK_FEED_OWNER_EMAIL"),

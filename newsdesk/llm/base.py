@@ -230,5 +230,6 @@ def get_adapter(settings: Settings) -> BaseLLMAdapter:
             api_key=settings.llm_api_key,
             model=settings.llm_model or "gpt-4o-mini",
             fallback_models=settings.llm_fallback_models,
+            extra_payload=settings.llm_extra_payload,
         )
     return NullAdapter()

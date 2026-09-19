@@ -149,6 +149,44 @@ def test_settings_parse_fallback_models(monkeypatch):
     assert Settings.from_env().llm_fallback_models == []
 
 
+# -- reasoning models: null content + extra payload -------------------------------
+
+
+def test_null_content_is_a_contained_llm_error():
+    """Reasoning-tuned models answer content: null (text hides in a thinking
+    field). Must be an LLMError — a bare None used to crash the digest stage
+    with `json.loads(None)` (run 35425098360)."""
+    def handler(request):
+        return httpx.Response(200, json={"choices": [{"message": {
+            "content": None, "reasoning": "thinking..."}}]})
+    with pytest.raises(LLMError, match="null or empty content"):
+        _adapter(handler).complete("sys", "user")
+
+
+def test_extra_payload_is_merged_into_every_request():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.read().decode())
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    adapter = OpenAICompatAdapter(
+        base_url="https://llm.test/v1", api_key="k", model="m",
+        transport=httpx.MockTransport(handler),
+        extra_payload={"reasoning": {"enabled": False}})
+    assert adapter.complete("sys", "user") == "ok"
+    assert seen["body"]["reasoning"] == {"enabled": False}
+    assert seen["body"]["temperature"] == 0.2
+
+
+def test_settings_parse_extra_payload(monkeypatch):
+    monkeypatch.setenv("NEWSDESK_LLM_EXTRA_JSON", '{"reasoning": {"enabled": false}}')
+    assert Settings.from_env().llm_extra_payload == {"reasoning": {"enabled": False}}
+    monkeypatch.setenv("NEWSDESK_LLM_EXTRA_JSON", "[1, 2]")
+    with pytest.raises(ValueError, match="NEWSDESK_LLM_EXTRA_JSON"):
+        Settings.from_env()
+
+
 def test_connect_error_maps_to_llm_error():
     def handler(request):
         raise httpx.ConnectError("no route")
