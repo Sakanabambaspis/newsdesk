@@ -76,3 +76,13 @@ Decisions:
   data; `workflow/` importing `SECTION_TYPES` from `morning/script.py` is
   the honest dependency for now and flips when the engine routes morning
   (ticket 05).
+
+## Comments
+
+2026-09-20 (ticket 02): this ticket's "per-plugin requires/provides
+metadata arrives at registration (ticket 02)" and "closing per-plugin
+param schemas ... (ticket 02)" both move their *mechanism* to ticket 05
+(the W1 build wires registration); ticket 02 fixed only the *rule* —
+`validate_registration` in `newsdesk/workflow/engine.py`: a plugin's
+declared triple may narrow, never contradict, its stage type's triple.
+Param schemas stay open until then.
