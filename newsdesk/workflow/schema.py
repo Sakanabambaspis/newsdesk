@@ -287,6 +287,29 @@ def require_valid(doc: Any) -> None:
                               + "\n- ".join(errors))
 
 
+def validate_registration(stage_type: str, requires: tuple[str, ...],
+                          provides: tuple[str, ...]) -> list[str]:
+    """Check a plugin's declared triple against its stage type.
+
+    Ticket 01 put per-plugin requires/provides metadata at registration;
+    the rule is fixed here (ticket 02): a plugin may narrow its type's
+    triple, never contradict it. Lives beside STAGE_TYPES so the
+    registries can validate at registration time (the W1 wiring, ticket
+    05) without importing the engine.
+    """
+    triple = STAGE_TYPES.get(stage_type)
+    if triple is None:
+        return [f"unknown stage type '{stage_type}' "
+                f"(known: {', '.join(STAGE_TYPES)})"]
+    errors = [f"plugin requires '{key}' which stage type '{stage_type}' "
+              f"does not ({', '.join(triple['requires'])})"
+              for key in requires if key not in triple["requires"]]
+    errors.extend(f"plugin provides '{key}' which stage type "
+                  f"'{stage_type}' does not ({', '.join(triple['provides'])})"
+                  for key in provides if key not in triple["provides"])
+    return errors
+
+
 def workflow_descriptor_path(name: str, version: int) -> Path:
     """Where a shipped descriptor lives in the package."""
     return Path(__file__).parent / "descriptors" / f"{name}@{version}.json"

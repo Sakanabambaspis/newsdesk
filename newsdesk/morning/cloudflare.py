@@ -164,5 +164,6 @@ def publish_cloudflare(settings: Any, episode: dict[str, Any],
             "artwork_url": f"{public}/artwork.png"}
 
 
-PUBLISHERS.register("cloudflare-pages", publish_cloudflare)
+PUBLISHERS.register("cloudflare-pages", publish_cloudflare,
+                   stage="publish")
 publish_cloudflare.already_published = already_published

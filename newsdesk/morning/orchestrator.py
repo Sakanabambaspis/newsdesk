@@ -8,13 +8,20 @@ from the registries, selected via env; the immutable log carries one entry
 per stage (provider and outcome — never key material, and never the
 token-bearing URLs, which are the feed's only auth); any stage failure
 aborts loudly with nothing published.
+
+Since ticket 05 the CLI routes ``newsdesk morning`` through the workflow
+engine (``newsdesk.workflow.run_workflow``), which reproduces this chain
+from the ``default-morning@1`` descriptor. ``run_morning`` stays as the
+characterization specimen — ``tests/test_characterization_default_chain.py``
+pins it verbatim — and retires with the catalog's shipped-descriptor
+bootstrap (W2); it is no longer called from production surfaces.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
@@ -23,21 +30,29 @@ from .registries import (NOTIFIERS, PUBLISHERS, SCRIPTWRITERS, TTS_ENGINES,
                          load_plugins)
 from .script import episode_date, write_sidecar
 
+if TYPE_CHECKING:  # annotation-only: the runtime edge points engine → morning
+    from ..workflow.engine import RunContext
+
 
 class MorningError(Exception):
     """A morning stage failed; message is safe to print (no secrets)."""
 
 
 def stage_script(session, settings: Any, digest: dict[str, Any],
-                 date: str, *, writer: Callable[..., Any] | None = None
+                 date: str, *, writer: Callable[..., Any] | None = None,
+                 ctx: "RunContext | None" = None
                  ) -> dict[str, Any]:
     """Run the script-writer, persist the sidecar, log the artifact.
 
     ``writer`` overrides the registry default (the workflow engine's
     pinned-plugin path, ticket 02); ``run_morning`` keeps resolving via
-    SCRIPTWRITERS.
+    SCRIPTWRITERS. ``ctx`` is the workflow engine's RunContext, forwarded
+    only to context-native writers so they can read the repair
+    bookkeeping (ticket 05); the v1 signature is unchanged without it.
     """
-    brief = (writer or SCRIPTWRITERS.get())(settings, digest, date=date)
+    writer_fn = writer or SCRIPTWRITERS.get()
+    extra = {"ctx": ctx} if ctx is not None else {}
+    brief = writer_fn(settings, digest, date=date, **extra)
     sidecar = write_sidecar(settings, brief["date"], brief)
     LogRepo(session).append("morning_brief_built", {
         "date": brief["date"], "method": brief["method"],

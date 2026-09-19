@@ -95,7 +95,7 @@ def publish_local(settings, episode: dict[str, Any],
             "artwork_url": artwork_url}
 
 
-PUBLISHERS.register("local-dir", publish_local)
+PUBLISHERS.register("local-dir", publish_local, stage="publish")
 
 
 def already_published(settings, date: str) -> bool:

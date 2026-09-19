@@ -293,7 +293,7 @@ def morning(
         help="Backfill: episode date YYYY-MM-DD (morning tz) instead of today"),
 ) -> None:
     """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
-    from .morning.orchestrator import MorningError, run_morning
+    from .workflow.engine import WorkflowRunError, load_descriptor, run_workflow
 
     if date is not None:
         try:
@@ -312,8 +312,12 @@ def morning(
     db = Database(settings)
     with db.session() as session:
         try:
-            report = run_morning(session, settings, date=date)
-        except MorningError as exc:
+            # W1: the shipped package descriptor; the catalog's
+            # name@latest resolve() replaces this at W2 (ticket 06)
+            report = run_workflow(session, settings,
+                                  load_descriptor("default-morning", 1),
+                                  date=date)
+        except WorkflowRunError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
     if json_out:

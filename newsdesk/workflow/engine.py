@@ -3,8 +3,8 @@
 The engine is the second deep interface of the workflow architecture: one
 call — ``run_workflow(session, settings, descriptor, station, date)`` —
 hiding dispatch, guardrail enforcement, the bounded repair loop, logging
-and error aggregation. Everything below is the written contract; the W1
-build (ticket 05) routes ``newsdesk morning`` through it. Decisions:
+and error aggregation. The W1 build (ticket 05) routes ``newsdesk
+morning`` through it. Decisions:
 
 - **RunReport** is the plain JSON-shaped dict ``newsdesk morning`` prints
   today: ``{date, outcome, stages: {...}, finished_at}``; outcomes are
@@ -23,9 +23,10 @@ build (ticket 05) routes ``newsdesk morning`` through it. Decisions:
   required artifacts from the bus by key and its result is placed under
   its type's ``provides`` key; ``workflow_stage_finished`` records the
   keys the stage saw ("artifact-visible means bus-keyed" — the runtime
-  invariant over the channel). Plugins keep their v1 signatures;
-  per-type adapters translate context → plugin, and the context-native
-  plugin convention arrives with registration metadata (ticket 05+).
+  invariant over the channel). Plugins keep their bare signatures;
+  per-type adapters translate context → plugin, and plugins registered
+  with ``context=True`` receive the RunContext itself (registration
+  metadata, wired at ticket 05).
 
 - **Dispatch** is per stage type: collect/select run engine built-ins
   (the only implementations — registries arrive with W3's select
@@ -45,10 +46,12 @@ build (ticket 05) routes ``newsdesk morning`` through it. Decisions:
   same publish-plugin guard as the run-level idempotency hook below, so
   on the default chain the hook always wins the race and the check
   cannot fire — ticket 01 recorded this; the check's role is keeping
-  the emission guard declared, named and validated in *data*. v1
-  implements the three the shipped descriptor carries; the W3 names
-  fail loudly as unimplemented if ever encountered — never a silent
-  pass.
+  the emission guard declared, named and validated in *data*. All six
+  names are implemented (the coverage pair ``distinct_stories`` /
+  ``diversity_floor`` guard the episode against the 2026-09-19 failure —
+  the floor scales to what the pack offered, so a quiet day never
+  fails); a check whose artifacts are not on the bus violates with a
+  binding hint — never a silent pass.
 
 - **Repair loop** (``on_fail: repair``): the failing stage re-runs with
   the violation notes on the context, at most ``loop_policy.max_attempts``
@@ -57,19 +60,20 @@ build (ticket 05) routes ``newsdesk morning`` through it. Decisions:
   ``ctx.degrade``), then a loud stage-tagged failure — at most
   ``1 + max_attempts + 1`` invocations. ``on_fail`` is per *check*: only
   a violating ``fail`` check aborts; a repairable violation repairs even
-  with a fatal sibling. v1 honesty: today's plugins ignore the notes, so
-  their re-runs are identical — the bound still caps a misbehaving
-  plugin's blast radius, and ticket 05's context-native plugins read
-  ``ctx.violations`` / ``ctx.degrade`` to actually vary their output.
+  with a fatal sibling. Plugins registered with ``context=True`` (the
+  context-native convention, wired at ticket 05) receive the context and
+  read ``ctx.violations`` / ``ctx.degrade`` — ``llm-brief`` skips its LLM
+  call on the degrade pass; the other built-ins ignore the notes, and the
+  bound still caps a misbehaving plugin's blast radius.
 
 - **Log events**: the engine appends uniform ``workflow_stage_started /
   finished / failed`` entries and terminates runs with
-  ``workflow_run_finished / workflow_run_failed`` — supersets of today's
-  ``morning_run_finished / failed`` shapes. The morning names retire when
-  ticket 05 routes the CLI through the engine (two engines must not use
-  different names for the same run-level fact); domain entries emitted by
-  stages (``daily_digest_built``, ``morning_brief_built``, ...) are
-  unchanged.
+  ``workflow_run_finished / workflow_run_failed`` — supersets of the old
+  ``morning_run_*`` shapes. The morning names retired when the CLI
+  routed through the engine (ticket 05); ``run_morning`` remains only as
+  the characterization specimen, so two live engines never use different
+  names for the same run-level fact. Domain entries emitted by stages
+  (``daily_digest_built``, ``morning_brief_built``, ...) are unchanged.
 
 - **Idempotency** hooks before the first stage: the publish plugin's
   ``already_published`` guard for (station, date) short-circuits the run
@@ -91,6 +95,7 @@ build (ticket 05) routes ``newsdesk morning`` through it. Decisions:
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, NoReturn
@@ -102,7 +107,8 @@ from ..morning.script import episode_date, word_count
 from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
 from ..storage.repo import LogRepo
-from .schema import STAGE_TYPES, require_valid, workflow_descriptor_path
+from .schema import STAGE_TYPES, require_valid, validate_registration, \
+    workflow_descriptor_path
 
 
 class WorkflowRunError(Exception):
@@ -120,8 +126,8 @@ class _ChecksFailed(Exception):
 class RunContext:
     """One run's state on the one first-class channel (ticket 02).
 
-    The engine owns this object; stage adapters and (once context-native,
-    ticket 05+) plugins read from it and never from globals.
+    The engine owns this object; stage adapters and context-native
+    plugins read from it and never from globals.
 
     Attributes:
         artifacts: the artifact bus, keyed by the stage-type triples'
@@ -132,8 +138,10 @@ class RunContext:
             current attempt, per stage name, for context-native plugins.
         degrade: stage names running their contained-degrade pass (the
             last bounded re-run after repairs are exhausted).
-        plugins: pre-resolved registry plugins, keyed by stage type; the
-            publish entry is ``(resolved_name, plugin)`` for the log.
+        plugins: pre-resolved registry plugins, keyed by stage type as
+            ``(resolved_name, plugin)`` for the log and metadata lookup.
+        current_stage: the stage name being dispatched, for context-native
+            plugins to locate their own entry in ``violations``/``degrade``.
     """
 
     def __init__(self, session: Any, settings: Any, workflow: dict[str, Any],
@@ -148,6 +156,7 @@ class RunContext:
         self.violations: dict[str, list[str]] = {}
         self.degrade: set[str] = set()
         self.plugins: dict[str, Any] = {}
+        self.current_stage: str | None = None
 
     def log(self, action: str, detail: dict[str, Any]) -> None:
         LogRepo(self.session).append(action, detail)
@@ -159,27 +168,6 @@ def load_descriptor(name: str, version: int) -> dict[str, Any]:
     doc = json.loads(path.read_text(encoding="utf-8"))
     require_valid(doc)
     return doc
-
-
-def validate_registration(stage_type: str, requires: tuple[str, ...],
-                          provides: tuple[str, ...]) -> list[str]:
-    """Check a plugin's declared triple against its stage type.
-
-    Ticket 01 put per-plugin requires/provides metadata at registration;
-    the mechanism wires up at ticket 05, but the rule is fixed here: a
-    plugin may narrow its type's triple, never contradict it.
-    """
-    triple = STAGE_TYPES.get(stage_type)
-    if triple is None:
-        return [f"unknown stage type '{stage_type}' "
-                f"(known: {', '.join(STAGE_TYPES)})"]
-    errors = [f"plugin requires '{key}' which stage type '{stage_type}' "
-              f"does not ({', '.join(triple['requires'])})"
-              for key in requires if key not in triple["requires"]]
-    errors.extend(f"plugin provides '{key}' which stage type "
-                  f"'{stage_type}' does not ({', '.join(triple['provides'])})"
-                  for key in provides if key not in triple["provides"])
-    return errors
 
 
 # -- Deterministic check library (no LLM anywhere in here) --------------------
@@ -223,12 +211,111 @@ def _check_archive_intact(ctx: RunContext,
     return []
 
 
+def _pack_items(ctx: RunContext) -> list[dict[str, Any]]:
+    """The writer's material pack (ADR 0001): what selection offered."""
+    digest = ctx.artifacts.get("digest") or {}
+    return ((digest.get("material_pack") or {}).get("items")) or []
+
+
+def _episode_items(ctx: RunContext) -> list[dict[str, Any]]:
+    """The pack items the composed episode actually covers."""
+    by_id = {i["id"]: i for i in _pack_items(ctx)}
+    script = ctx.artifacts.get("script") or {}
+    return [by_id[iid]
+            for section in script.get("sections") or []
+            for iid in section.get("item_ids") or []
+            if iid in by_id]
+
+
+def _coverage_artifacts_missing(ctx: RunContext) -> list[str]:
+    """Shared binding guard of the coverage checks: both read the digest's
+    pack and the composed script, so they belong after compose."""
+    if "digest" not in ctx.artifacts or "script" not in ctx.artifacts:
+        return ["needs the 'digest' and 'script' artifacts on the bus "
+                "(bind it after compose)"]
+    return []
+
+
+def _story_key(title: Any) -> str:
+    """A story's identity for the syndication check: the normalized
+    headline. Wire syndication reprints share the wire headline across
+    outlets, so collapsed clusters show up as one key (ticket 05's
+    provisional spec; ticket 08 owns the formal one)."""
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", str(title or "").lower())
+                    .split())
+
+
+def _check_distinct_stories(ctx: RunContext,
+                            params: dict[str, Any]) -> list[str]:
+    """Cluster collapse (the 2026-09-19 fix): the episode's slots must not
+    be eaten by one syndication cluster. The floor scales to what the pack
+    offered — a quiet day legally covers fewer stories, never fails."""
+    guard = _coverage_artifacts_missing(ctx)
+    if guard:
+        return guard
+    pack, episode = _pack_items(ctx), _episode_items(ctx)
+    offered = len({_story_key(i.get("title")) for i in pack} - {""})
+    covered = len({_story_key(i.get("title")) for i in episode} - {""})
+    floor = min(params["min_distinct"], offered)
+    if covered < floor:
+        return [f"episode covers {covered} distinct stor"
+                f"{'y' if covered == 1 else 'ies'} (floor {floor}; the "
+                f"pack offers {offered} — a syndication cluster may have "
+                f"eaten the slots)"]
+    return []
+
+
+def _themes_of(items: list[dict[str, Any]]) -> set[str]:
+    themes: set[str] = set()
+    for item in items:
+        themes.update(t for t in item.get("matched_terms") or [] if t)
+    return themes
+
+
+def _check_diversity_floor(ctx: RunContext,
+                           params: dict[str, Any]) -> list[str]:
+    """Cross-theme diversity floor (the 2026-09-19 fix): the episode must
+    span watchlist themes in proportion to what the pack offered — the
+    floor scales down to the material, never up from it."""
+    guard = _coverage_artifacts_missing(ctx)
+    if guard:
+        return guard
+    offered = _themes_of(_pack_items(ctx))
+    floor = min(params["min_themes"], len(offered))
+    spanned = _themes_of(_episode_items(ctx))
+    if len(spanned) < floor:
+        return [f"episode spans {len(spanned)} watchlist theme"
+                f"{'s' if len(spanned) != 1 else ''} ({', '.join(sorted(spanned)) or 'none'};"
+                f" floor {floor}; the pack offers {len(offered)}: "
+                f"{', '.join(sorted(offered)) or 'none'})"]
+    return []
+
+
+def _check_duration_band(ctx: RunContext,
+                         params: dict[str, Any]) -> list[str]:
+    """The rendered episode's measured duration must sit in the band."""
+    audio = ctx.artifacts.get("audio") or {}
+    seconds = audio.get("duration_seconds")
+    if seconds is None:
+        return ["needs the 'audio' artifact on the bus (bind it after "
+                "render)"]
+    lo, hi = params["min_seconds"], params["max_seconds"]
+    if seconds < lo:
+        return [f"episode is {seconds}s (band minimum {lo}s)"]
+    if seconds > hi:
+        return [f"episode is {seconds}s (band maximum {hi}s)"]
+    return []
+
+
 # name -> (binding phase, implementation). "pre" validates before the
 # stage dispatches; "post" validates the artifact the stage provided.
 _CHECKS: dict[str, tuple[str, Callable[..., list[str]]]] = {
     "section_allowlist": ("post", _check_section_allowlist),
     "word_budget": ("post", _check_word_budget),
     "archive_intact": ("pre", _check_archive_intact),
+    "distinct_stories": ("post", _check_distinct_stories),
+    "diversity_floor": ("post", _check_diversity_floor),
+    "duration_band": ("post", _check_duration_band),
 }
 
 
@@ -240,9 +327,9 @@ def _run_checks(ctx: RunContext, spec: dict[str, Any],
     for check in spec.get("checks") or []:
         name = check["name"]
         entry = _CHECKS.get(name)
-        if entry is None:
-            found.append((f"check '{name}' is not implemented "
-                          f"(lands with W3)", True))
+        if entry is None:  # the schema's closed set has drifted from the
+            found.append((f"check '{name}' has no implementation "
+                          f"(schema/library drift)", True))
             continue
         if entry[0] != phase:
             continue
@@ -272,15 +359,23 @@ def _stage_select(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
 
 
 def _stage_compose(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
-    brief = stage_script(ctx.session, ctx.settings, ctx.artifacts["digest"],
-                         ctx.date, writer=ctx.plugins["compose"])
+    _key, writer = ctx.plugins["compose"]
+    # context-native plugins (registered with context=True) read the run's
+    # repair bookkeeping; v1 plugins keep their bare signatures
+    if SCRIPTWRITERS.is_context_native(_key):
+        brief = stage_script(ctx.session, ctx.settings,
+                             ctx.artifacts["digest"], ctx.date, writer=writer,
+                             ctx=ctx)
+    else:
+        brief = stage_script(ctx.session, ctx.settings,
+                             ctx.artifacts["digest"], ctx.date, writer=writer)
     ctx.artifacts["script"] = brief
     return {"method": brief["method"], **brief["stats"]}
 
 
 def _stage_render(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
-    audio = ctx.plugins["render"](
-        ctx.settings, Path(ctx.artifacts["script"]["sidecar"]))
+    _name, render = ctx.plugins["render"]
+    audio = render(ctx.settings, Path(ctx.artifacts["script"]["sidecar"]))
     ctx.log("morning_audio_rendered", {
         "date": audio["date"], "engine": audio["engine"],
         "duration_seconds": audio["duration_seconds"],
@@ -342,13 +437,47 @@ def _resolve_plugins(ctx: RunContext) -> None:
     pinned = {s["type"]: s["plugin"] for s in ctx.workflow["stages"]
               if s.get("plugin")}
     if any(s["type"] == "render" for s in ctx.workflow["stages"]):
-        ctx.plugins["render"] = TTS_ENGINES.get(
+        ctx.plugins["render"] = TTS_ENGINES.resolve(
             pinned.get("render") or ctx.settings.morning_tts)
     if any(s["type"] == "publish" for s in ctx.workflow["stages"]):
-        name = pinned.get("publish") or ctx.settings.morning_publisher
-        ctx.plugins["publish"] = (name, PUBLISHERS.get(name))
+        ctx.plugins["publish"] = PUBLISHERS.resolve(
+            pinned.get("publish") or ctx.settings.morning_publisher)
     if any(s["type"] == "compose" for s in ctx.workflow["stages"]):
-        ctx.plugins["compose"] = SCRIPTWRITERS.get(pinned.get("compose"))
+        ctx.plugins["compose"] = SCRIPTWRITERS.resolve(pinned.get("compose"))
+    _validate_stage_params(ctx)
+
+
+# engine built-ins close their own stage-params key sets; registry plugins
+# declare theirs at registration (Registry.param_keys)
+_BUILTIN_PARAM_KEYS: dict[str, frozenset[str]] = {
+    "collect": frozenset(), "select": frozenset({"hours"}),
+}
+_REGISTRY_BY_TYPE = {"compose": SCRIPTWRITERS, "render": TTS_ENGINES,
+                     "publish": PUBLISHERS}
+
+
+def _allowed_param_keys(ctx: RunContext, stage_type: str) -> frozenset[str]:
+    if stage_type in _BUILTIN_PARAM_KEYS:
+        return _BUILTIN_PARAM_KEYS[stage_type]
+    entry = ctx.plugins.get(stage_type)
+    if entry is None:  # notify fans out — no single plugin, no params
+        return frozenset()
+    return _REGISTRY_BY_TYPE[stage_type].param_keys(entry[0])
+
+
+def _validate_stage_params(ctx: RunContext) -> None:
+    """Registration closed each plugin's params key set; unknown keys fail
+    pre-flight (witnesses at use — zero work done, tagged ``selection``)."""
+    errors: list[str] = []
+    for spec in ctx.workflow["stages"]:
+        stype = spec["type"]
+        unknown = sorted(set(spec.get("params") or {})
+                         - _allowed_param_keys(ctx, stype))
+        if unknown:
+            errors.append(f"stage '{spec.get('name') or stype}': unknown "
+                          f"params {', '.join(unknown)}")
+    if errors:
+        raise ValueError("; ".join(errors))
 
 
 def _abort(ctx: RunContext, stage: str, exc: Exception) -> NoReturn:
@@ -401,6 +530,7 @@ def run_workflow(session: Any, settings: Any, descriptor: dict[str, Any],
             break  # the emission boundary: publish and notify never run
         ctx.log("workflow_stage_started",
                 {**_run_fields(ctx), "stage": stage})
+        ctx.current_stage = stage
         try:
             pre = _run_checks(ctx, spec, "pre")
             if pre:  # pre-stage checks cannot repair; loud, immediately

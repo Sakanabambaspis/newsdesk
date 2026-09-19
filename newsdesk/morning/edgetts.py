@@ -265,4 +265,4 @@ def edge_tts_synth(settings: Any, script_path: str | Path, *, engine: Any = None
     return report
 
 
-TTS_ENGINES.register("edge-tts", edge_tts_synth)
+TTS_ENGINES.register("edge-tts", edge_tts_synth, stage="render")

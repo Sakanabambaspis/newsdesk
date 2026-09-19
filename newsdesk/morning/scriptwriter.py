@@ -13,11 +13,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..llm.base import LLMError, get_adapter
 from .registries import SCRIPTWRITERS
 from .script import clip_words, episode_date, make_section, script_stats, word_count
+
+if TYPE_CHECKING:  # annotation-only: the runtime edge points engine → morning
+    from ..workflow.engine import RunContext
 
 HEADLINE_MAX_WORDS = 60
 DEEP_DIVE_TARGET_WORDS = (400, 450)  # accepted band is wider; clip enforces the cap
@@ -104,14 +107,27 @@ def _assemble(method: str, date: str, deep: dict[str, Any] | None,
 
 
 def llm_brief(settings: Any, digest: dict[str, Any], *, adapter: Any = None,
-              date: str | None = None) -> dict[str, Any]:
-    """Render the spoken script from the digest's MaterialPack."""
+              date: str | None = None,
+              ctx: "RunContext | None" = None) -> dict[str, Any]:
+    """Render the spoken script from the digest's MaterialPack.
+
+    Context-native (ticket 05): when the engine runs this stage's
+    contained-degrade pass, the LLM call is skipped and the extractive
+    fill is produced directly — the degrade is contained, not retried.
+    """
     date = date or episode_date()
     pack_items = ((digest.get("material_pack") or {}).get("items")) or []
     deep = pack_items[0] if pack_items else None
     heads = pack_items[1:4]
     if deep is None:  # quiet day: a short episode, never padded
         return _assemble("extractive", date, None, [], "", [],
+                         settings.morning_voice)
+
+    degrading = ctx is not None and ctx.current_stage in ctx.degrade
+    if degrading:
+        return _assemble("extractive", date, deep, heads,
+                         _extractive_deep_dive(deep),
+                         [_extractive_headline(h) for h in heads],
                          settings.morning_voice)
 
     if adapter is None:
@@ -155,4 +171,4 @@ def llm_brief(settings: Any, digest: dict[str, Any], *, adapter: Any = None,
                      settings.morning_voice)
 
 
-SCRIPTWRITERS.register("llm-brief", llm_brief)
+SCRIPTWRITERS.register("llm-brief", llm_brief, stage="compose", context=True)

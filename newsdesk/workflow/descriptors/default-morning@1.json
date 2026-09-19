@@ -9,6 +9,8 @@
     {"type": "collect", "params": {}},
     {"type": "select", "name": "digest", "params": {"hours": 24}},
     {"type": "compose", "name": "script", "params": {}, "checks": [
+      {"name": "distinct_stories", "params": {"min_distinct": 2}},
+      {"name": "diversity_floor", "params": {"min_themes": 2}},
       {"name": "section_allowlist",
        "params": {"allow": ["cold_open", "headline", "deep_dive", "close"]}},
       {"name": "word_budget",
