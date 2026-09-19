@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "sources": [
     {
       "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
@@ -378,5 +378,7 @@
       ],
       "source_keys": []
     }
-  ]
+  ],
+  "workflows": [],
+  "retired_workflows": []
 }

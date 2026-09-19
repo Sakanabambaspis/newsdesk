@@ -4,8 +4,10 @@ The cloud half of the morning-audio pipeline (morning-audio-impl ticket 07).
 One scheduled workflow runs the whole local pipeline — `newsdesk morning`:
 collect → digest (with verdicts) → script → tts → publish → notify — with the
 `cloudflare-pages` publisher, unattended. The workflow first seeds the fresh
-runner database from the committed `seed/newsdesk-seed.json` (sources +
-watchlist terms; re-export locally after changes). The notify registry ships
+runner database from the committed `seed/newsdesk-seed.json` (sources,
+watchlist terms, and workflow history; re-export locally after changes);
+`newsdesk morning` itself bootstraps the shipped `default-morning@1` into
+the workflow catalog on first use. The notify registry ships
 empty, so notify is a logged no-op until a notifier bolts on.
 
 **Workflow:** `.github/workflows/morning.yml` · **Config contract tests:**
@@ -30,8 +32,10 @@ empty, so notify is a logged no-op until a notifier bolts on.
 
 Sources and watchlist terms ride into CI via the committed seed file
 (`seed/newsdesk-seed.json`, imported by the workflow before
-`newsdesk morning`). After changing sources or terms locally, re-run
-`newsdesk seed export` and commit the diff — that's the whole sync.
+`newsdesk morning`; seed format 2 also carries the workflow catalog's
+full history). After changing sources, terms, or workflows locally,
+re-run `newsdesk seed export` and commit the diff — that's the whole
+sync.
 
 Cloudflare side (details in ticket 06's checklist): create a **Pages**
 project ("Direct Upload", empty — e.g. `morning-briefing`), note the

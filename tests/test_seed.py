@@ -1,7 +1,8 @@
 """Seed export/import: the versioned bridge for fresh databases (CI).
 
 The property that matters: export -> import into an empty database ->
-export again is identical, and importing twice adds nothing.
+export again is identical, and importing twice adds nothing. Format 2
+carries the workflow catalog (full history) with monotonic retirement.
 """
 
 from __future__ import annotations
@@ -10,15 +11,35 @@ import json
 from pathlib import Path
 
 import pytest
+from sqlmodel import col, select
 from typer.testing import CliRunner
 
 from newsdesk.cli import app
 from newsdesk.config import Settings
-from newsdesk.seed import SeedError, export_seed, import_seed
+from newsdesk.core.models import LogEntry
+from newsdesk.seed import FORMAT, SeedError, export_seed, import_seed
 from newsdesk.storage.db import Database
-from newsdesk.storage.repo import SourceRepo, WatchlistRepo
+from newsdesk.storage.repo import LogRepo, SourceRepo, WatchlistRepo
+from newsdesk.workflow.catalog import WorkflowCatalog
+from newsdesk.workflow.schema import FORMAT_VERSION
 
 runner = CliRunner()
+
+
+def _descriptor(name: str = "seeded-morning", version: int = 1) -> dict:
+    return {
+        "format_version": FORMAT_VERSION,
+        "name": name,
+        "version": version,
+        "stages": [{"type": t} for t in ("collect", "select", "compose",
+                                         "render", "publish", "notify")],
+    }
+
+
+def _log(session, action: str) -> list[LogEntry]:
+    return list(session.exec(
+        select(LogEntry).where(LogEntry.action == action)
+        .order_by(col(LogEntry.id))))
 
 
 @pytest.fixture
@@ -36,6 +57,18 @@ def populated(session):
     return srepo, wrepo
 
 
+@pytest.fixture
+def with_workflows(session, populated):
+    """A catalog with a two-version workflow and a retired second name."""
+    catalog = WorkflowCatalog(session)
+    catalog.create_version(_descriptor("seeded-morning"), actor="user")
+    catalog.create_version(_descriptor("seeded-morning", version=2),
+                           actor="agent")
+    catalog.create_version(_descriptor("old-morning"), actor="user")
+    catalog.retire("old-morning", actor="user")
+    return catalog
+
+
 def _fresh_db(tmp_path: Path, name: str):
     settings = Settings(
         home=tmp_path / name,
@@ -51,11 +84,12 @@ def test_export_import_roundtrip_is_lossless(session, populated, tmp_path):
     first = export_seed(session)
 
     with _fresh_db(tmp_path, "home2").session() as fresh:
-        stats = import_seed(fresh, first)
+        stats = import_seed(fresh, first, actor="user")
         assert stats == {"sources_added": 2, "sources_present": 0,
                          "watchlists_created": 1, "terms_added": 2,
                          "terms_present": 0, "links_added": 1,
-                         "links_present": 0}
+                         "links_present": 0,
+                         "workflows_added": 0, "workflows_present": 0}
         assert export_seed(fresh) == first
 
         # the imported database is functionally identical
@@ -74,8 +108,8 @@ def test_export_import_roundtrip_is_lossless(session, populated, tmp_path):
 def test_reimport_is_idempotent(session, populated, tmp_path):
     data = export_seed(session)
     with _fresh_db(tmp_path, "home2").session() as fresh:
-        first = import_seed(fresh, data)
-        second = import_seed(fresh, data)
+        first = import_seed(fresh, data, actor="user")
+        second = import_seed(fresh, data, actor="user")
         assert first["sources_added"] == 2 and second["sources_added"] == 0
         assert second["sources_present"] == 2
         assert second["terms_added"] == 0 and second["terms_present"] == 2
@@ -87,24 +121,135 @@ def test_reimport_is_idempotent(session, populated, tmp_path):
 def test_import_never_deletes(session, populated):
     data = export_seed(session)
     SourceRepo(session).add("https://c.example.com/feed.xml", title="C Desk")
-    import_seed(session, data)
+    import_seed(session, data, actor="user")
     assert len(SourceRepo(session).list()) == 3
+
+
+def test_import_requires_an_actor(session, populated):
+    data = export_seed(session)
+    with pytest.raises(TypeError):
+        import_seed(session, data)  # must not silently default the actor
 
 
 def test_import_rejects_wrong_format(session):
     with pytest.raises(SeedError):
-        import_seed(session, {"format": 999})
+        import_seed(session, {"format": 999}, actor="user")
     with pytest.raises(SeedError):
-        import_seed(session, "not a dict")
+        import_seed(session, "not a dict", actor="user")
+    # format 1 files predate the catalog sections; re-export instead
+    with pytest.raises(SeedError, match="expected 2"):
+        import_seed(session, {"format": 1, "sources": []}, actor="user")
+    assert FORMAT == 2
 
 
 def test_import_validates_entries(session):
     with pytest.raises(SeedError):
-        import_seed(session, {"format": 1, "sources": [{"kind": "rss"}]})
+        import_seed(session, {"format": 2, "sources": [{"kind": "rss"}]},
+                    actor="user")
     with pytest.raises(SeedError):
-        import_seed(session, {"format": 1,
+        import_seed(session, {"format": 2,
                               "sources": [{"url": "https://x.example.com/rss",
-                                           "kind": "not-a-kind"}]})
+                                           "kind": "not-a-kind"}]},
+                    actor="user")
+
+
+# -- the workflows section (format 2) --------------------------------------------
+
+
+def test_seed_format_2_carries_full_workflow_history(session, with_workflows):
+    data = export_seed(session)
+    assert data["format"] == 2
+    assert [(d["name"], d["version"]) for d in data["workflows"]] == [
+        ("old-morning", 1), ("seeded-morning", 1), ("seeded-morning", 2)]
+    assert data["retired_workflows"] == ["old-morning"]
+
+
+def test_workflow_section_roundtrips_history_and_retirement(
+        session, with_workflows, tmp_path):
+    data = export_seed(session)
+    with _fresh_db(tmp_path, "home2").session() as fresh:
+        stats = import_seed(fresh, data, actor="user")
+        assert stats["workflows_added"] == 3 and stats["workflows_present"] == 0
+        fresh_catalog = WorkflowCatalog(fresh)
+        # versions + documents round-trip; authorship is the import's
+        # (the file carries documents, not provenance — the log's
+        # via=seed tells the origin story)
+        identity = lambda versions: [(ver["version"], ver["document"])
+                                     for ver in versions]
+        assert identity(fresh_catalog.versions("seeded-morning")) == \
+            identity(with_workflows.versions("seeded-morning"))
+        # a fresh DB can serve a pinned old version and refuses the retired
+        assert fresh_catalog.resolve("seeded-morning@1")["version"] == 1
+        with pytest.raises(Exception, match="retired"):
+            fresh_catalog.resolve("old-morning")
+        assert export_seed(fresh) == data
+
+
+def test_workflow_import_is_idempotent(session, with_workflows):
+    data = export_seed(session)
+    second = import_seed(session, data, actor="user")
+    assert second["workflows_added"] == 0
+    assert second["workflows_present"] == 3
+
+
+def test_conflicting_workflow_version_is_loud(session, with_workflows):
+    data = export_seed(session)
+    clashing = _descriptor("seeded-morning", version=1)
+    clashing["title"] = "a rewrite of immutable history"
+    data["workflows"][1] = clashing
+    with pytest.raises(SeedError, match="history was violated"):
+        import_seed(session, data, actor="user")
+
+
+def test_stale_seed_never_unretires(session, with_workflows):
+    """A seed exported before a name was retired carries no retire
+    instruction; importing it after a local un-retire must not re-retire
+    (a seed can retire, never un-retire — and its silence retires
+    nothing)."""
+    stale = export_seed(session)
+    stale["retired_workflows"] = []  # an older file, pre-retirement
+    WorkflowCatalog(session).unretire("old-morning", actor="user")
+    import_seed(session, stale, actor="user")
+    entry = next(e for e in WorkflowCatalog(session).list()
+                 if e["name"] == "old-morning")
+    assert entry["retired_at"] is None  # the deliberate local action stands
+
+
+def test_retirement_applies_monotonically(session, with_workflows, tmp_path):
+    data = export_seed(session)
+    with _fresh_db(tmp_path, "home2").session() as fresh:
+        import_seed(fresh, data, actor="user")
+        # re-import the same seed: retiring an already-retired name is calm
+        import_seed(fresh, data, actor="user")
+        assert WorkflowCatalog(fresh).resolve("seeded-morning")
+
+
+def test_seed_rejects_invalid_workflow_documents(session):
+    bad = _descriptor()
+    bad["stages"][0]["type"] = "transmogrify"
+    with pytest.raises(SeedError, match="transmogrify"):
+        import_seed(session, {"format": 2, "workflows": [bad]}, actor="user")
+
+
+def test_seed_rejects_version_gaps(session):
+    with pytest.raises(SeedError, match="must be 1"):
+        import_seed(session, {"format": 2,
+                              "workflows": [_descriptor(version=2)]},
+                    actor="user")
+
+
+def test_workflow_actors_and_via_are_recorded(session, with_workflows,
+                                              tmp_path):
+    data = export_seed(session)
+    with _fresh_db(tmp_path, "home2").session() as fresh:
+        import_seed(fresh, data, actor="user")
+        versioned = _log(fresh, "workflow_version_created")
+        assert len(versioned) == 3
+        assert all(e.actor == "user" for e in versioned)
+        assert all(e.detail.get("via") == "seed" for e in versioned)
+
+
+# -- the seed CLI -----------------------------------------------------------------
 
 
 def test_seed_cli_roundtrip_between_homes(tmp_path, monkeypatch):
@@ -139,3 +284,26 @@ def test_seed_cli_import_missing_file(tmp_path, monkeypatch):
     result = runner.invoke(app, ["seed", "import", str(tmp_path / "nope.json")])
     assert result.exit_code == 1
     assert "no such seed file" in result.output
+
+
+def test_seed_cli_imports_workflow_versions(tmp_path, monkeypatch):
+    """The CLI import records workflow versions as actor=user, via=seed."""
+    monkeypatch.setenv("NEWSDESK_HOME", str(tmp_path / "home1"))
+    with _fresh_db(tmp_path, "home1").session() as s:
+        WorkflowCatalog(s).create_version(_descriptor(), actor="agent")
+
+    out = tmp_path / "seed" / "out.json"
+    result = runner.invoke(app, ["seed", "export", str(out)])
+    assert result.exit_code == 0, result.output
+
+    monkeypatch.setenv("NEWSDESK_HOME", str(tmp_path / "home2"))
+    result = runner.invoke(app, ["seed", "import", str(out)])
+    assert result.exit_code == 0, result.output
+    assert "+1 workflow versions" in result.output
+    with _fresh_db(tmp_path, "home2").session() as s:
+        catalog = WorkflowCatalog(s)
+        assert catalog.resolve("seeded-morning")["name"] == "seeded-morning"
+        versioned = [e for e in LogRepo(s).recent(50)
+                     if e.action == "workflow_version_created"]
+        assert versioned[0].actor == "user"  # the CLI is the user's surface
+        assert versioned[0].detail["via"] == "seed"

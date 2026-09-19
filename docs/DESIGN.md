@@ -63,7 +63,7 @@ Component map (mirrors the package layout):
 | Storage | `newsdesk.storage` | repositories, schema, full-text index, log |
 | Core | `newsdesk.core` | domain records, source kinds, identity (URLs, hashes, ids) |
 | LLM | `newsdesk.llm` | extraction / embedding / ranking / summarization adapters |
-| Workflow | `newsdesk.workflow` | workflow descriptor schema + deterministic validator (data-defined, versioned workflows) |
+| Workflow | `newsdesk.workflow` | descriptor schema + validator, engine, versioned catalog (data-defined workflows; `newsdesk workflow …` CLI) |
 | Interface | `newsdesk.api`, `newsdesk.agents`, `newsdesk.mcp_server`, `newsdesk.cli` | HTTP API, agent protocol + MCP, command line |
 
 Each pipeline stage has a contract: defined input, defined output, defined failure
@@ -373,7 +373,9 @@ Portability rules:
 | M2 | Postgres option | pgvector (only when semantic search lands) | Postgres-backed queue or Redis Streams | object storage (S3-compatible) | multi-source continuous collection |
 | M4+ | Postgres required | FTS + vector | Redis/NATS | object storage + derivatives | scheduled digests/alerts, multi-user |
 
-The repository layer is the only code touching SQL; switching to Postgres is a
+The repository layer is the only code touching SQL (the workflow catalog's
+`WorkflowCatalog` is a repo in the same idiom, living beside its domain
+package); switching to Postgres is a
 `NEWSDESK_DB_URL` change plus a migration step. No ORM-specific logic lives in
 the pipeline.
 

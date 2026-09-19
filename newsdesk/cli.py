@@ -10,16 +10,19 @@
     newsdesk script               stage the spoken-briefing script (+ sidecar)
     newsdesk audio                synthesize the staged script into the day's MP3
     newsdesk morning              the whole morning: collect through notify
+    newsdesk workflow ...         the versioned workflow catalog (create,
+                                  get, list, history, diff, retire, unretire)
     newsdesk log                  tail the immutable activity log
     newsdesk serve                run the local HTTP API + agent tools
     newsdesk mcp                  run the MCP server (stdio) for agent harnesses
     newsdesk accounts ...         link/inspect personal accounts (email, X, YouTube)
-    newsdesk seed export|import   sources + watchlists as a committed JSON seed
+    newsdesk seed export|import   sources, watchlists, workflows as a committed JSON seed
 """
 
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -45,6 +48,12 @@ seed_app = typer.Typer(help="Export/import sources + watchlists as a committed "
                             "JSON seed (bridges fresh databases, e.g. CI)",
                        no_args_is_help=True)
 app.add_typer(seed_app, name="seed")
+
+workflow_app = typer.Typer(help="The versioned workflow catalog: create, "
+                                "inspect, diff, retire (every mutation "
+                                "actor-tagged in the log)",
+                           no_args_is_help=True)
+app.add_typer(workflow_app, name="workflow")
 
 
 def _mmss(seconds: float) -> str:
@@ -293,7 +302,9 @@ def morning(
         help="Backfill: episode date YYYY-MM-DD (morning tz) instead of today"),
 ) -> None:
     """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
-    from .workflow.engine import WorkflowRunError, load_descriptor, run_workflow
+    from .workflow.catalog import (CatalogError, WorkflowCatalog,
+                                   ensure_default_catalog)
+    from .workflow.engine import WorkflowRunError, run_workflow
 
     if date is not None:
         try:
@@ -312,12 +323,18 @@ def morning(
     db = Database(settings)
     with db.session() as session:
         try:
-            # W1: the shipped package descriptor; the catalog's
-            # name@latest resolve() replaces this at W2 (ticket 06)
+            # W2: the morning runs the catalog's default workflow — the
+            # shipped file bootstraps the catalog once, then the DB row
+            # (floating default-morning@latest) is the living data
+            ensure_default_catalog(session)
             report = run_workflow(session, settings,
-                                  load_descriptor("default-morning", 1),
+                                  WorkflowCatalog(session)
+                                  .resolve("default-morning"),
                                   date=date)
         except WorkflowRunError as exc:
+            typer.echo(f"error: {exc}")
+            raise typer.Exit(code=1)
+        except CatalogError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
     if json_out:
@@ -404,7 +421,7 @@ def seed_import(
     db = Database(_settings())
     with db.session() as session:
         try:
-            stats = import_seed(session, data)
+            stats = import_seed(session, data, actor="user")
         except SeedError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
@@ -414,7 +431,126 @@ def seed_import(
                f"({stats['terms_present']} present), "
                f"{stats['watchlists_created']} watchlists created, "
                f"+{stats['links_added']} links "
-               f"({stats['links_present']} present)")
+               f"({stats['links_present']} present), "
+               f"+{stats['workflows_added']} workflow versions "
+               f"({stats['workflows_present']} present)")
+
+
+# -- workflow catalog -----------------------------------------------------
+
+
+@contextmanager
+def _workflow_session():
+    """One catalog verb's boilerplate: a session with the shipped default
+    bootstrapped, ``CatalogError`` rendered as the CLI error exit."""
+    from .workflow.catalog import CatalogError, WorkflowCatalog, \
+        ensure_default_catalog
+
+    db = Database(_settings())
+    with db.session() as session:
+        ensure_default_catalog(session)
+        try:
+            yield WorkflowCatalog(session)
+        except CatalogError as exc:
+            typer.echo(f"error: {exc}")
+            raise typer.Exit(code=1)
+
+
+@workflow_app.command("create")
+def workflow_create(
+    path: Path = typer.Argument(..., help="Descriptor JSON file"),
+) -> None:
+    """Append a new workflow version from a descriptor JSON file.
+
+    The document self-describes its name@version; the version must be
+    exactly max+1 for its name (dense, never reused). Logged as actor
+    ``user`` — the CLI is the user's surface.
+    """
+    if not path.exists():
+        typer.echo(f"error: no such descriptor file: {path}")
+        raise typer.Exit(code=1)
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        typer.echo(f"error: {path} is not valid JSON: {exc}")
+        raise typer.Exit(code=1)
+    with _workflow_session() as catalog:
+        version = catalog.create_version(doc, actor="user", via="cli")
+    typer.echo(f"created {doc['name']}@{version}")
+
+
+@workflow_app.command("get")
+def workflow_get(
+    ref: str = typer.Argument(..., help="Workflow ref: name, name@N, or name@latest"),
+) -> None:
+    """Print one stored descriptor document (works on retired names)."""
+    with _workflow_session() as catalog:
+        doc = catalog.document(ref)
+    typer.echo(json.dumps(doc, indent=2, ensure_ascii=False))
+
+
+@workflow_app.command("list")
+def workflow_list() -> None:
+    """List every workflow name with its latest version and retirement."""
+    with _workflow_session() as catalog:
+        rows = catalog.list()
+    if not rows:  # unreachable while the shipped default bootstraps
+        typer.echo("No workflows in the catalog.")
+        return
+    typer.echo(f"{'NAME':<24} {'LATEST':>6}  STATE")
+    for r in rows:
+        state = "retired" if r["retired_at"] else "active"
+        typer.echo(f"{r['name']:<24} {r['latest']:>6}  {state}")
+
+
+@workflow_app.command("history")
+def workflow_history(
+    name: str = typer.Argument(..., help="Workflow name"),
+) -> None:
+    """Show a workflow's full version history (the append-only truth)."""
+    with _workflow_session() as catalog:
+        history = catalog.versions(name)
+    for v in history:
+        title = v["document"].get("title") or "-"
+        typer.echo(f"v{v['version']:<3} by {v['created_by']:<6} "
+                   f"{v['created_at']}  {title}")
+
+
+@workflow_app.command("diff")
+def workflow_diff(
+    name: str = typer.Argument(..., help="Workflow name"),
+    version_a: int = typer.Argument(..., help="Base version"),
+    version_b: int = typer.Argument(..., help="Compared version"),
+) -> None:
+    """Structural diff of two versions (RFC 6901 paths, keyed by stage)."""
+    with _workflow_session() as catalog:
+        changes = catalog.diff(name, version_a, version_b)
+    if not changes:
+        typer.echo(f"{name} v{version_a} -> v{version_b}: no differences")
+        return
+    typer.echo(json.dumps(changes, indent=2, ensure_ascii=False))
+
+
+@workflow_app.command("retire")
+def workflow_retire(
+    name: str = typer.Argument(..., help="Workflow name"),
+) -> None:
+    """Retire a workflow name: new versions and runs are refused (loudly),
+    history stays. Logged as actor ``user``."""
+    with _workflow_session() as catalog:
+        catalog.retire(name, actor="user", via="cli")
+    typer.echo(f"retired {name}")
+
+
+@workflow_app.command("unretire")
+def workflow_unretire(
+    name: str = typer.Argument(..., help="Workflow name"),
+) -> None:
+    """Undo a retirement (the data was never gone). Logged as actor
+    ``user``."""
+    with _workflow_session() as catalog:
+        catalog.unretire(name, actor="user", via="cli")
+    typer.echo(f"unretired {name}")
 
 
 # -- accounts -------------------------------------------------------------
