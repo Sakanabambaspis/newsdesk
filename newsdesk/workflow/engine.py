@@ -95,7 +95,6 @@ morning`` through it. Decisions:
 from __future__ import annotations
 
 import json
-import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, NoReturn
@@ -107,6 +106,7 @@ from ..morning.script import episode_date, word_count
 from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
 from ..storage.repo import LogRepo
+from .rubric import story_key
 from .schema import STAGE_TYPES, require_valid, validate_registration, \
     workflow_descriptor_path
 
@@ -236,15 +236,6 @@ def _coverage_artifacts_missing(ctx: RunContext) -> list[str]:
     return []
 
 
-def _story_key(title: Any) -> str:
-    """A story's identity for the syndication check: the normalized
-    headline. Wire syndication reprints share the wire headline across
-    outlets, so collapsed clusters show up as one key (ticket 05's
-    provisional spec; ticket 08 owns the formal one)."""
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", str(title or "").lower())
-                    .split())
-
-
 def _check_distinct_stories(ctx: RunContext,
                             params: dict[str, Any]) -> list[str]:
     """Cluster collapse (the 2026-09-19 fix): the episode's slots must not
@@ -254,8 +245,8 @@ def _check_distinct_stories(ctx: RunContext,
     if guard:
         return guard
     pack, episode = _pack_items(ctx), _episode_items(ctx)
-    offered = len({_story_key(i.get("title")) for i in pack} - {""})
-    covered = len({_story_key(i.get("title")) for i in episode} - {""})
+    offered = len({story_key(i.get("title")) for i in pack} - {""})
+    covered = len({story_key(i.get("title")) for i in episode} - {""})
     floor = min(params["min_distinct"], offered)
     if covered < floor:
         return [f"episode covers {covered} distinct stor"

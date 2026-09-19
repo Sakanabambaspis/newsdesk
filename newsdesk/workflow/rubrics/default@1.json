@@ -1,0 +1,49 @@
+{
+  "format_version": 1,
+  "name": "default",
+  "version": 1,
+  "title": "Engineering substance over hype",
+  "dimensions": [
+    {
+      "name": "technical_depth",
+      "description": "A novel engineering solution, mechanism, dataset, or result the briefing can build on — real substance, not news about money or people.",
+      "weight": 0.4,
+      "anchors": [
+        {"score": 1.0, "example": "New architecture, benchmark, dataset, or measured result, with enough mechanism to explain how it works."},
+        {"score": 0.5, "example": "Real engineering progress, but incremental or thin on mechanism."},
+        {"score": 0.0, "example": "Funding, personality, marketing, or press-release noise with no technical core."}
+      ]
+    },
+    {
+      "name": "watchlist_fit",
+      "description": "How much of the configured watchlist the item actually touches.",
+      "weight": 0.3,
+      "proxy": "relevance",
+      "anchors": [
+        {"score": 1.0, "example": "Central to several monitored areas at once."},
+        {"score": 0.0, "example": "Touches none of the watchlist terms."}
+      ]
+    },
+    {
+      "name": "timeliness",
+      "description": "How fresh the item is inside the selection window.",
+      "weight": 0.15,
+      "proxy": "recency",
+      "anchors": [
+        {"score": 1.0, "example": "Published just now."},
+        {"score": 0.0, "example": "At or beyond the window's edge."}
+      ]
+    },
+    {
+      "name": "corroboration",
+      "description": "How many independent outlets carry the same story.",
+      "weight": 0.15,
+      "proxy": "corroboration",
+      "anchors": [
+        {"score": 1.0, "example": "Three or more distinct publishers carry it (the cap)."},
+        {"score": 0.33, "example": "A single-outlet story."}
+      ]
+    }
+  ],
+  "thresholds": {"min_score": 0.0}
+}
