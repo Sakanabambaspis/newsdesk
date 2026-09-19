@@ -52,7 +52,7 @@ split — the secret/var distinction is deliberate):
 
 | Name | Kind | Example | What it is |
 |---|---|---|---|
-| `NEWSDESK_FEED_TOKEN` | **Secret** | 64-hex | the feed's only auth (URL path segment) |
+| `NEWSDESK_FEED_TOKEN` | **Secret** | 32-hex (`secrets.token_hex(16)`) | the feed's only auth (URL path segment) |
 | `NEWSDESK_CLOUDFLARE_API_TOKEN` | **Secret** | — | Cloudflare Pages:Edit API token |
 | `NEWSDESK_LLM_API_KEY` | **Secret** (optional) | — | OpenAI-compatible key; **omit ⇒ NullAdapter ⇒ extractive episode still publishes** |
 | `NEWSDESK_FEED_BASE_URL` | Variable | `https://morning-briefing.pages.dev` | Pages project production URL |
