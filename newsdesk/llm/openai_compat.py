@@ -21,7 +21,7 @@ from .base import BaseLLMAdapter, LLMError
 
 RETRY_STATUS = frozenset({429, 502, 503})
 RETRY_DELAYS_S = (5.0, 15.0, 45.0)
-_REASON_CAP = 160
+_REASON_CAP = 400
 
 
 class OpenAICompatAdapter(BaseLLMAdapter):
