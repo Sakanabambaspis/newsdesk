@@ -28,15 +28,19 @@ morning`` through it. Decisions:
   with ``context=True`` receive the RunContext itself (registration
   metadata, wired at ticket 05).
 
-- **Dispatch** is per stage type: collect/select run engine built-ins
-  (the only implementations — registries arrive with W3's select
-  strategies); compose/render/publish resolve through the morning
-  registries — a pinned ``plugin`` key wins, else the v1 unpinned rule
-  (per-type settings knob: ``morning_tts`` / ``morning_publisher``; else
-  the registry default); notify fans out over every registered notifier
-  (zero = the designed no-op). All registry plugins resolve before the
-  first stage runs, so a bad selection does nothing at all — a resolution
-  failure is stage-tagged ``selection``, today's pre-flight tag.
+- **Dispatch** is per stage type: collect runs an engine built-in;
+  select is the legacy built-in digest when unpinned, or a registered
+  select-strategy plugin (W3's rubric-scored strategies, ticket 09) when
+  the stage pins one — the strategy's ``rubric`` param is resolved at
+  pre-flight through the rubric catalog (missing/retired fails loudly,
+  tagged ``selection``); compose/render/publish resolve through the
+  morning registries — a pinned ``plugin`` key wins, else the v1
+  unpinned rule (per-type settings knob: ``morning_tts`` /
+  ``morning_publisher``; else the registry default); notify fans out
+  over every registered notifier (zero = the designed no-op). All
+  registry plugins resolve before the first stage runs, so a bad
+  selection does nothing at all — a resolution failure is stage-tagged
+  ``selection``, today's pre-flight tag.
 
 - **Checks** are the named deterministic library, keyed by check name;
   each name has a fixed binding phase: pre-stage (``archive_intact``)
@@ -49,9 +53,13 @@ morning`` through it. Decisions:
   the emission guard declared, named and validated in *data*. All six
   names are implemented (the coverage pair ``distinct_stories`` /
   ``diversity_floor`` guard the episode against the 2026-09-19 failure —
-  the floor scales to what the pack offered, so a quiet day never
-  fails); a check whose artifacts are not on the bus violates with a
-  binding hint — never a silent pass.
+  since ticket 08 their floors scale to the select stage's *admissible
+  set* — what selection could legally have packed — so a quiet day never
+  fails and a small pick cannot lower its own floor); a check whose
+  artifacts are not on the bus violates with a binding hint — never a
+  silent pass — and since ticket 09 a binding that can *never* see its
+  artifacts (the check bound before its provider stage) is refused at
+  pre-flight, so no stage ever enters a doomed repair loop.
 
 - **Repair loop** (``on_fail: repair``): the failing stage re-runs with
   the violation notes on the context, at most ``loop_policy.max_attempts``
@@ -107,8 +115,10 @@ from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
 from ..storage.repo import LogRepo
 from .rubric import story_key
+from .rubric_catalog import RubricCatalog, ensure_default_rubric_catalog
 from .schema import STAGE_TYPES, require_valid, validate_registration, \
     workflow_descriptor_path
+from .strategies import SELECT_STRATEGIES
 
 
 class WorkflowRunError(Exception):
@@ -140,6 +150,9 @@ class RunContext:
             last bounded re-run after repairs are exhausted).
         plugins: pre-resolved registry plugins, keyed by stage type as
             ``(resolved_name, plugin)`` for the log and metadata lookup.
+        rubrics: select stages' rubric documents, resolved at pre-flight
+            by stage name (ticket 07: attachment by ref string, resolved
+            at run start — never a silent fallback).
         current_stage: the stage name being dispatched, for context-native
             plugins to locate their own entry in ``violations``/``degrade``.
     """
@@ -156,6 +169,7 @@ class RunContext:
         self.violations: dict[str, list[str]] = {}
         self.degrade: set[str] = set()
         self.plugins: dict[str, Any] = {}
+        self.rubrics: dict[str, dict[str, Any]] = {}
         self.current_stage: str | None = None
 
     def log(self, action: str, detail: dict[str, Any]) -> None:
@@ -217,6 +231,15 @@ def _pack_items(ctx: RunContext) -> list[dict[str, Any]]:
     return ((digest.get("material_pack") or {}).get("items")) or []
 
 
+def _admissible_items(ctx: RunContext) -> list[dict[str, Any]]:
+    """What selection could legally have packed (ticket 08): the select
+    stage's post-verdict-filter, post-``min_score`` candidates. Both
+    coverage floors scale to this set — never to the pack, which would
+    let a small pick lower its own floor and pass."""
+    digest = ctx.artifacts.get("digest") or {}
+    return digest.get("admissible") or []
+
+
 def _episode_items(ctx: RunContext) -> list[dict[str, Any]]:
     """The pack items the composed episode actually covers."""
     by_id = {i["id"]: i for i in _pack_items(ctx)}
@@ -239,20 +262,22 @@ def _coverage_artifacts_missing(ctx: RunContext) -> list[str]:
 def _check_distinct_stories(ctx: RunContext,
                             params: dict[str, Any]) -> list[str]:
     """Cluster collapse (the 2026-09-19 fix): the episode's slots must not
-    be eaten by one syndication cluster. The floor scales to what the pack
-    offered — a quiet day legally covers fewer stories, never fails."""
+    be eaten by one syndication cluster. The floor scales to the
+    admissible set — a quiet day legally covers fewer stories, never
+    fails; a small pick cannot lower its own floor."""
     guard = _coverage_artifacts_missing(ctx)
     if guard:
         return guard
-    pack, episode = _pack_items(ctx), _episode_items(ctx)
-    offered = len({story_key(i.get("title")) for i in pack} - {""})
+    admissible = _admissible_items(ctx)
+    episode = _episode_items(ctx)
+    offered = len({story_key(i.get("title")) for i in admissible} - {""})
     covered = len({story_key(i.get("title")) for i in episode} - {""})
     floor = min(params["min_distinct"], offered)
     if covered < floor:
         return [f"episode covers {covered} distinct stor"
                 f"{'y' if covered == 1 else 'ies'} (floor {floor}; the "
-                f"pack offers {offered} — a syndication cluster may have "
-                f"eaten the slots)"]
+                f"admissible set offers {offered} — a syndication cluster "
+                f"may have eaten the slots)"]
     return []
 
 
@@ -266,18 +291,19 @@ def _themes_of(items: list[dict[str, Any]]) -> set[str]:
 def _check_diversity_floor(ctx: RunContext,
                            params: dict[str, Any]) -> list[str]:
     """Cross-theme diversity floor (the 2026-09-19 fix): the episode must
-    span watchlist themes in proportion to what the pack offered — the
-    floor scales down to the material, never up from it."""
+    span watchlist themes in proportion to what the material offered —
+    the floor scales down to the admissible set, never up from it, and a
+    single-theme pick cannot lower its own floor to 1."""
     guard = _coverage_artifacts_missing(ctx)
     if guard:
         return guard
-    offered = _themes_of(_pack_items(ctx))
+    offered = _themes_of(_admissible_items(ctx))
     floor = min(params["min_themes"], len(offered))
     spanned = _themes_of(_episode_items(ctx))
     if len(spanned) < floor:
         return [f"episode spans {len(spanned)} watchlist theme"
                 f"{'s' if len(spanned) != 1 else ''} ({', '.join(sorted(spanned)) or 'none'};"
-                f" floor {floor}; the pack offers {len(offered)}: "
+                f" floor {floor}; the admissible set offers {len(offered)}: "
                 f"{', '.join(sorted(offered)) or 'none'})"]
     return []
 
@@ -340,13 +366,34 @@ def _stage_collect(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
 
 
 def _stage_select(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
-    digest = build_daily_digest(
-        ctx.session, ctx.settings,
-        hours=(spec.get("params") or {}).get("hours", 24))
+    params = spec.get("params") or {}
+    entry = ctx.plugins.get("select")
+    if entry is None:  # unpinned: the legacy built-in digest
+        digest = build_daily_digest(ctx.session, ctx.settings,
+                                    hours=params.get("hours", 24))
+        report = {"method": digest.get("method"),
+                  "items_in_window": digest.get("items_in_window"),
+                  "verdict_method": digest.get("verdict_method")}
+    else:
+        # pinned: a W3 select strategy; its rubric resolved at pre-flight
+        _name, strategy = entry
+        digest = strategy(ctx.session, ctx.settings,
+                          ctx.rubrics[spec.get("name") or "select"], params)
+        stats = digest["material_pack"]["stats"]
+        report = {"method": digest["method"],
+                  "rubric": digest["rubric"],
+                  "scoring_method": digest["scoring"]["method"],
+                  "min_score": digest["min_score"],
+                  "items_in_window": digest["items_in_window"],
+                  "verdict_method": digest["verdict_method"],
+                  "candidates": stats["candidates"],
+                  "after_filter": stats["after_filter"],
+                  "in_pack": stats["in_pack"],
+                  # ticket 07: scores and reasons are run outputs riding
+                  # the select report and the log, never catalog state
+                  "scores": digest["scoring"]["scores"]}
     ctx.artifacts["digest"] = digest
-    return {"method": digest.get("method"),
-            "items_in_window": digest.get("items_in_window"),
-            "verdict_method": digest.get("verdict_method")}
+    return report
 
 
 def _stage_compose(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
@@ -420,11 +467,54 @@ def _run_fields(ctx: RunContext) -> dict[str, Any]:
     return fields
 
 
+# -- Pre-flight -----------------------------------------------------------------
+
+# the bus artifacts each named check validates against (the check library's
+# binding guards, known statically). A check bound to a stage that runs
+# before its artifacts exist can never pass — refusing that at pre-flight
+# is what keeps strategies (and any early stage) out of a doomed repair
+# loop (ticket 08: the binding guard "refuses loudly").
+_CHECK_REQUIRES: dict[str, tuple[str, ...]] = {
+    "archive_intact": (),
+    "section_allowlist": ("script",),
+    "word_budget": ("script",),
+    "distinct_stories": ("digest", "script"),
+    "diversity_floor": ("digest", "script"),
+    "duration_band": ("audio",),
+}
+
+_PROVIDERS: dict[str, str] = {artifact: stage_type
+                              for stage_type, triple in STAGE_TYPES.items()
+                              for artifact in triple["provides"]}
+
+
+def _validate_check_bindings(ctx: RunContext) -> None:
+    """Every check's artifacts must be providable at (or before) its
+    stage; otherwise the violation fires forever and the loop policy
+    would burn bounded attempts on a stage that cannot self-heal."""
+    stages = ctx.workflow["stages"]
+    for index, spec in enumerate(stages):
+        stage = spec.get("name") or spec["type"]
+        for check in spec.get("checks") or []:
+            for artifact in _CHECK_REQUIRES[check["name"]]:
+                provider = _PROVIDERS[artifact]
+                if not any(s["type"] == provider
+                           for s in stages[:index + 1]):
+                    raise ValueError(
+                        f"stage '{stage}', check '{check['name']}': needs "
+                        f"the '{artifact}' artifact on the bus — bind it "
+                        f"at or after a '{provider}' stage (a check that "
+                        f"can never pass must not enter the repair loop)")
+
+
 def _resolve_plugins(ctx: RunContext) -> None:
     """Pre-flight resolution (today's ``selection`` phase): every registry
     plugin resolves before any stage runs, so an unknown selection fails
-    loudly having done nothing. Resolution order matches the orchestrator
-    (render, then publish, then compose)."""
+    loudly having done nothing — plugins in the orchestrator's order
+    (render, publish, select, compose), then rubric refs, then check
+    bindings. Pinned select stages resolve their ``rubric`` param here
+    (ticket 07: by ref string, float/pin semantics, loud on missing or
+    retired); the shipped default rubric bootstraps once, at first use."""
     pinned = {s["type"]: s["plugin"] for s in ctx.workflow["stages"]
               if s.get("plugin")}
     if any(s["type"] == "render" for s in ctx.workflow["stages"]):
@@ -433,9 +523,32 @@ def _resolve_plugins(ctx: RunContext) -> None:
     if any(s["type"] == "publish" for s in ctx.workflow["stages"]):
         ctx.plugins["publish"] = PUBLISHERS.resolve(
             pinned.get("publish") or ctx.settings.morning_publisher)
+    select_stages = [s for s in ctx.workflow["stages"]
+                     if s["type"] == "select" and s.get("plugin")]
+    if select_stages:
+        if len({s["plugin"] for s in select_stages}) > 1:
+            raise ValueError(
+                "multiple select stages pin different strategies "
+                f"({', '.join(sorted({s['plugin'] for s in select_stages}))})"
+                " — the engine resolves one strategy per stage type")
+        ctx.plugins["select"] = SELECT_STRATEGIES.resolve(
+            select_stages[0]["plugin"])
     if any(s["type"] == "compose" for s in ctx.workflow["stages"]):
         ctx.plugins["compose"] = SCRIPTWRITERS.resolve(pinned.get("compose"))
+    if select_stages:
+        ensure_default_rubric_catalog(ctx.session)
+        for spec in select_stages:
+            stage = spec.get("name") or "select"
+            ref = (spec.get("params") or {}).get("rubric")
+            if not isinstance(ref, str) or not ref.strip():
+                raise ValueError(
+                    f"stage '{stage}': select strategy '{spec['plugin']}' "
+                    f"requires a 'rubric' param (a rubric ref string, "
+                    f"'name' or 'name@version')")
+            ctx.rubrics[stage] = RubricCatalog(ctx.session).resolve(
+                ref.strip())
     _validate_stage_params(ctx)
+    _validate_check_bindings(ctx)
 
 
 # engine built-ins close their own stage-params key sets; registry plugins
@@ -444,16 +557,16 @@ _BUILTIN_PARAM_KEYS: dict[str, frozenset[str]] = {
     "collect": frozenset(), "select": frozenset({"hours"}),
 }
 _REGISTRY_BY_TYPE = {"compose": SCRIPTWRITERS, "render": TTS_ENGINES,
-                     "publish": PUBLISHERS}
+                     "publish": PUBLISHERS, "select": SELECT_STRATEGIES}
 
 
 def _allowed_param_keys(ctx: RunContext, stage_type: str) -> frozenset[str]:
+    if stage_type in ctx.plugins:  # pinned: the plugin's own key set
+        return _REGISTRY_BY_TYPE[stage_type].param_keys(
+            ctx.plugins[stage_type][0])
     if stage_type in _BUILTIN_PARAM_KEYS:
         return _BUILTIN_PARAM_KEYS[stage_type]
-    entry = ctx.plugins.get(stage_type)
-    if entry is None:  # notify fans out — no single plugin, no params
-        return frozenset()
-    return _REGISTRY_BY_TYPE[stage_type].param_keys(entry[0])
+    return frozenset()  # notify fans out — no single plugin, no params
 
 
 def _validate_stage_params(ctx: RunContext) -> None:

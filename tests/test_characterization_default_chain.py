@@ -117,7 +117,11 @@ def test_digest_shape_for_a_fixture_window(session, settings, chain_world):
     assert set(digest) == {"overview", "worth_following", "also_noteworthy",
                            "noise", "method", "verdict_method",
                            "material_pack", "generated_at", "window_hours",
-                           "items_in_window", "items_considered", "items"}
+                           "items_in_window", "items_considered", "items",
+                           "admissible"}  # 'admissible' added at ticket 09
+    # (ticket 08's deliberate flip: the select artifact exposes the
+    # post-filter candidate set the coverage floors scale to)
+    assert digest["admissible"] == digest["items"]  # no verdicts: all pass
     assert digest["method"] == "extractive"
     assert digest["verdict_method"] == "skipped:llm_not_configured"
     assert digest["window_hours"] == 24

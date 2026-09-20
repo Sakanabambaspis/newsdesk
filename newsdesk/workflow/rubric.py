@@ -244,8 +244,11 @@ def story_key(title: Any) -> str:
                     .split())
 
 
-def _publisher_counts(items: list[dict[str, Any]]) -> dict[str, int]:
-    """Distinct outlets per story key across the candidate set."""
+def publisher_counts(items: list[dict[str, Any]]) -> dict[str, int]:
+    """Distinct outlets per story key across one item set — the
+    corroboration signal's base, and the strategies' cluster ``outlets``
+    count (ticket 08: both numbers are computed the same way, over the
+    scored/post-filter candidate set)."""
     outlets: dict[str, set[str]] = {}
     for item in items:
         outlets.setdefault(story_key(item.get("title")), set()).add(
@@ -301,7 +304,7 @@ PROXY_SIGNALS = tuple(_SIGNALS)
 
 
 def _score_item(rubric: dict[str, Any], item: dict[str, Any],
-                publisher_counts: dict[str, int], *, window_hours: float,
+                counts: dict[str, int], *, window_hours: float,
                 now: datetime,
                 model_dims: dict[str, Any] | None = None) \
         -> dict[str, dict[str, Any]] | None:
@@ -321,7 +324,7 @@ def _score_item(rubric: dict[str, Any], item: dict[str, Any],
         signal = _SIGNALS.get(proxy) if proxy else None
         if signal is not None:
             value, reason = signal(item, window_hours=window_hours, now=now,
-                                   counts=publisher_counts)
+                                   counts=counts)
         elif model_dims is None:
             continue  # mechanical path: no proxy, no score
         else:
@@ -356,7 +359,7 @@ def _score_all(rubric: dict[str, Any], items: list[dict[str, Any]],
         -> list[dict[str, Any]] | None:
     """Score every item; None when any model entry is missing or unusable
     (the all-or-nothing rule)."""
-    counts = _publisher_counts(items)
+    counts = publisher_counts(items)
     scores: list[dict[str, Any]] = []
     for item in items:
         # a missing entry becomes {} — an unmodelled item fails the pass

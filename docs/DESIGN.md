@@ -373,9 +373,9 @@ Portability rules:
 | M2 | Postgres option | pgvector (only when semantic search lands) | Postgres-backed queue or Redis Streams | object storage (S3-compatible) | multi-source continuous collection |
 | M4+ | Postgres required | FTS + vector | Redis/NATS | object storage + derivatives | scheduled digests/alerts, multi-user |
 
-The repository layer is the only code touching SQL (the workflow catalog's
-`WorkflowCatalog` is a repo in the same idiom, living beside its domain
-package); switching to Postgres is a
+The repository layer is the only code touching SQL (the workflow and rubric
+catalogs — `WorkflowCatalog`, `RubricCatalog` — are repos in the same idiom,
+living beside their domain package); switching to Postgres is a
 `NEWSDESK_DB_URL` change plus a migration step. No ORM-specific logic lives in
 the pipeline.
 

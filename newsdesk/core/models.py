@@ -1,11 +1,12 @@
-"""Domain model: Source, Watchlist, Item, Job, LogEntry, Workflow.
+"""Domain model: Source, Watchlist, Item, Job, LogEntry, Workflow, Rubric.
 
 The Item row is the persistence form of the canonical record defined in
 docs/DESIGN.md; ``Item.to_canonical()`` emits exactly that JSON shape.
-The workflow tables (Workflow, WorkflowVersion) are the catalog's
-storage: they live here so ``Database``'s ``create_all`` picks them up
-with every other table, while their repo (WorkflowCatalog) stays in
-``newsdesk.workflow.catalog``.
+The workflow tables (Workflow, WorkflowVersion) and the rubric tables
+(Rubric, RubricVersion) are the catalogs' storage: they live here so
+``Database``'s ``create_all`` picks them up with every other table, while
+their repos stay in ``newsdesk.workflow.catalog`` /
+``newsdesk.workflow.rubric_catalog``.
 """
 
 from __future__ import annotations
@@ -219,6 +220,35 @@ class WorkflowVersion(SQLModel, table=True):
     __tablename__ = "workflow_versions"
 
     name: str = Field(primary_key=True, foreign_key="workflows.name")
+    version: int = Field(primary_key=True)
+    document: dict[str, Any] = Field(sa_column=Column(JSON))
+    created_by: str  # one of ACTORS; required — no default to hide behind
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class Rubric(SQLModel, table=True):
+    """A rubric name in the catalog (wayfinder tickets 07/09).
+
+    The same retire-never-delete shape as :class:`Workflow`: rows are
+    created implicitly by the name's first version and never deleted;
+    retirement is this row's flag, so the versions below stay strictly
+    append-only."""
+
+    __tablename__ = "rubrics"
+
+    name: str = Field(primary_key=True)
+    created_at: datetime = Field(default_factory=utcnow)
+    retired_at: datetime | None = None
+
+
+class RubricVersion(SQLModel, table=True):
+    """One immutable version of a rubric — INSERT-only like
+    :class:`WorkflowVersion`; the selection strategies resolve their
+    ``rubric`` param through these rows (float ``name`` / pin ``name@N``)."""
+
+    __tablename__ = "rubric_versions"
+
+    name: str = Field(primary_key=True, foreign_key="rubrics.name")
     version: int = Field(primary_key=True)
     document: dict[str, Any] = Field(sa_column=Column(JSON))
     created_by: str  # one of ACTORS; required — no default to hide behind

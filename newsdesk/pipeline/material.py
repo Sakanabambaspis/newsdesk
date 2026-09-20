@@ -45,7 +45,7 @@ def build_material_pack(ranked: list[dict[str, Any]],
         if total + len(text) > total_chars:
             break  # rank-order prefix that fits; everything later is dropped
         verdict = (verdicts or {}).get(item["id"]) or {}
-        pack_items.append({
+        card = {
             "id": item["id"],
             "title": item.get("title"),
             "publisher": item.get("publisher"),
@@ -56,7 +56,12 @@ def build_material_pack(ranked: list[dict[str, Any]],
             "verdict": verdict.get("verdict"),
             "verdict_reason": verdict.get("reason"),
             "text": text,
-        })
+        }
+        if item.get("outlets") is not None:
+            # cluster breadth, set by the W3 select strategies on their
+            # collapsed representatives; the legacy digest has no clusters
+            card["outlets"] = item["outlets"]
+        pack_items.append(card)
         total += len(text)
 
     return {

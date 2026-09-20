@@ -148,7 +148,9 @@ def test_cluster_collapse_fails_loud_instead_of_publishing_a_one_story_episode(
     assert not (offline.publish_dir / TOKEN).exists()  # nothing published
     failed = _run_failed(session)
     assert failed["stage"] == "script"
-    assert "the pack offers 3" in failed["error"]  # other stories existed
+    # offered-base is the admissible set since ticket 08: other stories
+    # existed that selection could legally have packed
+    assert "the admissible set offers 3" in failed["error"]
 
 
 def test_cluster_collapse_runs_the_bounded_repairs_first(session, offline):

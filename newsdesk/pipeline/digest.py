@@ -129,34 +129,75 @@ def _guard_verdicts(entries: Any, items_by_id: dict[str, Any]) -> dict[str, dict
     return guarded
 
 
+def candidate_items(session, *, hours: int = 24,
+                    limit: int = MAX_LLM_ITEMS) -> tuple[list[dict[str, Any]], int]:
+    """The selection candidate set (the common pipeline's first stages,
+    W3): items in the ``hours`` window ranked relevance-desc, capped at
+    ``min(limit, MAX_LLM_ITEMS)`` — the cap holds no matter what a caller
+    asks for (ADR 0001 bounds the writer's injection surface). Shared by
+    the legacy digest and the select strategies, so every path ranks and
+    caps identically. Returns ``(candidates, items_in_window)`` with the
+    pre-cap window count for the report."""
+    include_terms = WatchlistRepo(session).include_terms()
+    ranked = _collect(session, hours, include_terms)
+    return ranked[:min(limit, MAX_LLM_ITEMS)], len(ranked)
+
+
+def classify_verdicts(adapter: Any,
+                      items: list[dict[str, Any]]) \
+        -> tuple[dict[str, dict[str, str]], str]:
+    """The editorial verdict pass (ADR 0001): guarded per-item verdicts
+    plus the method string. Unconfigured/failed passes degrade to no
+    verdicts with the cause visible in the method — the caller's filter
+    then treats every item as admissible (the ``skipped`` fallback)."""
+    if not items:
+        return {}, "skipped:no_items"
+    try:
+        result = adapter.classify_verdicts(items)
+    except LLMError as exc:
+        # LLMError messages are safe to log by contract, and the report
+        # is the CI log — keep the cause visible so a red LLM stage is
+        # diagnosable from the run alone.
+        result = {"error": f"llm_error:{exc}"[:420]}
+    if result.get("error"):
+        return {}, f"skipped:{result['error']}"
+    items_by_id = {i["id"]: i for i in items}
+    return _guard_verdicts(result.get("verdicts"), items_by_id), \
+        f"llm:{adapter.name}"
+
+
+def technical_only(items: list[dict[str, Any]],
+                   verdicts: dict[str, dict[str, str]]) \
+        -> list[dict[str, Any]]:
+    """The verdict filter: technical-only when verdicts exist, otherwise
+    every item passes (the ``skipped`` fallback) — one definition for the
+    pack builder and the strategies' admissible set."""
+    if not verdicts:
+        return list(items)
+    return [i for i in items
+            if (verdicts.get(i["id"]) or {}).get("verdict") == "technical"]
+
+
+def item_card(item: dict[str, Any],
+              verdicts: dict[str, dict[str, str]]) -> dict[str, Any]:
+    """One full item card for drill-down, in ranked order."""
+    return {
+        "id": item["id"], "title": item["title"], "publisher": item["publisher"],
+        "url": item["url"], "relevance": item["relevance"],
+        "matched_terms": item["matched_terms"], "published_at": item["published_at"],
+        "verdict": (verdicts.get(item["id"]) or {}).get("verdict"),
+        "verdict_reason": (verdicts.get(item["id"]) or {}).get("reason"),
+    }
+
+
 def build_daily_digest(session, settings: Settings, *, hours: int = 24,
                        limit: int = 30, adapter: Any = None) -> dict[str, Any]:
     """Build the briefing and log it. Returns the digest dict."""
-    include_terms = WatchlistRepo(session).include_terms()
-    ranked = _collect(session, hours, include_terms)
-    window_count = len(ranked)
-    selected = ranked[:min(limit, MAX_LLM_ITEMS)]
-    themes, loose = _group_themes(selected, include_terms)
+    selected, window_count = candidate_items(session, hours=hours, limit=limit)
+    themes, loose = _group_themes(selected, WatchlistRepo(session).include_terms())
 
-    items_by_id = {i["id"]: i for i in selected}
     adapter = adapter or get_adapter(settings)
-
-    verdicts: dict[str, dict[str, str]] = {}
-    if not selected:
-        verdict_method = "skipped:no_items"
-    else:
-        try:
-            result = adapter.classify_verdicts(selected)
-        except LLMError as exc:
-            # LLMError messages are safe to log by contract, and the report
-            # is the CI log — keep the cause visible so a red LLM stage is
-            # diagnosable from the run alone.
-            result = {"error": f"llm_error:{exc}"[:420]}
-        if result.get("error"):
-            verdict_method = f"skipped:{result['error']}"
-        else:
-            verdicts = _guard_verdicts(result.get("verdicts"), items_by_id)
-            verdict_method = f"llm:{adapter.name}"
+    verdicts, verdict_method = classify_verdicts(adapter, selected)
 
     try:
         briefing = adapter.summarize_digest(selected)
@@ -169,12 +210,15 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
         # Grounding guard: keep only citations that refer to provided items.
         for section in briefing.get("worth_following", []):
             section["item_ids"] = [i for i in section.get("item_ids", [])
-                                   if i in items_by_id]
+                                   if i in {x["id"] for x in selected}]
         briefing.setdefault("method", f"llm:{adapter.name}")
 
     verdict_counts = {v: sum(1 for x in verdicts.values() if x["verdict"] == v)
                       for v in VERDICT_VALUES}
     pack = build_material_pack(selected, verdicts or None)
+    # what selection could legally have packed (post-verdict-filter; the
+    # coverage checks' "offered" base, ticket 08)
+    admissible = technical_only(selected, verdicts)
 
     briefing["verdict_method"] = verdict_method
     briefing["material_pack"] = {
@@ -189,13 +233,10 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
         "items_in_window": window_count,
         "items_considered": len(selected),
         # full item cards for drill-down, in ranked order
-        "items": [{
-            "id": i["id"], "title": i["title"], "publisher": i["publisher"],
-            "url": i["url"], "relevance": i["relevance"],
-            "matched_terms": i["matched_terms"], "published_at": i["published_at"],
-            "verdict": (verdicts.get(i["id"]) or {}).get("verdict"),
-            "verdict_reason": (verdicts.get(i["id"]) or {}).get("reason"),
-        } for i in selected],
+        "items": [item_card(i, verdicts) for i in selected],
+        # the admissible set: same cards, post-filter — what the coverage
+        # floors scale to (ticket 08/09)
+        "admissible": [item_card(i, verdicts) for i in admissible],
     })
     LogRepo(session).append("daily_digest_built", {
         "window_hours": hours, "items_in_window": window_count,

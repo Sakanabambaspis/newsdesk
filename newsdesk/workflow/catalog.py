@@ -47,26 +47,27 @@ class CatalogError(Exception):
     """A catalog operation failed; message is safe to print (no secrets)."""
 
 
-def parse_ref(ref: str) -> tuple[str, int | None]:
-    """Split a workflow ref into ``(name, version)``.
+def parse_ref(ref: str, *, kind: str = "workflow") -> tuple[str, int | None]:
+    """Split a catalog ref into ``(name, version)``.
 
     ``name`` and ``name@latest`` float (version ``None``), ``name@N``
     pins. Names cannot contain ``@`` (the schema's name pattern), so the
     split is unambiguous; malformed refs raise :class:`CatalogError`.
+    ``kind`` names the catalog in error messages (workflow/rubric).
     """
     if not isinstance(ref, str) or not ref.strip():
-        raise CatalogError("workflow ref must be a non-empty string")
+        raise CatalogError(f"{kind} ref must be a non-empty string")
     name, sep, tail = ref.rpartition("@")
     if not sep:
         return ref, None
     if not name:
-        raise CatalogError(f"malformed workflow ref '{ref}'")
+        raise CatalogError(f"malformed {kind} ref '{ref}'")
     if tail == "latest":
         return name, None
     try:
         return name, int(tail)
     except ValueError:
-        raise CatalogError(f"malformed workflow ref '{ref}' (version must "
+        raise CatalogError(f"malformed {kind} ref '{ref}' (version must "
                            f"be an integer or 'latest')") from None
 
 

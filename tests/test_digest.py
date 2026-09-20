@@ -79,6 +79,16 @@ def test_digest_selection_window_and_ranking(session, settings, digest_world):
     assert digest["items_considered"] <= 30
 
 
+def test_candidate_cap_holds_no_matter_the_requested_limit(session,
+                                                           digest_world):
+    """The 30-item candidate cap is absolute (ADR 0001 bounds the writer's
+    injection surface): a bigger ``limit`` cannot lift it."""
+    from newsdesk.pipeline.digest import candidate_items
+
+    items, window_count = candidate_items(session, hours=24, limit=500)
+    assert len(items) <= 30 and window_count >= len(items)
+
+
 def test_digest_fallback_groups_by_watchlist_term(session, settings, digest_world):
     _, ids = digest_world
     digest = build_daily_digest(session, settings, hours=24,
