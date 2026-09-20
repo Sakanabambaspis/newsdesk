@@ -79,7 +79,7 @@ class DescriptorError(Exception):
     """A descriptor is invalid; message lists every violation found."""
 
 
-def _is_int(value: Any) -> bool:
+def is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
@@ -99,11 +99,11 @@ def _check_params_errors(name: str, params: Any) -> list[str]:
     if name == "duration_band":
         errors = []
         lo, hi = params.get("min_seconds"), params.get("max_seconds")
-        if not _is_int(lo) or lo < 0:
+        if not is_int(lo) or lo < 0:
             errors.append(f"check '{name}': min_seconds must be an integer >= 0")
-        if not _is_int(hi) or hi < 0:
+        if not is_int(hi) or hi < 0:
             errors.append(f"check '{name}': max_seconds must be an integer >= 0")
-        if _is_int(lo) and _is_int(hi) and hi < lo:
+        if is_int(lo) and is_int(hi) and hi < lo:
             errors.append(f"check '{name}': max_seconds < min_seconds")
         return errors
     if name == "section_allowlist":
@@ -123,10 +123,10 @@ def _check_params_errors(name: str, params: Any) -> list[str]:
             else:
                 errors.extend(_unknown_sections(name, per))
                 for section, cap in per.items():
-                    if not _is_int(cap) or cap < 1:
+                    if not is_int(cap) or cap < 1:
                         errors.append(f"check '{name}': cap for '{section}' "
                                       f"must be an integer >= 1")
-        if "total" in params and (not _is_int(params["total"])
+        if "total" in params and (not is_int(params["total"])
                                   or params["total"] < 1):
             errors.append(f"check '{name}': total must be an integer >= 1")
         return errors
@@ -135,7 +135,7 @@ def _check_params_errors(name: str, params: Any) -> list[str]:
 
 def _require_pos_int(params: dict[str, Any], key: str, name: str) -> list[str]:
     value = params.get(key)
-    if not _is_int(value) or value < 1:
+    if not is_int(value) or value < 1:
         return [f"check '{name}': {key} must be an integer >= 1"]
     return []
 
@@ -229,7 +229,7 @@ def validate_descriptor(doc: Any) -> list[str]:
         errors.append(f"name must match {WORKFLOW_NAME_RE.pattern}, "
                       f"got {name!r}")
     rev = doc.get("version")
-    if not _is_int(rev) or rev < 1:
+    if not is_int(rev) or rev < 1:
         errors.append("version must be an integer >= 1")
     title = doc.get("title")
     if title is not None and not isinstance(title, str):
@@ -246,7 +246,7 @@ def validate_descriptor(doc: Any) -> list[str]:
             if extra:
                 errors.append(f"loop_policy: unknown keys {', '.join(extra)}")
             attempts = policy.get("max_attempts")
-            if attempts is not None and (not _is_int(attempts)
+            if attempts is not None and (not is_int(attempts)
                                          or not 1 <= attempts <= 2):
                 errors.append("loop_policy: max_attempts must be an "
                               "integer in 1..2 (bounded repair)")

@@ -64,7 +64,7 @@ from pathlib import Path
 from typing import Any
 
 from ..llm.base import LLMError
-from .schema import WORKFLOW_NAME_RE, _is_int
+from .schema import WORKFLOW_NAME_RE, is_int
 
 RUBRIC_FORMAT_VERSION = 1
 
@@ -129,7 +129,7 @@ def validate_rubric(doc: Any) -> list[str]:
         errors.append(f"name must match {WORKFLOW_NAME_RE.pattern}, "
                       f"got {name!r}")
     rev = doc.get("version")
-    if not _is_int(rev) or rev < 1:
+    if not is_int(rev) or rev < 1:
         errors.append("version must be an integer >= 1")
     title = doc.get("title")
     if title is not None and not isinstance(title, str):

@@ -280,6 +280,21 @@ def test_three_syndicated_copies_cannot_fill_three_episode_slots(
                               for card in scored["items"]]
 
 
+def test_cluster_breadth_is_spoken_in_prose(session, offline):
+    """Ticket 08: the cluster's size is spoken as "covered by N outlets" —
+    the collapsed rep's deep dive says it; single-outlet headlines don't."""
+    _syndicated_world(session)
+    run_workflow(session, offline,
+                 _descriptor("top-k-interesting", {"k": 3}), date=DATE)
+    script = json.loads(
+        (offline.morning_dir / DATE / f"{DATE}-script.json").read_text())
+    by_type = {s["type"]: s["text"] for s in script["sections"]}
+    assert by_type["deep_dive"].endswith("Covered by 3 outlets.")
+    headlines = [s["text"] for s in script["sections"]
+                 if s["type"] == "headline"]
+    assert headlines and all("Covered by" not in t for t in headlines)
+
+
 def test_select_report_exposes_pack_stats_and_scoring(session, offline):
     ids = _mixed_world(session)
     doc = _descriptor("top-k-interesting", {"k": 2},

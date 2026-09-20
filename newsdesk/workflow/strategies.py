@@ -63,7 +63,7 @@ from ..pipeline.digest import (candidate_items, classify_verdicts,
 from ..pipeline.material import build_material_pack
 from ..storage.repo import LogRepo
 from .rubric import publisher_counts, rubric_ref, score_items, story_key
-from .schema import _is_int
+from .schema import is_int
 
 SELECT_STRATEGIES = Registry("SELECT_STRATEGIES")
 
@@ -80,7 +80,7 @@ def _hours(params: dict[str, Any]) -> int | float:
 
 def _k(params: dict[str, Any], strategy: str) -> int:
     k = params.get("k")
-    if not _is_int(k) or k < 1:
+    if not is_int(k) or k < 1:
         raise ValueError(f"{strategy} needs an integer k >= 1, got {k!r}")
     return k
 

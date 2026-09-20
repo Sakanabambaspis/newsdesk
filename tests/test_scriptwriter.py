@@ -12,8 +12,14 @@ from newsdesk.cli import app
 from newsdesk.llm.base import BaseLLMAdapter, LLMError
 from newsdesk.morning.registries import (NOTIFIERS, PUBLISHERS, SCRIPTWRITERS,
                                          TTS_ENGINES, load_plugins)
-from newsdesk.morning.script import DEFAULT_VOICE, episode_date, write_sidecar
-from newsdesk.morning.scriptwriter import COLD_OPENS, cold_open_text
+from newsdesk.morning.script import (DEFAULT_VOICE, episode_date,
+                                     word_count, write_sidecar)
+from newsdesk.morning.scriptwriter import (COLD_OPENS, DEEP_DIVE_TARGET_WORDS,
+                                           HEADLINE_MAX_WORDS, cold_open_text,
+                                           _corroboration,
+                                           _extractive_deep_dive,
+                                           _extractive_headline,
+                                           _item_blocks)
 from newsdesk.pipeline.digest import build_daily_digest
 from newsdesk.storage.repo import ItemRepo, LogRepo, SourceRepo, WatchlistRepo
 from tests.conftest import make_canonical_item
@@ -269,3 +275,36 @@ def test_cli_script_stages_end_to_end(session, settings, script_world, monkeypat
     entries = [e for e in LogRepo(session).recent(limit=5)
                if e.action == "morning_brief_built"]
     assert entries and entries[0].detail["date"] == body["date"]
+
+
+# -- cluster breadth in prose (W3 follow-up: ticket 08's "covered by N outlets")
+
+
+def test_cluster_breadth_spoken_and_budgeted():
+    """Pack cards stamped ``outlets`` (collapsed syndication reps) speak
+    "covered by N outlets"; the phrase's words are reserved inside the
+    clip budget so the word_budget check can never fire on it — and the
+    legacy digest's cards (no outlets) never speak it."""
+    fat = {"id": "i1", "title": "Cluster rep", "text": "word " * 300,
+           "outlets": 3}
+    exclusive = {"id": "i2", "title": "Exclusive", "text": "word " * 300}
+    head = _extractive_headline(fat)
+    assert head.endswith("Covered by 3 outlets.")
+    assert word_count(head) <= HEADLINE_MAX_WORDS
+    deep = _extractive_deep_dive(fat)
+    assert deep.endswith("Covered by 3 outlets.")
+    assert word_count(deep) <= DEEP_DIVE_TARGET_WORDS[0]
+    assert _corroboration(exclusive) == ""
+    assert "Covered by" not in _extractive_headline(exclusive)
+
+
+def test_item_blocks_render_outlets_only_when_present():
+    """The LLM writer sees the breadth as an item attribute; legacy cards
+    render byte-identical to the pre-W3 prompt."""
+    with_outlets = {"id": "i1", "publisher": "Alpha", "relevance": 0.9,
+                    "title": "T", "text": "x", "outlets": 3}
+    legacy = {"id": "i2", "publisher": "Beta", "relevance": 0.5,
+              "title": "U", "text": "y"}
+    blocks = _item_blocks([with_outlets, legacy])
+    assert 'outlets="3"' in blocks
+    assert blocks.count("outlets") == 1

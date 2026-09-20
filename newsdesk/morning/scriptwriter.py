@@ -26,6 +26,8 @@ HEADLINE_MAX_WORDS = 60
 DEEP_DIVE_TARGET_WORDS = (400, 450)  # accepted band is wider; clip enforces the cap
 DEEP_DIVE_MAX_WORDS = 460
 DEEP_DIVE_MIN_WORDS = 120  # below this the model output counts as unusable
+_CORROBORATION_WORDS = 4  # "Covered by N outlets." — reserved inside the
+# clip budget so a spoken cluster never breaches the word_budget check
 
 COLD_OPENS = (
     "Here is your morning briefing.",
@@ -68,10 +70,23 @@ def cold_open_text(date: str) -> str:
 def _item_blocks(pack_items: list[dict[str, Any]]) -> str:
     blocks = []
     for item in pack_items:
+        outlets = item.get("outlets")
+        breadth = f' outlets="{outlets}"' if outlets is not None else ""
         blocks.append(f'<item id="{item["id"]}" publisher="{item.get("publisher", "")}" '
-                      f'relevance="{item.get("relevance")}">\n'
+                      f'relevance="{item.get("relevance")}"{breadth}>\n'
                       f"{item.get('title') or ''}\n{item.get('text') or ''}\n</item>")
     return "\n\n".join(blocks)
+
+
+def _corroboration(item: dict[str, Any]) -> str:
+    """The cluster breadth, spoken in prose (ticket 08: "covered by N
+    outlets"). Only the W3 strategies stamp pack cards with ``outlets``;
+    the legacy digest never does, so its pinned prose is untouched."""
+    outlets = item.get("outlets")
+    if isinstance(outlets, int) and not isinstance(outlets, bool) \
+            and outlets >= 2:
+        return f" Covered by {outlets} outlets."
+    return ""
 
 
 def _clip(text: Any, max_words: int) -> str | None:
@@ -81,13 +96,15 @@ def _clip(text: Any, max_words: int) -> str | None:
 
 
 def _extractive_headline(item: dict[str, Any]) -> str:
-    return clip_words(f"{item.get('title', '')}. {item.get('text', '')}",
-                      HEADLINE_MAX_WORDS)
+    body = clip_words(f"{item.get('title', '')}. {item.get('text', '')}",
+                      HEADLINE_MAX_WORDS - _CORROBORATION_WORDS)
+    return body + _corroboration(item)
 
 
 def _extractive_deep_dive(item: dict[str, Any]) -> str:
-    return clip_words(f"{item.get('title', '')}. {item.get('text', '')}",
-                      DEEP_DIVE_TARGET_WORDS[0])
+    body = clip_words(f"{item.get('title', '')}. {item.get('text', '')}",
+                      DEEP_DIVE_TARGET_WORDS[0] - _CORROBORATION_WORDS)
+    return body + _corroboration(item)
 
 
 def _assemble(method: str, date: str, deep: dict[str, Any] | None,

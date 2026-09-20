@@ -208,9 +208,10 @@ def build_daily_digest(session, settings: Settings, *, hours: int = 24,
         briefing = _fallback_digest(selected, themes, loose, window_count)
     else:
         # Grounding guard: keep only citations that refer to provided items.
+        selected_ids = {x["id"] for x in selected}
         for section in briefing.get("worth_following", []):
             section["item_ids"] = [i for i in section.get("item_ids", [])
-                                   if i in {x["id"] for x in selected}]
+                                   if i in selected_ids]
         briefing.setdefault("method", f"llm:{adapter.name}")
 
     verdict_counts = {v: sum(1 for x in verdicts.values() if x["verdict"] == v)
