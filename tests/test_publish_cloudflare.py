@@ -49,33 +49,68 @@ def _cf_settings(settings: Settings) -> Settings:
 
 
 class FakeRemote:
-    """The live site: episodes.json + audio files under <token>/audio/."""
+    """The live site: per path segment ("" = the legacy root) an
+    episodes.json manifest plus its audio files under <token>/[<segment>/]audio/."""
 
     def __init__(self, manifest=None):
-        self.manifest = list(manifest or [])
-        self.audio: dict[str, bytes] = {}
-        self.deploys: list[dict] = []  # {"files", "feed", "env_token"}
+        self.sites: dict[str, dict] = {
+            "": {"manifest": list(manifest or []), "audio": {}}}
+        self.deploys: list[dict] = []  # one entry per wrangler invocation
+
+    @property
+    def manifest(self) -> list[dict]:
+        return self.sites[""]["manifest"]
+
+    @manifest.setter
+    def manifest(self, manifest) -> None:
+        self.sites[""]["manifest"] = list(manifest)
+
+    @property
+    def audio(self) -> dict[str, bytes]:
+        return self.sites[""]["audio"]
+
+    def site(self, segment: str) -> dict:
+        """One segment's {manifest, audio} — create/seed a sibling station."""
+        return self.sites.setdefault(segment, {"manifest": [], "audio": {}})
 
     def serve(self, url: str) -> tuple[int, bytes]:
-        after_base = url[len(BASE):]
-        if after_base.endswith("/episodes.json"):
-            if not self.manifest and not self.audio:
+        rest = url[len(BASE):].strip("/").split("/")
+        if not rest or rest[0] != TOKEN:
+            return 404, b""
+        rest = rest[1:]
+        root_file = not rest or rest[0] in ("audio", "episodes.json",
+                                            "feed.xml", "artwork.png")
+        segment = "" if root_file else rest[0]
+        rest = rest if root_file else rest[1:]
+        site = self.sites.get(segment)
+        if site is None:
+            return 404, b""
+        if rest and rest[-1] == "episodes.json":
+            if not site["manifest"] and not site["audio"]:
                 return 404, b""
-            return 200, json.dumps(self.manifest).encode()
-        name = after_base.rsplit("/", 1)[-1]
-        if after_base.startswith(f"/{TOKEN}/audio/") and name in self.audio:
-            return 200, self.audio[name]
+            return 200, json.dumps(site["manifest"]).encode()
+        name = rest[-1] if rest else ""
+        if rest and rest[0] == "audio" and name in site["audio"]:
+            return 200, site["audio"][name]
         return 404, b""
 
     def record_deploy(self, stage: Path, settings):
         token_dir = stage / TOKEN
-        files = sorted(str(p.relative_to(stage)) for p in token_dir.rglob("*")
-                       if p.is_file())
-        self.deploys.append({
-            "files": files,
-            "feed": (token_dir / "feed.xml").read_text(),
-            "manifest": json.loads((token_dir / "episodes.json").read_text()),
-        })
+        deploy: dict = {
+            "files": sorted(str(p.relative_to(stage)) for p in token_dir.rglob("*")
+                            if p.is_file()),
+            "stations": {},
+        }
+        for segment in self.sites:
+            root = token_dir / segment if segment else token_dir
+            if not (root / "episodes.json").exists():
+                continue
+            deploy["stations"][segment] = {
+                "feed": (root / "feed.xml").read_text(),
+                "manifest": json.loads((root / "episodes.json").read_text()),
+            }
+        deploy.update(deploy["stations"].get("", {}))  # the root's, as before
+        self.deploys.append(deploy)
 
 
 @pytest.fixture
@@ -259,3 +294,71 @@ def test_published_manifest_not_json_refuses(cf, remote, monkeypatch, tmp_path):
     monkeypatch.setattr("newsdesk.morning.cloudflare._http_get", serve)
     with pytest.raises(PublishError, match="not valid JSON"):
         _pub(cf, tmp_path, "2026-09-18")
+
+
+# -- W4: station legs stage the union of every station's archive ------------------
+
+PAPERS = {"name": "papers", "path_segment": "papers",
+          "feed": {"title": "Paper Trail", "author": "Paper Trail"}}
+ROOT_STATION = {"name": "morning-briefing", "path_segment": None, "feed": {}}
+
+
+def _station_episode(date: str, *, duration: int = 300) -> dict:
+    return {"date": date, "duration_seconds": duration, "station": "papers",
+            "path_segment": "papers", "feed": PAPERS["feed"],
+            "stations": [ROOT_STATION, PAPERS]}
+
+
+def test_station_deploy_restages_every_stations_archive(cf, remote, tmp_path):
+    """A Pages deploy is the complete site, so the papers leg ships the
+    legacy root's archive and its sibling's too — its own episode lands only
+    in its own manifest."""
+    remote.manifest = [_entry("2026-09-17")]
+    remote.audio["2026-09-17.mp3"] = b"ID3" + _FRAME * 50
+    remote.site("papers")["manifest"] = [{**_entry("2026-09-18"),
+                                          "guid": "papers-2026-09-18"}]
+    remote.site("papers")["audio"]["2026-09-18.mp3"] = b"ID3" + _FRAME * 50
+
+    result = publish_cloudflare(cf, _station_episode("2026-09-19"),
+                                _audio(tmp_path, b"x" * 2048))
+    deploy = remote.deploys[0]
+    for path in (f"{TOKEN}/episodes.json", f"{TOKEN}/audio/2026-09-17.mp3",
+                 f"{TOKEN}/feed.xml", f"{TOKEN}/papers/episodes.json",
+                 f"{TOKEN}/papers/audio/2026-09-18.mp3",
+                 f"{TOKEN}/papers/audio/2026-09-19.mp3"):
+        assert path in deploy["files"], path
+    assert [e["date"] for e in deploy["stations"][""]["manifest"]] == ["2026-09-17"]
+    assert [e["date"] for e in deploy["stations"]["papers"]["manifest"]] == \
+        ["2026-09-18", "2026-09-19"]
+    # each feed carries its own identity, and the GUIDs never collide
+    assert "<title>Morning Briefing</title>" in deploy["stations"][""]["feed"]
+    assert "morning-briefing-2026-09-17" in deploy["stations"][""]["feed"]
+    papers_feed = deploy["stations"]["papers"]["feed"]
+    assert "<title>Paper Trail</title>" in papers_feed
+    assert "papers-2026-09-19" in papers_feed
+    assert f"{BASE}/{TOKEN}/papers/audio/2026-09-19.mp3" in papers_feed
+    assert result == {"feed_url": f"{BASE}/{TOKEN}/papers/feed.xml",
+                      "episode_url": f"{BASE}/{TOKEN}/papers/audio/2026-09-19.mp3",
+                      "artwork_url": f"{BASE}/{TOKEN}/papers/artwork.png"}
+
+
+def test_station_deploy_refuses_when_a_sibling_archive_is_unfetchable(
+        cf, remote, tmp_path):
+    """The archive-intact refusal is widened: a deploy that cannot include
+    every station's history never ships."""
+    remote.manifest = [_entry("2026-09-17")]  # in the root manifest, no audio
+    with pytest.raises(PublishError,
+                       match="station 'morning-briefing'.*refusing to redeploy"):
+        publish_cloudflare(cf, _station_episode("2026-09-19"),
+                           _audio(tmp_path, b"x" * 2048))
+    assert remote.deploys == []
+
+
+def test_already_published_is_per_station(cf, remote):
+    remote.manifest = [_entry("2026-09-18")]
+    remote.site("papers")["manifest"] = [{**_entry("2026-09-19"),
+                                          "guid": "papers-2026-09-19"}]
+    assert already_published(cf, "2026-09-18", ROOT_STATION) is True
+    assert already_published(cf, "2026-09-18", PAPERS) is False  # other station
+    assert already_published(cf, "2026-09-19", PAPERS) is True
+    assert already_published(cf, "2026-09-18") is True  # station-less = root

@@ -5,22 +5,57 @@ One scheduled workflow runs the whole local pipeline — `newsdesk morning`:
 collect → digest (with verdicts) → script → tts → publish → notify — with the
 `cloudflare-pages` publisher, unattended. The workflow first seeds the fresh
 runner database from the committed `seed/newsdesk-seed.json` (sources,
-watchlist terms, and workflow history; re-export locally after changes);
-`newsdesk morning` itself bootstraps the shipped `default-morning@1` into
-the workflow catalog on first use. The notify registry ships
+watchlist terms, workflow history, and stations; re-export locally after
+changes); `newsdesk morning` itself bootstraps the shipped `default-morning@1`
+into the workflow catalog on first use. The notify registry ships
 empty, so notify is a logged no-op until a notifier bolts on.
 
 **Workflow:** `.github/workflows/morning.yml` · **Config contract tests:**
 `tests/test_actions_workflow.py`
+
+## Stations: one schedule, one matrix, N feeds (W4)
+
+The `morning` job is a **matrix over station ids** (research:
+`docs/research/gha-station-topology.md`). Each leg sets
+`NEWSDESK_STATION: ${{ matrix.station }}`, so it runs that station's bound
+workflow against its scoped watchlist and publishes its own feed under
+`https://<project>.pages.dev/<token>/<path_segment>/feed.xml` (the seeded
+default station `morning-briefing` has no path segment: it *is* the legacy
+root feed, byte-for-byte — same URLs, same GUIDs, same identity).
+
+- `strategy.fail-fast: false` isolates the legs: one station's failure
+  never cancels its siblings. `continue-on-error` is deliberately absent —
+  a failed leg must fail the run, or the failure email (the only alerting
+  channel) goes silent.
+- The 45-minute timeout and the workflow-level `concurrency: morning` are
+  unchanged; the timeout is now a *per-station* budget and the matrix wall
+  time stays ≈ one leg.
+- Idempotency is per (station, date): a re-run (or the second cron line of
+  the recovery pattern) no-ops the stations that already published and
+  rebuilds only the missing ones.
+- Because a Pages deployment is the complete site, each station leg fetches
+  back and restages the **union of all stations' archives** before deploy —
+  a deploy that cannot include every station's history is refused (the
+  archive-intact posture, widened). The station list comes from the
+  stations table (the leg seeds first).
+- **Adding a station:** add it to the seed (`newsdesk seed export` after
+  creating it — stations enter the DB via seed or agent tools), add its id
+  to the matrix list in `morning.yml`, commit both. No new secrets: the
+  feed token, base URL and Cloudflare credentials are shared; the only
+  per-station env is `NEWSDESK_STATION`.
 
 ## Schedule and deadline
 
 - Single cron `7 23 * * *` UTC = **07:07 HKT daily**. Deadline is
   publish-by-08:30 HKT; the 83 minutes of slack absorb median Actions runner
   delays plus the ~10-minute pipeline (evidence:
-  `docs/research/gha-schedule-reliability.md`).
-- Job timeout 45 min; overlapping runs queue (`concurrency: morning`); a
-  re-run for an already-published date exits early via the idempotency guard.
+  `docs/research/gha-schedule-reliability.md`). One cron drives the whole
+  station matrix — per-station schedules would multiply the delay/drop
+  surface for nothing at N = 2–5.
+- Job timeout 45 min per station leg; overlapping runs queue
+  (`concurrency: morning`); a re-run for an already-published (station,
+  date) exits early via the idempotency guard and heals only the missing
+  stations.
 - `workflow_dispatch` inputs:
   - *(empty)* — run for today; the normal test path.
   - `date` (`YYYY-MM-DD`, morning tz) — backfill a past episode
@@ -33,9 +68,9 @@ empty, so notify is a logged no-op until a notifier bolts on.
 Sources and watchlist terms ride into CI via the committed seed file
 (`seed/newsdesk-seed.json`, imported by the workflow before
 `newsdesk morning`; seed format 2 also carries the workflow catalog's
-full history). After changing sources, terms, or workflows locally,
-re-run `newsdesk seed export` and commit the diff — that's the whole
-sync.
+full history and the stations). After changing sources, terms, workflows,
+or stations locally, re-run `newsdesk seed export` and commit the diff —
+that's the whole sync.
 
 Cloudflare side (details in ticket 06's checklist): create a **Pages**
 project ("Direct Upload", empty — e.g. `morning-briefing`), note the
@@ -89,8 +124,11 @@ run (optionally with `date` to backfill).
 
 ## Cost
 
-~10 min per run, once a day ⇒ **~300–400 min/month**, well inside the 2,000
-free minutes of a private repo. pip is cached; wrangler is installed per run.
+~10 min per station leg, once a day — the matrix repeats setup per leg, so
+the bill scales roughly linearly with stations (**~300–400 min/month** for
+the first station, each additional station ≈ +300–400), well inside the
+2,000 free minutes of a private repo at N = 2–5. pip is cached; wrangler is
+installed per run.
 
 ## No-leak check (run after each live dispatch)
 

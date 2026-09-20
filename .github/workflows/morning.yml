@@ -5,6 +5,16 @@
 # Failure visibility is GitHub's automatic workflow-failure email — no retry
 # fire, no dead-man's switch (schedule policy, wayfinder ticket 06). Setup,
 # rehearsal, and cost math: docs/morning-actions.md.
+#
+# W4 (workflow-modules ticket 12): the job is a matrix over station ids —
+# one scheduled run produces every station's feed. `fail-fast: false`
+# isolates the legs (one station's failure never cancels its siblings) and
+# `continue-on-error` is deliberately absent: a failed leg must fail the
+# run, or the failure email — the only alerting channel — goes silent
+# (research: docs/research/gha-station-topology.md). Each leg publishes one
+# station (NEWSDESK_STATION) and stages the union of all stations'
+# archives, so no deploy ever drops another station's history. Adding a
+# station = one seed entry + one matrix entry.
 name: morning
 
 on:
@@ -32,7 +42,12 @@ concurrency:
 jobs:
   morning:
     runs-on: ubuntu-latest
+    # per station leg (a matrix job is one job def × N legs)
     timeout-minutes: 45
+    strategy:
+      fail-fast: false      # legs live or die alone; siblings keep publishing
+      matrix:
+        station: [morning-briefing, papers]  # keep in sync with the seed's stations
     env:
       NEWSDESK_PUBLISHER: cloudflare-pages
       NEWSDESK_FEED_BASE_URL: ${{ vars.NEWSDESK_FEED_BASE_URL }}
@@ -40,6 +55,9 @@ jobs:
       NEWSDESK_CLOUDFLARE_API_TOKEN: ${{ secrets.NEWSDESK_CLOUDFLARE_API_TOKEN }}
       NEWSDESK_CLOUDFLARE_ACCOUNT_ID: ${{ vars.NEWSDESK_CLOUDFLARE_ACCOUNT_ID }}
       NEWSDESK_CLOUDFLARE_PROJECT: ${{ vars.NEWSDESK_CLOUDFLARE_PROJECT }}
+      # the only per-station env: the CLI resolves scope, workflow, feed
+      # identity and token subpath from the station row (seeded below)
+      NEWSDESK_STATION: ${{ matrix.station }}
       # Optional: no key => NullAdapter => extractive episode still publishes.
       NEWSDESK_LLM_API_KEY: ${{ secrets.NEWSDESK_LLM_API_KEY }}
       NEWSDESK_LLM_BASE_URL: ${{ vars.NEWSDESK_LLM_BASE_URL }}
@@ -67,8 +85,9 @@ jobs:
       - name: Install wrangler (cloudflare-pages transport)
         run: npm install -g wrangler
 
-      # The runner DB starts empty; sources + watchlist ride in the repo.
-      - name: Seed sources + watchlist
+      # The runner DB starts empty; sources, watchlists, workflows and
+      # stations ride in the repo.
+      - name: Seed sources, watchlists, workflows, stations
         run: newsdesk seed import seed/newsdesk-seed.json
 
       - name: Run the morning

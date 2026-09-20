@@ -2,7 +2,8 @@
 
 The property that matters: export -> import into an empty database ->
 export again is identical, and importing twice adds nothing. Format 2
-carries the workflow catalog (full history) with monotonic retirement.
+carries the workflow catalog (full history) and the stations, with
+monotonic retirement.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from newsdesk.storage.db import Database
 from newsdesk.storage.repo import LogRepo, SourceRepo, WatchlistRepo
 from newsdesk.workflow.catalog import WorkflowCatalog
 from newsdesk.workflow.schema import FORMAT_VERSION
+from newsdesk.workflow.stations import StationRepo
 
 runner = CliRunner()
 
@@ -89,7 +91,9 @@ def test_export_import_roundtrip_is_lossless(session, populated, tmp_path):
                          "watchlists_created": 1, "terms_added": 2,
                          "terms_present": 0, "links_added": 1,
                          "links_present": 0,
-                         "workflows_added": 0, "workflows_present": 0}
+                         "workflows_added": 0, "workflows_present": 0,
+                         "stations_added": 0, "stations_updated": 0,
+                         "stations_present": 0}
         assert export_seed(fresh) == first
 
         # the imported database is functionally identical
@@ -307,3 +311,92 @@ def test_seed_cli_imports_workflow_versions(tmp_path, monkeypatch):
                      if e.action == "workflow_version_created"]
         assert versioned[0].actor == "user"  # the CLI is the user's surface
         assert versioned[0].detail["via"] == "seed"
+
+
+# -- the stations section (W4, ticket 12) -----------------------------------------
+
+
+def test_stations_roundtrip_immutably(session, populated, tmp_path):
+    """Stations ride the seed with name-keyed documents: export -> import ->
+    export is identical, metadata edits win on re-import (like sources), a
+    changed path_segment is loud, and retirement is monotonic."""
+    Stations = StationRepo(session)
+    Stations.create("briefing", actor="user", watchlist_id=1,
+                    workflow_ref="default-morning")
+    Stations.create("papers", actor="user", watchlist_id=1,
+                    path_segment="papers", feed_title="Paper Trail",
+                    feed_author="Paper Trail")
+    seeded = export_seed(session)
+    assert [s["name"] for s in seeded["stations"]] == ["briefing", "papers"]
+    papers = seeded["stations"][1]
+    assert papers["watchlist"] == "morning"  # name, not id
+    assert papers["feed"] == {"title": "Paper Trail", "author": "Paper Trail"}
+    assert papers["path_segment"] == "papers"
+
+    with _fresh_db(tmp_path, "home2").session() as fresh:
+        stats = import_seed(fresh, seeded, actor="user")
+        assert stats["stations_added"] == 2
+        assert export_seed(fresh) == seeded
+        assert import_seed(fresh, seeded, actor="user")["stations_present"] == 2
+
+        stolen = json.loads(json.dumps(seeded))
+        stolen["stations"][1]["path_segment"] = "papers-2"
+        with pytest.raises(SeedError, match="immutable"):
+            import_seed(fresh, stolen, actor="user")
+
+        edited = json.loads(json.dumps(seeded))
+        edited["stations"][1]["workflow"] = "seeded-morning"
+        edited["stations"][1]["feed"]["title"] = "Paper Trail v2"
+        stats = import_seed(fresh, edited, actor="user")
+        assert stats["stations_updated"] == 1
+        row = StationRepo(fresh).get("papers")
+        assert row["workflow_ref"] == "seeded-morning"
+        assert row["feed_title"] == "Paper Trail v2"
+
+        # a retired station stays retired: a stale seed never un-retires
+        StationRepo(fresh).retire("papers", actor="user")
+        assert import_seed(fresh, seeded, actor="user")["stations_present"] == 1
+        assert StationRepo(fresh).get("papers")["retired_at"] is not None
+
+        # and a seed that says retired: true retires on import
+        retired_seed = json.loads(json.dumps(seeded))
+        retired_seed["stations"][1]["retired"] = True
+        import_seed(fresh, retired_seed, actor="user")
+        assert StationRepo(fresh).get("papers")["retired_at"] is not None
+        assert [s["name"] for s in StationRepo(fresh).list()] == \
+            ["briefing", "papers"]  # never deleted
+
+
+def test_seed_rejects_bad_station_documents(session, populated):
+    base = {"format": FORMAT, "stations": [{"name": "papers"}]}
+    with pytest.raises(SeedError, match="unknown watchlist 'ghost'"):
+        import_seed(session, {**base, "stations": [
+            {"name": "papers", "watchlist": "ghost"}]}, actor="user")
+    with pytest.raises(SeedError, match="unknown keys"):
+        import_seed(session, {**base, "stations": [
+            {"name": "papers", "feed": {"titel": "typo"}}]}, actor="user")
+    with pytest.raises(SeedError, match="path_segment must match"):
+        import_seed(session, {**base, "stations": [
+            {"name": "papers", "path_segment": "Not A Slug"}]}, actor="user")
+    # a pre-W4 format-2 file simply has no stations section: calm import
+    assert import_seed(session, {"format": FORMAT}, actor="user")[
+        "stations_added"] == 0
+
+
+def test_committed_seed_file_defines_the_stations(session):
+    """Ticket 12 acceptance: >=2 stations ride the committed seed — the one
+    the CI legs import before their run."""
+    committed = json.loads(
+        (Path(__file__).parents[1] / "seed" / "newsdesk-seed.json")
+        .read_text(encoding="utf-8"))
+    stats = import_seed(session, committed, actor="user")
+    assert stats["stations_added"] >= 2
+    by_name = {s["name"]: s for s in StationRepo(session).list()}
+    # the default station is the legacy root feed; the other sits at its own
+    # permanent path segment and carries its own identity
+    assert by_name["morning-briefing"]["path_segment"] is None
+    assert by_name["papers"]["path_segment"] == "papers"
+    assert by_name["papers"]["feed_title"] == "Paper Trail"
+    # every station's watchlist binding resolved (never a dangling name)
+    assert all(s["watchlist_id"] is not None for s in by_name.values())
+    assert all(s["workflow_ref"] for s in by_name.values())

@@ -53,3 +53,22 @@ def test_cli_search_no_match(tmp_path, monkeypatch, energy_feed):
     result = runner.invoke(app, ["search", "zzznotathing"])
     assert result.exit_code == 0
     assert "No matches" in result.output
+
+
+def test_morning_station_flag_and_env_resolve_before_any_work(tmp_path, monkeypatch,
+                                                              energy_feed):
+    """W4: `--station` (and NEWSDESK_STATION, the CI matrix's knob) picks the
+    station at pre-flight — an unknown one fails loudly having done nothing."""
+    monkeypatch.setenv("NEWSDESK_HOME", str(tmp_path / "home"))
+    runner.invoke(app, ["add-source", energy_feed.as_uri()])
+
+    result = runner.invoke(app, ["morning", "--station", "ghost"])
+    assert result.exit_code == 1
+    assert "unknown station 'ghost'" in result.output
+
+    monkeypatch.setenv("NEWSDESK_STATION", "phantom")
+    result = runner.invoke(app, ["morning"])
+    assert result.exit_code == 1
+    assert "unknown station 'phantom'" in result.output
+    assert "unknown station 'ghost'" in runner.invoke(
+        app, ["morning", "--station", "ghost"]).output  # the flag wins

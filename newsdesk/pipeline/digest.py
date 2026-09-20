@@ -45,13 +45,24 @@ def _term_matches(haystack: str,
     return [(t, w) for t, w in include_terms if t in low]
 
 
-def _collect(session, hours: int, include_terms: list[tuple[str, float]]) \
-        -> list[dict[str, Any]]:
-    """Window items as compact dicts, ranked: relevance desc, then freshness."""
+def _collect(session, hours: int, include_terms: list[tuple[str, float]],
+             exclude_terms: list[str] | tuple[str, ...] = (),
+             source_ids: list[int] | None = None) -> list[dict[str, Any]]:
+    """Window items as compact dicts, ranked: relevance desc, then freshness.
+
+    The optional scope (F1, ticket 10) filters first: items from sources
+    outside ``source_ids`` never enter, and items matching an exclude term
+    are dropped — a scoped station never sees them."""
     ranked: list[dict[str, Any]] = []
     for row in _scan(session, hours):
+        if source_ids is not None and row.source_id not in source_ids:
+            continue
         text = row.text or ""
-        matches = _term_matches(f"{row.title or ''}\n{text}", include_terms)
+        haystack = f"{row.title or ''}\n{text}"
+        matches = _term_matches(haystack, include_terms)
+        if exclude_terms and _term_matches(
+                haystack, [(t, 1.0) for t in exclude_terms]):
+            continue
         relevance = (row.analysis or {}).get("relevance")
         if relevance is None:
             relevance = relevance_score(row.title or "", text, include_terms)
@@ -130,16 +141,27 @@ def _guard_verdicts(entries: Any, items_by_id: dict[str, Any]) -> dict[str, dict
 
 
 def candidate_items(session, *, hours: int = 24,
-                    limit: int = MAX_LLM_ITEMS) -> tuple[list[dict[str, Any]], int]:
+                    limit: int = MAX_LLM_ITEMS,
+                    scope: dict[str, Any] | None = None) \
+        -> tuple[list[dict[str, Any]], int]:
     """The selection candidate set (the common pipeline's first stages,
     W3): items in the ``hours`` window ranked relevance-desc, capped at
     ``min(limit, MAX_LLM_ITEMS)`` — the cap holds no matter what a caller
     asks for (ADR 0001 bounds the writer's injection surface). Shared by
     the legacy digest and the select strategies, so every path ranks and
     caps identically. Returns ``(candidates, items_in_window)`` with the
-    pre-cap window count for the report."""
-    include_terms = WatchlistRepo(session).include_terms()
-    ranked = _collect(session, hours, include_terms)
+    pre-cap window count for the report.
+
+    ``scope`` (F1, ticket 10) is a station's resolved watchlist scope —
+    ``{include_terms, exclude_terms, source_ids}`` as built by
+    ``newsdesk.workflow.stations.station_scope``; ``None`` keeps the
+    global include-terms union, so the legacy path is unchanged."""
+    scope = scope or {}
+    include_terms = scope.get("include_terms") or \
+        WatchlistRepo(session).include_terms()
+    ranked = _collect(session, hours, include_terms,
+                      exclude_terms=scope.get("exclude_terms") or (),
+                      source_ids=scope.get("source_ids"))
     return ranked[:min(limit, MAX_LLM_ITEMS)], len(ranked)
 
 
@@ -191,10 +213,19 @@ def item_card(item: dict[str, Any],
 
 
 def build_daily_digest(session, settings: Settings, *, hours: int = 24,
-                       limit: int = 30, adapter: Any = None) -> dict[str, Any]:
-    """Build the briefing and log it. Returns the digest dict."""
-    selected, window_count = candidate_items(session, hours=hours, limit=limit)
-    themes, loose = _group_themes(selected, WatchlistRepo(session).include_terms())
+                       limit: int = 30, adapter: Any = None,
+                       scope: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build the briefing and log it. Returns the digest dict.
+
+    ``scope`` (F1, ticket 10) scopes the whole pass — candidates,
+    ranking and theme grouping — to the station's watchlist; ``None``
+    is the global union, byte-identical to the legacy behavior."""
+    scope = scope or {}
+    selected, window_count = candidate_items(session, hours=hours, limit=limit,
+                                             scope=scope)
+    include_terms = scope.get("include_terms") or \
+        WatchlistRepo(session).include_terms()
+    themes, loose = _group_themes(selected, include_terms)
 
     adapter = adapter or get_adapter(settings)
     verdicts, verdict_method = classify_verdicts(adapter, selected)

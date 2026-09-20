@@ -1,19 +1,21 @@
 """The Actions workflow is a contract (morning-audio-impl ticket 07).
 
 Parsed as text — no YAML dependency. The assertions pin exactly what the
-schedule decision (wayfinder tickets 01/06) and the credential split
-(wayfinder ticket 09) settled: one cron at 07:07 HKT, manual dispatch for
-backfilling and the failure probe, minimal permissions, credentials wired
-by name only (secrets vs plain vars), and no credential material in the
-file itself.
+schedule decision (wayfinder tickets 01/06), the credential split (wayfinder
+ticket 09) and the station fan-out (workflow-modules tickets 11/12) settled:
+one cron at 07:07 HKT, manual dispatch for backfilling and the failure probe,
+minimal permissions, credentials wired by name only (secrets vs plain vars),
+and no credential material in the file itself.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
 WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "morning.yml"
+SEED = Path(__file__).parents[1] / "seed" / "newsdesk-seed.json"
 
 
 def _text() -> str:
@@ -116,3 +118,23 @@ def test_no_credential_material_in_the_file():
     assert not re.search(r"sk-[A-Za-z0-9_-]{10,}", text)
     assert not re.search(r"\b[0-9a-f]{32}\b", text)
     assert not re.search(r"\b[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b", text)
+
+
+def test_station_matrix_runs_every_seeded_station_with_isolated_legs():
+    """W4 (tickets 11/12): one scheduled run fans out over the seed's
+    stations. `fail-fast: false` is the isolation lever; `continue-on-error`
+    must stay absent or a failed leg would silence the failure email — the
+    repo's only alerting."""
+    text = _text()
+    assert "fail-fast: false" in text
+    # no live setting (comments may name it to explain its absence)
+    assert not any("continue-on-error" in ln
+                   for ln in _lines() if not ln.lstrip().startswith("#"))
+    assert "NEWSDESK_STATION: ${{ matrix.station }}" in text
+    # the matrix list and the committed seed are one contract
+    matrix = re.search(r"^\s*station:\s*\[(.+?)\]", text, re.MULTILINE)
+    assert matrix, "missing the station matrix"
+    listed = [s.strip() for s in matrix.group(1).split(",")]
+    seeded = [s["name"] for s in
+              json.loads(SEED.read_text(encoding="utf-8"))["stations"]]
+    assert sorted(listed) == sorted(seeded)

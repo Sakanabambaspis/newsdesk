@@ -76,14 +76,20 @@ def script_stats(sections: list[dict[str, Any]]) -> dict[str, int]:
             "est_seconds": sum(s["est_seconds"] for s in sections)}
 
 
-def sidecar_path(settings: Any, date: str) -> Path:
-    """Where the sidecar ``<morning_dir>/<date>/<date>-script.json`` lives."""
-    return settings.morning_dir / date / f"{date}-script.json"
+def sidecar_path(settings: Any, date: str, station: str | None = None) -> Path:
+    """Where the sidecar lives: station runs sidecar to
+    ``<morning_dir>/<station>/<date>/<date>-script.json``; station-less
+    runs keep the pinned legacy ``<morning_dir>/<date>/…`` layout
+    (ticket 10 — sidecars are local artifacts, not permanent URLs)."""
+    base = settings.morning_dir / station / date if station \
+        else settings.morning_dir / date
+    return base / f"{date}-script.json"
 
 
-def write_sidecar(settings: Any, date: str, brief: dict[str, Any]) -> Path:
-    """Persist the sidecar ``<morning_dir>/<date>/<date>-script.json``."""
-    path = sidecar_path(settings, date)
+def write_sidecar(settings: Any, date: str, brief: dict[str, Any],
+                  station: str | None = None) -> Path:
+    """Persist the sidecar ``<date>-script.json`` under the run's layout."""
+    path = sidecar_path(settings, date, station)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"date": date, "generated_at": datetime.now(MORNING_TZ).isoformat(),
                "method": brief.get("method"), "stats": brief.get("stats"),

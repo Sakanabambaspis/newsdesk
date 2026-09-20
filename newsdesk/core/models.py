@@ -1,12 +1,13 @@
-"""Domain model: Source, Watchlist, Item, Job, LogEntry, Workflow, Rubric.
+"""Domain model: Source, Watchlist, Item, Job, LogEntry, Workflow, Rubric,
+Station.
 
 The Item row is the persistence form of the canonical record defined in
 docs/DESIGN.md; ``Item.to_canonical()`` emits exactly that JSON shape.
-The workflow tables (Workflow, WorkflowVersion) and the rubric tables
-(Rubric, RubricVersion) are the catalogs' storage: they live here so
-``Database``'s ``create_all`` picks them up with every other table, while
-their repos stay in ``newsdesk.workflow.catalog`` /
-``newsdesk.workflow.rubric_catalog``.
+The workflow tables (Workflow, WorkflowVersion), the rubric tables
+(Rubric, RubricVersion) and the Station table live here so ``Database``'s
+``create_all`` picks them up with every other table, while their repos
+stay in ``newsdesk.workflow.catalog`` / ``newsdesk.workflow.rubric_catalog``
+/ ``newsdesk.workflow.stations``.
 """
 
 from __future__ import annotations
@@ -253,3 +254,38 @@ class RubricVersion(SQLModel, table=True):
     document: dict[str, Any] = Field(sa_column=Column(JSON))
     created_by: str  # one of ACTORS; required — no default to hide behind
     created_at: datetime = Field(default_factory=utcnow)
+
+
+class Station(SQLModel, table=True):
+    """One published podcast surface (wayfinder ticket 10): a named scope
+    (one watchlist and, through it, its sources), one workflow binding,
+    one feed identity, one publish path. Exactly one episode per
+    (station, date).
+
+    Catalog conventions (retire-never-delete, required actor) live in
+    ``newsdesk.workflow.stations.StationRepo`` — including the fields'
+    mutability rules: ``name`` and ``path_segment`` are immutable (GUIDs
+    and enclosure URLs are permanent by publish contract), the feed
+    identity columns are mutable metadata (the feed is regenerated whole
+    on every publish), and NULL identity falls back to ``morning.feed``'s
+    module constants so the seeded default reproduces today's feed
+    byte-for-byte. No credentials column, ever (DESIGN §18)."""
+
+    __tablename__ = "stations"
+
+    name: str = Field(primary_key=True)  # slug; CLI arg + GUID prefix
+    description: str | None = None
+    workflow_ref: str = Field(default="default-morning")  # name or name@N
+    watchlist_id: int | None = Field(default=None,
+                                     foreign_key="watchlists.id", index=True)
+    # NULL = the legacy root path <base>/<token>/… (the default station
+    # only); others sit at <base>/<token>/<path_segment>/…
+    path_segment: str | None = Field(default=None, unique=True)
+    feed_title: str | None = None
+    feed_description: str | None = None
+    feed_author: str | None = None
+    feed_category: str | None = None
+    feed_language: str | None = None
+    feed_owner_email: str | None = None  # NULL → env/fallback as today
+    created_at: datetime = Field(default_factory=utcnow)
+    retired_at: datetime | None = None  # monotonic; retired refuses runs

@@ -53,7 +53,8 @@ def stage_script(session, settings: Any, digest: dict[str, Any],
     writer_fn = writer or SCRIPTWRITERS.get()
     extra = {"ctx": ctx} if ctx is not None else {}
     brief = writer_fn(settings, digest, date=date, **extra)
-    sidecar = write_sidecar(settings, brief["date"], brief)
+    sidecar = write_sidecar(settings, brief["date"], brief,
+                            station=ctx.station if ctx is not None else None)
     LogRepo(session).append("morning_brief_built", {
         "date": brief["date"], "method": brief["method"],
         "stats": brief["stats"],

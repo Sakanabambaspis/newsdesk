@@ -118,6 +118,7 @@ from .rubric import story_key
 from .rubric_catalog import RubricCatalog, ensure_default_rubric_catalog
 from .schema import STAGE_TYPES, require_valid, validate_registration, \
     workflow_descriptor_path
+from .stations import (StationRepo, publish_target, station_scope)
 from .strategies import SELECT_STRATEGIES
 
 
@@ -155,6 +156,13 @@ class RunContext:
             at run start — never a silent fallback).
         current_stage: the stage name being dispatched, for context-native
             plugins to locate their own entry in ``violations``/``degrade``.
+        station_record: the station row resolved at pre-flight (ticket 10)
+            as a plain dict, or ``None`` — ``station`` itself stays the
+            log-safe name string.
+        scope: the station's resolved watchlist scope (F1) for select
+            stages; ``None`` keeps the global union.
+        stations: every station's publish target (the union list the
+            publish stage stages on a Pages deploy); ``None`` station-less.
     """
 
     def __init__(self, session: Any, settings: Any, workflow: dict[str, Any],
@@ -171,6 +179,9 @@ class RunContext:
         self.plugins: dict[str, Any] = {}
         self.rubrics: dict[str, dict[str, Any]] = {}
         self.current_stage: str | None = None
+        self.station_record: dict[str, Any] | None = None
+        self.scope: dict[str, Any] | None = None
+        self.stations: list[dict[str, Any]] | None = None
 
     def log(self, action: str, detail: dict[str, Any]) -> None:
         LogRepo(self.session).append(action, detail)
@@ -219,7 +230,8 @@ def _check_archive_intact(ctx: RunContext,
                           params: dict[str, Any]) -> list[str]:
     _name, publish = ctx.plugins.get("publish", (None, None))
     guard = getattr(publish, "already_published", None)
-    if guard is not None and guard(ctx.settings, ctx.date):
+    if guard is not None and guard(ctx.settings, ctx.date,
+                                   ctx.station_record):
         return [f"episode {ctx.date} is already in the archive — publish "
                 f"never overwrites or prunes it"]
     return []
@@ -370,15 +382,23 @@ def _stage_select(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
     entry = ctx.plugins.get("select")
     if entry is None:  # unpinned: the legacy built-in digest
         digest = build_daily_digest(ctx.session, ctx.settings,
-                                    hours=params.get("hours", 24))
+                                    hours=params.get("hours", 24),
+                                    scope=ctx.scope)
         report = {"method": digest.get("method"),
                   "items_in_window": digest.get("items_in_window"),
                   "verdict_method": digest.get("verdict_method")}
     else:
-        # pinned: a W3 select strategy; its rubric resolved at pre-flight
-        _name, strategy = entry
-        digest = strategy(ctx.session, ctx.settings,
-                          ctx.rubrics[spec.get("name") or "select"], params)
+        # pinned: a W3 select strategy; its rubric resolved at pre-flight.
+        # Context-native strategies (all built-ins, ticket 10) take the
+        # RunContext so the station's resolved watchlist scope reaches
+        # candidate_items — the strategies stay stations-table-blind.
+        name, strategy = entry
+        rubric = ctx.rubrics[spec.get("name") or "select"]
+        if SELECT_STRATEGIES.is_context_native(name):
+            digest = strategy(ctx.session, ctx.settings, rubric, params,
+                              ctx=ctx)
+        else:
+            digest = strategy(ctx.session, ctx.settings, rubric, params)
         stats = digest["material_pack"]["stats"]
         report = {"method": digest["method"],
                   "rubric": digest["rubric"],
@@ -427,13 +447,20 @@ def _stage_render(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
 def _stage_publish(ctx: RunContext, spec: dict[str, Any]) -> dict[str, Any]:
     name, publish = ctx.plugins["publish"]
     audio = ctx.artifacts["audio"]
-    published = publish(ctx.settings,
-                        {"date": ctx.date,
-                         "duration_seconds": audio["duration_seconds"]},
-                        audio["mp3"])
-    ctx.log("morning_episode_published", {
-        "date": ctx.date, "publisher": name,
-        "duration_seconds": audio["duration_seconds"]})
+    episode: dict[str, Any] = {"date": ctx.date,
+                               "duration_seconds": audio["duration_seconds"]}
+    if ctx.station_record is not None:
+        # the station payload publishers consume (ticket 10): identity for
+        # GUIDs and feed metadata, the path segment under the shared token,
+        # and the union list a Pages deploy must stage
+        episode.update(publish_target(ctx.station_record))
+        episode["stations"] = ctx.stations
+    published = publish(ctx.settings, episode, audio["mp3"])
+    detail: dict[str, Any] = {"date": ctx.date, "publisher": name,
+                              "duration_seconds": audio["duration_seconds"]}
+    if ctx.station is not None:
+        detail["station"] = ctx.station
+    ctx.log("morning_episode_published", detail)
     ctx.artifacts["episode"] = published
     return {"publisher": name, **published}
 
@@ -507,14 +534,31 @@ def _validate_check_bindings(ctx: RunContext) -> None:
                         f"can never pass must not enter the repair loop)")
 
 
+def _resolve_station(ctx: RunContext) -> None:
+    """Pre-flight station resolution (ticket 10): the row resolves loudly
+    (missing/retired → selection failure, zero work done), the watchlist
+    binding becomes the run's digest scope, and the publish stage gets
+    the union of all stations' publish targets. Station-less runs never
+    read the stations table."""
+    if ctx.station is None:
+        return
+    repo = StationRepo(ctx.session)
+    ctx.station_record = repo.resolve(ctx.station)
+    ctx.scope = station_scope(ctx.session,
+                              ctx.station_record["watchlist_id"])
+    ctx.stations = [publish_target(row) for row in repo.list()]
+
+
 def _resolve_plugins(ctx: RunContext) -> None:
     """Pre-flight resolution (today's ``selection`` phase): every registry
     plugin resolves before any stage runs, so an unknown selection fails
-    loudly having done nothing — plugins in the orchestrator's order
-    (render, publish, select, compose), then rubric refs, then check
-    bindings. Pinned select stages resolve their ``rubric`` param here
-    (ticket 07: by ref string, float/pin semantics, loud on missing or
-    retired); the shipped default rubric bootstraps once, at first use."""
+    loudly having done nothing — the station row, then plugins in the
+    orchestrator's order (render, publish, select, compose), then rubric
+    refs, then check bindings. Pinned select stages resolve their
+    ``rubric`` param here (ticket 07: by ref string, float/pin semantics,
+    loud on missing or retired); the shipped default rubric bootstraps
+    once, at first use."""
+    _resolve_station(ctx)
     pinned = {s["type"]: s["plugin"] for s in ctx.workflow["stages"]
               if s.get("plugin")}
     if any(s["type"] == "render" for s in ctx.workflow["stages"]):
@@ -601,9 +645,12 @@ def run_workflow(session: Any, settings: Any, descriptor: dict[str, Any],
 
     ``descriptor`` must be a valid v1 document (validated on entry —
     witnesses at definition and at use). ``station`` is the output
-    surface's identity; v1 has no Station rows yet (ticket 10), so it may
-    stay ``None`` and only rides the context and log events. ``date``
-    defaults to today in the morning timezone, like ``run_morning``.
+    surface's name (ticket 10): given, the engine resolves the station
+    row at pre-flight — loud on missing/retired — scopes the digest to
+    the station's watchlist and publishes under its identity and path;
+    ``None`` is the station-less legacy run, which never reads the
+    stations table. ``date`` defaults to today in the morning timezone,
+    like ``run_morning``.
     """
     require_valid(descriptor)
     load_plugins()  # idempotent: built-in plugins must be registered
@@ -621,10 +668,16 @@ def run_workflow(session: Any, settings: Any, descriptor: dict[str, Any],
 
     _name, publish = ctx.plugins.get("publish", (None, None))
     guard = getattr(publish, "already_published", None)
-    if not dry_run and guard is not None and guard(settings, date):
+    if not dry_run and guard is not None and \
+            guard(settings, date, ctx.station_record):
         ctx.log("workflow_run_finished",
                 {**_run_fields(ctx), "outcome": "already_published"})
-        return {"date": date, "outcome": "already_published", "stages": {}}
+        report: dict[str, Any] = {"date": date,
+                                  "outcome": "already_published",
+                                  "stages": {}}
+        if station is not None:
+            report["station"] = station
+        return report
 
     max_attempts = (descriptor.get("loop_policy") or {}).get(
         "max_attempts", 2)
@@ -668,8 +721,11 @@ def run_workflow(session: Any, settings: Any, descriptor: dict[str, Any],
     outcome = "dry_run" if dry_run else "published"
     ctx.log("workflow_run_finished",
             {**_run_fields(ctx), "outcome": outcome})
-    return {"date": date, "outcome": outcome, "stages": ctx.reports,
-            "finished_at": datetime.now().isoformat(timespec="seconds")}
+    report = {"date": date, "outcome": outcome, "stages": ctx.reports,
+              "finished_at": datetime.now().isoformat(timespec="seconds")}
+    if station is not None:
+        report["station"] = station
+    return report
 
 
 __all__ = ["RunContext", "WorkflowRunError", "load_descriptor",

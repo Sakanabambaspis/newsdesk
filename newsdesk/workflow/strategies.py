@@ -183,13 +183,18 @@ def _pick_single(stories: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _select(session, settings: Any, rubric: dict[str, Any],
             params: dict[str, Any], *, method: str,
             pick: Callable[[list[dict[str, Any]]],
-                           list[dict[str, Any]]]) -> dict[str, Any]:
+                           list[dict[str, Any]]],
+            scope: dict[str, Any] | None = None) -> dict[str, Any]:
     """The common pipeline (ticket 08), ending in the strategy's pick and
     the material pack in final episode order. Returns the select
     artifact: the writer's pack, the admissible set (the coverage
-    floors' base) and the full scoring — and logs ``select_scored``."""
+    floors' base) and the full scoring — and logs ``select_scored``.
+    ``scope`` is the station's resolved watchlist scope (ticket 10),
+    threaded by the engine through the context; the strategies themselves
+    stay stations-table-blind."""
     hours = _hours(params)
-    candidates, window_count = candidate_items(session, hours=hours)
+    candidates, window_count = candidate_items(session, hours=hours,
+                                               scope=scope)
     adapter = get_adapter(settings)
     verdicts, verdict_method = classify_verdicts(adapter, candidates)
     filtered = technical_only(candidates, verdicts)
@@ -251,41 +256,54 @@ def _select(session, settings: Any, rubric: dict[str, Any],
 
 
 # -- the three strategies --------------------------------------------------------
+#
+# All three are context-native plugins (ticket 10): the engine passes the
+# RunContext as an extra ``ctx`` keyword so the station's resolved watchlist
+# scope reaches ``candidate_items``; the v1 signature is unchanged without it
+# (direct callers keep working, scope-less = the global union).
+
 
 def top_k_interesting(session, settings: Any, rubric: dict[str, Any],
-                      params: dict[str, Any]) -> dict[str, Any]:
+                      params: dict[str, Any],
+                      ctx: Any = None) -> dict[str, Any]:
     """The ``k`` best stories by rubric total. "Interesting" is the
     rubric total, nothing else."""
     k = _k(params, "top-k-interesting")
     return _select(session, settings, rubric, params,
                    method="top-k-interesting",
-                   pick=lambda stories: _pick_top_k(stories, k))
+                   pick=lambda stories: _pick_top_k(stories, k),
+                   scope=ctx.scope if ctx is not None else None)
 
 
 def trending_impactful_mix(session, settings: Any, rubric: dict[str, Any],
-                           params: dict[str, Any]) -> dict[str, Any]:
+                           params: dict[str, Any],
+                           ctx: Any = None) -> dict[str, Any]:
     """Deep dive = best-impactful (the rubric total), then ``floor(k/2)``
     trending slots (corroboration breadth), then impactful fills — dedup
     by story, cross-backfill when a pool runs dry."""
     k = _k(params, "trending-impactful-mix")
     return _select(session, settings, rubric, params,
                    method="trending-impactful-mix",
-                   pick=lambda stories: _pick_mix(stories, k))
+                   pick=lambda stories: _pick_mix(stories, k),
+                   scope=ctx.scope if ctx is not None else None)
 
 
 def single_deep_dive(session, settings: Any, rubric: dict[str, Any],
-                     params: dict[str, Any]) -> dict[str, Any]:
+                     params: dict[str, Any],
+                     ctx: Any = None) -> dict[str, Any]:
     """Exactly one story: the top total. No admissible story → empty pack
     → the quiet-day short episode. Never padded."""
     return _select(session, settings, rubric, params,
-                   method="single-deep-dive", pick=_pick_single)
+                   method="single-deep-dive", pick=_pick_single,
+                   scope=ctx.scope if ctx is not None else None)
 
 
 SELECT_STRATEGIES.register("top-k-interesting", top_k_interesting,
-                           stage="select",
+                           stage="select", context=True,
                            params=("rubric", "k", "hours"))
 SELECT_STRATEGIES.register("trending-impactful-mix", trending_impactful_mix,
-                           stage="select",
+                           stage="select", context=True,
                            params=("rubric", "k", "hours"))
 SELECT_STRATEGIES.register("single-deep-dive", single_deep_dive,
-                           stage="select", params=("rubric", "hours"))
+                           stage="select", context=True,
+                           params=("rubric", "hours"))

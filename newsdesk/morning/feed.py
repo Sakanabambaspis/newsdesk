@@ -20,6 +20,7 @@ FEED_TITLE = "Morning Briefing"
 FEED_DESCRIPTION = "A short daily technology briefing."
 FEED_AUTHOR = "Morning Briefing"  # pseudonymous on purpose (ticket 07)
 FEED_CATEGORY = "News"
+FEED_LANGUAGE = "en"
 FEED_OWNER_EMAIL_FALLBACK = "morning-briefing@example.com"  # alias; set yours via NEWSDESK_FEED_OWNER_EMAIL
 ARTWORK_SIZE = 1400  # Apple requires 1400-3000px square artwork
 
@@ -29,32 +30,50 @@ def episode_title(date: str) -> str:
     return date
 
 
-def episode_guid(date: str) -> str:
-    """Permanent GUID, never reused across dates (ticket 10)."""
-    return f"morning-briefing-{date}"
+def episode_guid(date: str, station: str | None = None) -> str:
+    """Permanent GUID, never reused across dates or stations (ticket 10):
+    ``<station-name>-<date>``, which for ``morning-briefing`` is
+    byte-identical to the pre-station ``morning-briefing-<date>``.
+    Station-less callers keep the legacy string."""
+    return f"{station or 'morning-briefing'}-{date}"
 
 
 def build_feed_xml(episodes: list[dict[str, Any]], *, feed_url: str,
-                   owner_email: str, artwork_url: str) -> str:
+                   owner_email: str, artwork_url: str,
+                   identity: dict[str, str | None] | None = None) -> str:
     """Regenerate the complete RSS 2.0 + itunes feed.
 
     ``episodes`` are resolved feed rows: {date, enclosure_url, bytes,
-    duration_seconds, published_at}. Listed newest first; every episode ever
-    published stays listed (ticket 10).
+    duration_seconds, published_at} — plus ``guid`` when the manifest
+    carries one (station runs: ``<station>-<date>``, the permanent
+    identity). Rows without it fall back to this module's station-less
+    GUID, which is byte-identical for the legacy feed. Listed newest
+    first; every episode ever published stays listed (ticket 10).
+
+    ``identity`` is a station's resolved feed identity
+    (``newsdesk.workflow.stations.resolve_identity``); absent or empty
+    means the module constants — byte-identical output for the legacy
+    single feed.
     """
+    identity = identity or {}
+    title = identity.get("title") or FEED_TITLE
+    description = identity.get("description") or FEED_DESCRIPTION
+    author = identity.get("author") or FEED_AUTHOR
+    category = identity.get("category") or FEED_CATEGORY
+    language = identity.get("language") or FEED_LANGUAGE
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<rss version="2.0" '
         'xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">',
         "<channel>",
-        f"<title>{escape(FEED_TITLE)}</title>",
+        f"<title>{escape(title)}</title>",
         f"<link>{escape(feed_url)}</link>",
-        f"<description>{escape(FEED_DESCRIPTION)}</description>",
-        "<language>en</language>",
-        f"<itunes:author>{escape(FEED_AUTHOR)}</itunes:author>",
+        f"<description>{escape(description)}</description>",
+        f"<language>{escape(language)}</language>",
+        f"<itunes:author>{escape(author)}</itunes:author>",
         "<itunes:explicit>false</itunes:explicit>",
         f"<itunes:image href={quoteattr(artwork_url)} />",
-        "<itunes:category text=" + quoteattr(FEED_CATEGORY) + " />",
+        "<itunes:category text=" + quoteattr(category) + " />",
         "<itunes:owner>",
         f"<itunes:email>{escape(owner_email)}</itunes:email>",
         "</itunes:owner>",
@@ -62,7 +81,7 @@ def build_feed_xml(episodes: list[dict[str, Any]], *, feed_url: str,
     for ep in sorted(episodes, key=lambda e: e["date"], reverse=True):
         published_at = format_datetime(datetime.fromisoformat(ep["published_at"]))
         title = escape(episode_title(ep["date"]))
-        guid = escape(episode_guid(ep["date"]))
+        guid = escape(ep.get("guid") or episode_guid(ep["date"]))
         enclosure = (
             "<enclosure url=" + quoteattr(ep["enclosure_url"])
             + f' length="{int(ep["bytes"])}" type="audio/mpeg" />'

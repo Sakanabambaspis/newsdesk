@@ -69,6 +69,7 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     monkeypatch.setenv("NEWSDESK_TTS_PACE", "2.5")
     monkeypatch.setenv("NEWSDESK_TTS_ENGINE", "kokoro")
     monkeypatch.setenv("NEWSDESK_PUBLISHER", "cloudflare-pages")
+    monkeypatch.setenv("NEWSDESK_STATION", "papers")
     monkeypatch.setenv("NEWSDESK_CLOUDFLARE_API_TOKEN", "cf-token")
     monkeypatch.setenv("NEWSDESK_CLOUDFLARE_ACCOUNT_ID", "acct")
     monkeypatch.setenv("NEWSDESK_CLOUDFLARE_PROJECT", "morning-briefing")
@@ -91,6 +92,7 @@ def test_from_env_reads_every_documented_knob(tmp_path, monkeypatch):
     assert s.morning_voice_alt == "zh-CN-YunyangNeural"
     assert s.tts_retries == 2 and s.tts_pace == 2.5
     assert s.morning_tts == "kokoro" and s.morning_publisher == "cloudflare-pages"
+    assert s.station == "papers"  # NEWSDESK_STATION: the CI matrix's one knob
     assert s.cf_api_token == "cf-token" and s.cf_account_id == "acct"
     assert s.cf_project == "morning-briefing" and s.wrangler_bin == "npx"
 

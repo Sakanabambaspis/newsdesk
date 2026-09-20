@@ -10,6 +10,8 @@
     newsdesk script               stage the spoken-briefing script (+ sidecar)
     newsdesk audio                synthesize the staged script into the day's MP3
     newsdesk morning              the whole morning: collect through notify
+                                  (--station / NEWSDESK_STATION publishes one
+                                  station's feed instead of the legacy run)
     newsdesk workflow ...         the versioned workflow catalog (create,
                                   get, list, history, diff, retire, unretire)
     newsdesk log                  tail the immutable activity log
@@ -22,6 +24,7 @@
 from __future__ import annotations
 
 import json
+import os
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -300,11 +303,17 @@ def morning(
     date: Optional[str] = typer.Option(
         None, "--date",
         help="Backfill: episode date YYYY-MM-DD (morning tz) instead of today"),
+    station: Optional[str] = typer.Option(
+        None, "--station",
+        help="Publish as this station (its scope, workflow, feed identity "
+             "and path); default: NEWSDESK_STATION, else the station-less "
+             "legacy run"),
 ) -> None:
     """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
     from .workflow.catalog import (CatalogError, WorkflowCatalog,
                                    ensure_default_catalog)
     from .workflow.engine import WorkflowRunError, run_workflow
+    from .workflow.stations import StationRepo
 
     if date is not None:
         try:
@@ -314,6 +323,7 @@ def morning(
             raise typer.Exit(code=1)
 
     settings = _settings()
+    station = station or settings.station
 
     def mask(text: str) -> str:
         # the token-bearing URLs are the feed's only auth; the CLI report
@@ -325,12 +335,17 @@ def morning(
         try:
             # W2: the morning runs the catalog's default workflow — the
             # shipped file bootstraps the catalog once, then the DB row
-            # (floating default-morning@latest) is the living data
+            # (floating default-morning@latest) is the living data. A
+            # station run (W4) runs the station's own bound workflow ref;
+            # the engine re-resolves the station row at pre-flight.
             ensure_default_catalog(session)
+            if station:
+                ref = StationRepo(session).resolve(station)["workflow_ref"]
+            else:
+                ref = "default-morning"
             report = run_workflow(session, settings,
-                                  WorkflowCatalog(session)
-                                  .resolve("default-morning"),
-                                  date=date)
+                                  WorkflowCatalog(session).resolve(ref),
+                                  station, date=date)
         except WorkflowRunError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
@@ -340,11 +355,18 @@ def morning(
     if json_out:
         typer.echo(mask(json.dumps(report, indent=2, ensure_ascii=False)))
         return
+    stages = report["stages"]
     if report["outcome"] == "already_published":
         typer.echo(f"morning {report['date']}: already published — nothing to do")
         return
-    stages = report["stages"]
-    typer.echo(f"morning {report['date']}: published")
+    if not {"collect", "digest", "script", "tts", "publish", "notify"} \
+            <= set(stages):
+        # a station may bind a workflow with renamed stages: the machine
+        # report stays the honest surface
+        typer.echo(mask(json.dumps(report, indent=2, ensure_ascii=False)))
+        return
+    prefix = f"morning {report['date']}" + (f" [{station}]" if station else "")
+    typer.echo(f"{prefix}: published")
     typer.echo(f"  collect   {stages['collect']['sources']} sources, "
                f"{stages['collect']['status']}")
     typer.echo(f"  digest    {stages['digest']['method']}, "
@@ -389,7 +411,8 @@ def seed_export(
     out: Path = typer.Argument(Path("seed/newsdesk-seed.json"),
                                help="Output JSON path"),
 ) -> None:
-    """Write every source + watchlist to a JSON file, ready to commit."""
+    """Write every source, watchlist, workflow, and station to a JSON
+    file, ready to commit."""
     from .seed import export_seed
 
     db = Database(_settings())
@@ -400,7 +423,9 @@ def seed_export(
                    encoding="utf-8")
     terms = sum(len(w["terms"]) for w in data["watchlists"])
     typer.echo(f"{out}: {len(data['sources'])} sources, {terms} terms "
-               f"across {len(data['watchlists'])} watchlists")
+               f"across {len(data['watchlists'])} watchlists, "
+               f"{len(data['workflows'])} workflow versions, "
+               f"{len(data['stations'])} stations")
 
 
 @seed_app.command("import")
@@ -433,7 +458,10 @@ def seed_import(
                f"+{stats['links_added']} links "
                f"({stats['links_present']} present), "
                f"+{stats['workflows_added']} workflow versions "
-               f"({stats['workflows_present']} present)")
+               f"({stats['workflows_present']} present), "
+               f"+{stats['stations_added']} stations "
+               f"(+{stats['stations_updated']} updated, "
+               f"{stats['stations_present']} present)")
 
 
 # -- workflow catalog -----------------------------------------------------

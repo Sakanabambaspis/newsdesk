@@ -3,11 +3,13 @@
 Writes the episode audio plus the whole-regenerated feed under
 ``<publish_dir>/<feed-token>/…`` — the 128-bit token as a path segment from
 env is the only access control (wayfinder ticket 07), and it never appears
-in log entries. Publish is idempotent per date (same-date republish
-replaces audio, keeps the original first-published timestamp) and
-append-only across dates (ticket 10): GUIDs and enclosure URLs never change
-and no prune code exists. This publisher doubles as the test double for the
-orchestration and rehearsal tickets and stays useful as a local archive.
+in log entries. Publish is idempotent per (station, date) (same-date
+republish replaces audio, keeps the original first-published timestamp;
+W4 ticket 10) and append-only across dates: GUIDs and enclosure URLs never
+change and no prune code exists. A station run writes only its own
+subtree under the token; station-less runs keep the legacy root exactly.
+This publisher doubles as the test double for the orchestration and
+rehearsal tickets and stays useful as a local archive.
 """
 
 from __future__ import annotations
@@ -33,12 +35,32 @@ def _load_manifest(path: Path) -> list[dict[str, Any]]:
     return []
 
 
+def _station_fields(episode: dict[str, Any]) -> tuple[str | None, str | None,
+                                                      dict[str, Any] | None]:
+    """The station payload the engine puts on the episode (ticket 10):
+    ``(station name, path_segment, resolved feed identity)``; all ``None``
+    for station-less runs, which keep the legacy behavior exactly."""
+    station = episode.get("station")
+    if station is None:
+        return None, None, None
+    return station, episode.get("path_segment"), episode.get("feed")
+
+
+def _subtree(root: Path, path_segment: str | None) -> Path:
+    return root / path_segment if path_segment else root
+
+
 def publish_local(settings, episode: dict[str, Any],
                   audio_path: str | Path) -> dict[str, str]:
     """Publish one episode: place audio, upsert manifest, regenerate feed.
 
-    ``episode``: {date, duration_seconds}. Returns the permanent
-    feed/episode/artwork URLs for this host.
+    ``episode``: {date, duration_seconds}, plus the engine's station
+    payload ({station, path_segment, feed}) for station runs — a station
+    writes only its own subtree ``<publish_dir>/<token>/<segment>/…``
+    (no cross-fetch: a plain directory is not complete-site semantics),
+    while the default station's NULL segment is the legacy root and
+    station-less callers are byte-identical to the pre-station path.
+    Returns the permanent feed/episode/artwork URLs for this host.
     """
     token = settings.feed_token
     if not token:
@@ -47,7 +69,8 @@ def publish_local(settings, episode: dict[str, Any],
             'python -c "import secrets; print(secrets.token_hex(16))" — '
             "it is the feed's only access control.")
     date = episode["date"]
-    out = (settings.publish_dir / token).resolve()
+    station, segment, identity = _station_fields(episode)
+    out = _subtree((settings.publish_dir / token).resolve(), segment)
     audio_dir = out / "audio"
     audio_dir.mkdir(parents=True, exist_ok=True)
     dest = audio_dir / f"{date}.mp3"
@@ -61,7 +84,7 @@ def publish_local(settings, episode: dict[str, Any],
     entry = {"date": date, "file": f"audio/{dest.name}",
              "bytes": dest.stat().st_size,
              "duration_seconds": int(episode["duration_seconds"]),
-             "guid": episode_guid(date), "published_at": published_at}
+             "guid": episode_guid(date, station), "published_at": published_at}
     manifest = sorted([e for e in manifest if e["date"] != date] + [entry],
                       key=lambda e: e["date"])
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -74,7 +97,7 @@ def publish_local(settings, episode: dict[str, Any],
     # pages.dev domain), otherwise local file URIs for the local archive.
     base = (settings.feed_base_url or "").rstrip("/")
     if base:
-        public = f"{base}/{token}"
+        public = f"{base}/{token}" + (f"/{segment}" if segment else "")
         feed_url = f"{public}/feed.xml"
         episode_url = f"{public}/audio/{date}.mp3"
         artwork_url = f"{public}/artwork.png"
@@ -87,9 +110,10 @@ def publish_local(settings, episode: dict[str, Any],
                      for e in manifest]
 
     xml = build_feed_xml(feed_rows, feed_url=feed_url,
-                         owner_email=settings.feed_owner_email
+                         owner_email=(identity or {}).get("owner_email")
+                         or settings.feed_owner_email
                          or FEED_OWNER_EMAIL_FALLBACK,
-                         artwork_url=artwork_url)
+                         artwork_url=artwork_url, identity=identity)
     (out / "feed.xml").write_text(xml, encoding="utf-8")
     return {"feed_url": feed_url, "episode_url": episode_url,
             "artwork_url": artwork_url}
@@ -98,14 +122,19 @@ def publish_local(settings, episode: dict[str, Any],
 PUBLISHERS.register("local-dir", publish_local, stage="publish")
 
 
-def already_published(settings, date: str) -> bool:
-    """Idempotency guard: has ``date`` been published? (Checks the manifest
-    before the orchestrator does any work, so re-runs exit early.)"""
+def already_published(settings, date: str,
+                      station: dict[str, Any] | None = None) -> bool:
+    """Idempotency guard, per (station, date) (ticket 10): has ``date``
+    been published to *this* station's own manifest? (Checks the manifest
+    before the orchestrator does any work, so re-runs exit early; a
+    same-date re-run of one station no-ops only that station.)"""
     token = settings.feed_token
     if not token:
         return False
+    segment = (station or {}).get("path_segment")
     manifest = _load_manifest(
-        (settings.publish_dir / token).resolve() / "episodes.json")
+        _subtree((settings.publish_dir / token).resolve(),
+                 segment) / "episodes.json")
     return any(e["date"] == date for e in manifest)
 
 

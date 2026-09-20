@@ -377,8 +377,84 @@
         }
       ],
       "source_keys": []
+    },
+    {
+      "name": "Paper picks",
+      "description": "Terms that lift paper-of-the-day candidates for the papers station",
+      "terms": [
+        {
+          "term": "benchmark",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "state space model",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "in-context learning",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "world model",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "vision language",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "reinforcement learning",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "diffusion",
+          "kind": "include",
+          "weight": 1.0
+        },
+        {
+          "term": "long context",
+          "kind": "include",
+          "weight": 1.0
+        }
+      ],
+      "source_keys": [
+        ["https://papers.takara.ai/api/feed", "rss"],
+        ["arxiv://cs.LG", "arxiv"],
+        ["arxiv://cs.CL", "arxiv"],
+        ["arxiv://cs.AI", "arxiv"],
+        ["arxiv://cs.CV", "arxiv"],
+        ["arxiv://stat.ML", "arxiv"]
+      ]
     }
   ],
   "workflows": [],
-  "retired_workflows": []
+  "retired_workflows": [],
+  "stations": [
+    {
+      "name": "morning-briefing",
+      "description": "The default morning briefing: the global watchlist, the shipped default-morning workflow, the legacy root feed.",
+      "workflow": "default-morning",
+      "watchlist": "AI research directions",
+      "path_segment": null,
+      "feed": {}
+    },
+    {
+      "name": "papers",
+      "description": "A daily research-papers briefing: arXiv + HF papers only, scoped to the Paper picks watchlist.",
+      "workflow": "default-morning",
+      "watchlist": "Paper picks",
+      "path_segment": "papers",
+      "feed": {
+        "title": "Paper Trail",
+        "description": "A short daily research-papers briefing.",
+        "author": "Paper Trail"
+      }
+    }
+  ]
 }

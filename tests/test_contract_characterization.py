@@ -42,8 +42,9 @@ def test_c1_importing_storage_db_registers_all_tables(tmp_path):
                             text=True, check=True, cwd=REPO_ROOT)
     # sources, watchlists, watchlist_terms, watchlist_sources, items, jobs,
     # log_entries, workflows, workflow_versions (the W2 catalog, ticket 06),
-    # rubrics, rubric_versions (the rubric catalog, ticket 09)
-    assert int(result.stdout.strip()) == 11
+    # rubrics, rubric_versions (the rubric catalog, ticket 09),
+    # stations (W4, ticket 12)
+    assert int(result.stdout.strip()) == 12
 
 
 def test_c3_add_time_rejects_unknown_kind(session, settings):
