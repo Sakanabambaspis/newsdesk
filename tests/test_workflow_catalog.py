@@ -354,6 +354,56 @@ def test_invalid_documents_are_refused():
 # -- the shipped-descriptor bootstrap -------------------------------------------
 
 
+# -- save gates: bindings + size (ticket 13/14, shared with the engine) ---------
+
+
+def test_unbindable_document_is_refused_at_save(session):
+    """The engine's static pre-flight rules run at save too — one
+    implementation (workflow.bindings), two callers. A document that
+    could never run never enters the catalog."""
+    catalog = WorkflowCatalog(session)
+    doc = descriptor()
+    doc["stages"][2]["plugin"] = "ghost"
+    with pytest.raises(CatalogError, match="unknown SCRIPTWRITERS plugin"):
+        catalog.create_version(doc, actor="user")
+
+    early = descriptor()
+    early["stages"][1]["checks"] = [
+        {"name": "duration_band",
+         "params": {"min_seconds": 1, "max_seconds": 2}}]
+    with pytest.raises(CatalogError, match="needs the 'audio' artifact"):
+        catalog.create_version(early, actor="user")
+
+    unknown_param = descriptor()
+    unknown_param["stages"][2]["params"] = {"voice": "nope"}
+    with pytest.raises(CatalogError, match="unknown params voice"):
+        catalog.create_version(unknown_param, actor="user")
+
+    # notify fans out over every notifier: no plugin to own params, so ANY
+    # param is unknown there (the engine's old default, kept by the shared
+    # validator)
+    notify_params = descriptor()
+    notify_params["stages"][5]["params"] = {"webhook": "https://…"}
+    with pytest.raises(CatalogError, match="unknown params webhook"):
+        catalog.create_version(notify_params, actor="user")
+
+    assert session.exec(select(WorkflowVersion)).all() == []
+
+
+def test_oversized_document_is_refused_at_save(session):
+    """The 64 KiB boundary: v1 documents are ~1 KB and schema-closed, so a
+    near-cap document is a payload, refused before log/DB/tool results."""
+    catalog = WorkflowCatalog(session)
+    with pytest.raises(CatalogError, match="cap 65536"):
+        catalog.create_version(descriptor(title="x" * 70_000), actor="user")
+    # exactly at the cap is legal
+    doc = descriptor(title="x" * 40_000)
+    catalog.create_version(doc, actor="user")
+
+
+# -- the shipped default ---------------------------------------------------------
+
+
 def test_bootstrap_imports_shipped_default_once(session):
     ensure_default_catalog(session)
     catalog = WorkflowCatalog(session)

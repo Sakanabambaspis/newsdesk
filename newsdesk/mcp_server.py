@@ -19,6 +19,7 @@ try:  # mcp 2.x
 except ImportError:  # mcp 1.x
     from mcp.server.fastmcp import FastMCP as _Server
 
+from .agents import tools
 from .agents.protocol import TOOL_SPECS
 from .config import Settings
 from .pipeline.runner import run_collection
@@ -130,6 +131,156 @@ def create_digest(hours: int = 24, limit: int = 30) -> str:
 def export_log(limit: int = 500) -> str:
     rows = _run(lambda s, _: LogRepo(s).recent(limit=limit))
     return json.dumps([e.to_json() for e in rows], ensure_ascii=False)
+
+
+# -- workflow-module tools (W5; thin adapters over agents.tools) --------------
+#
+# The implementations in agents.tools carry the specs and do the work
+# (actor="agent", via="mcp" here); these wrappers only parse typed
+# arguments, delegate, and serialize. Failures are contained by _run into
+# {"error": ...} — never a crashed server loop, never a stack trace.
+
+@mcp.tool(name="list_workflows", description=_DESCRIPTIONS["list_workflows"])
+def list_workflows_tool(query: str | None = None,
+                        include_retired: bool = False, limit: int = 50) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.list_workflows(
+        s, cfg, query=query, include_retired=include_retired, limit=limit)),
+        ensure_ascii=False)
+
+
+@mcp.tool(name="get_workflow", description=_DESCRIPTIONS["get_workflow"])
+def get_workflow_tool(ref: str, version: int | None = None) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.get_workflow(s, cfg, ref,
+                                                             version)),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="create_workflow", description=_DESCRIPTIONS["create_workflow"])
+def create_workflow_tool(document: dict, dry_run: bool = False) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.create_workflow(
+        s, cfg, document, dry_run, via="mcp")), ensure_ascii=False)
+
+
+@mcp.tool(name="diff_workflow", description=_DESCRIPTIONS["diff_workflow"])
+def diff_workflow_tool(name: str, from_version: int, to_version: int) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.diff_workflow(
+        s, cfg, name, from_version, to_version)), ensure_ascii=False)
+
+
+@mcp.tool(name="retire_workflow", description=_DESCRIPTIONS["retire_workflow"])
+def retire_workflow_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.retire_workflow(s, cfg, name,
+                                                                via="mcp")),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="unretire_workflow",
+          description=_DESCRIPTIONS["unretire_workflow"])
+def unretire_workflow_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.unretire_workflow(
+        s, cfg, name, via="mcp")), ensure_ascii=False)
+
+
+@mcp.tool(name="list_rubrics", description=_DESCRIPTIONS["list_rubrics"])
+def list_rubrics_tool(limit: int = 50) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.list_rubrics(s, cfg, limit)),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="get_rubric", description=_DESCRIPTIONS["get_rubric"])
+def get_rubric_tool(ref: str, version: int | None = None) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.get_rubric(s, cfg, ref,
+                                                           version)),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="create_rubric", description=_DESCRIPTIONS["create_rubric"])
+def create_rubric_tool(document: dict) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.create_rubric(s, cfg,
+                                                              document,
+                                                              via="mcp")),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="diff_rubric", description=_DESCRIPTIONS["diff_rubric"])
+def diff_rubric_tool(name: str, from_version: int, to_version: int) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.diff_rubric_tool(
+        s, cfg, name, from_version, to_version)), ensure_ascii=False)
+
+
+@mcp.tool(name="score_preview", description=_DESCRIPTIONS["score_preview"])
+def score_preview_tool(rubric: dict | str, limit: int = 10,
+                       hours: float = 24) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.score_preview(
+        s, cfg, rubric, limit, hours)), ensure_ascii=False)
+
+
+@mcp.tool(name="retire_rubric", description=_DESCRIPTIONS["retire_rubric"])
+def retire_rubric_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.retire_rubric(s, cfg, name,
+                                                              via="mcp")),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="unretire_rubric",
+          description=_DESCRIPTIONS["unretire_rubric"])
+def unretire_rubric_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.unretire_rubric(
+        s, cfg, name, via="mcp")), ensure_ascii=False)
+
+
+@mcp.tool(name="list_stations", description=_DESCRIPTIONS["list_stations"])
+def list_stations_tool(include_retired: bool = True) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.list_stations(
+        s, cfg, include_retired=include_retired)), ensure_ascii=False)
+
+
+@mcp.tool(name="get_station", description=_DESCRIPTIONS["get_station"])
+def get_station_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.get_station(s, cfg, name)),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="create_station", description=_DESCRIPTIONS["create_station"])
+def create_station_tool(name: str, workflow: str,
+                        watchlist: int | None = None,
+                        path_segment: str | None = None,
+                        description: str | None = None,
+                        feed: dict | None = None) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.create_station(
+        s, cfg, name, workflow, watchlist, path_segment, description, feed,
+        via="mcp")), ensure_ascii=False)
+
+
+@mcp.tool(name="update_station", description=_DESCRIPTIONS["update_station"])
+def update_station_tool(name: str, workflow: str,
+                        watchlist: int | None = None,
+                        description: str | None = None,
+                        feed: dict | None = None) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.update_station(
+        s, cfg, name, workflow, watchlist, description, feed, via="mcp")),
+        ensure_ascii=False)
+
+
+@mcp.tool(name="retire_station", description=_DESCRIPTIONS["retire_station"])
+def retire_station_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.retire_station(s, cfg, name,
+                                                               via="mcp")),
+                      ensure_ascii=False)
+
+
+@mcp.tool(name="unretire_station",
+          description=_DESCRIPTIONS["unretire_station"])
+def unretire_station_tool(name: str) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.unretire_station(
+        s, cfg, name, via="mcp")), ensure_ascii=False)
+
+
+@mcp.tool(name="run_workflow", description=_DESCRIPTIONS["run_workflow"])
+def run_workflow_tool(ref: str, station: str | None = None,
+                      date: str | None = None, verbose: bool = False) -> str:
+    return json.dumps(_run(lambda s, cfg: tools.run_workflow(
+        s, cfg, ref, station, date, verbose)), ensure_ascii=False)
 
 
 def main() -> None:

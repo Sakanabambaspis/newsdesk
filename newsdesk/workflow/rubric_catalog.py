@@ -17,9 +17,11 @@ resolution path. The semantics are exactly the workflow catalog's
 - Documents are validated on save AND on load (the DB is a boundary
   channel), and a stored document's identity must agree with its row.
 
-What is deliberately absent: the structural diff (rubric diffs are
-per-dimension JSON a renderer can compute on the fly; no consumer yet)
-and the seed sections (rubrics enter through agent tools, ticket 13/14).
+What is deliberately absent: the seed sections (rubrics enter through
+agent tools, tickets 13/14). The structural diff exists since ticket 14:
+``diff_rubrics`` shares the workflow diff's core with the order-sensitive
+keyed list parameterized to ``dimensions`` (reordering dimensions changes
+the weighted mean's renormalization inputs — order is behavior there too).
 """
 
 from __future__ import annotations
@@ -31,9 +33,30 @@ from sqlmodel import Session, col, select
 
 from ..core.models import ACTORS, Rubric, RubricVersion, iso_utc, utcnow
 from ..storage.repo import LogRepo
-from .catalog import CatalogError, parse_ref
+from .catalog import (CatalogError, require_document_size, diff_documents,
+                      parse_ref)
 from .rubric import (RubricError, load_shipped_rubric, require_valid_rubric,
                      rubric_ref)
+
+
+def _dimension_label(dimension: dict[str, Any]) -> str:
+    """A dimension's identity: its name (the schema requires one)."""
+    return dimension["name"]
+
+
+def diff_rubrics(a: Any, b: Any) -> list[dict[str, Any]]:
+    """Structural diff of two rubric documents (ticket 13): the workflow
+    diff's shape, keyed by dimension name with any sequence change as one
+    ``order`` entry on ``/dimensions``. Both documents must be valid and
+    share the rubric name."""
+    require_valid_rubric(a)
+    require_valid_rubric(b)
+    if a["name"] != b["name"]:
+        raise CatalogError(f"cannot diff '{a['name']}' against "
+                           f"'{b['name']}' — diffs compare versions of "
+                           f"one rubric")
+    return diff_documents(a, b, list_key="dimensions",
+                          label_of=_dimension_label)
 
 
 def _validated_document(row: RubricVersion) -> dict[str, Any]:
@@ -117,6 +140,20 @@ class RubricCatalog:
         self._require_name(name)
         return _validated_document(self._row_for_ref(name, version))
 
+    def diff(self, name: str, version_a: int,
+             version_b: int) -> list[dict[str, Any]]:
+        """Structural diff between two stored versions — a thin lookup
+        over the module-level :func:`diff_rubrics` (order-sensitive on
+        ``dimensions``, ticket 13)."""
+        a, b = self.get(name, version_a), self.get(name, version_b)
+        if a is None:
+            raise CatalogError(f"rubric '{name}' has no version "
+                               f"{version_a}")
+        if b is None:
+            raise CatalogError(f"rubric '{name}' has no version "
+                               f"{version_b}")
+        return diff_rubrics(a, b)
+
     # -- writes (every one: required actor, logged)
 
     def create_version(self, doc: dict[str, Any], actor: str, *,
@@ -132,6 +169,7 @@ class RubricCatalog:
             require_valid_rubric(doc)
         except RubricError as exc:
             raise CatalogError(str(exc)) from exc
+        require_document_size(doc, name=doc.get("name"))
         name, version = doc["name"], doc["version"]
         name_row = self._name_row(name)
         if name_row is not None and name_row.retired_at is not None:

@@ -16,7 +16,7 @@ def test_health_and_tools(settings):
 
     tools = client.get("/tools").json()
     names = [t["name"] for t in tools]
-    assert len(tools) == 11  # digest_item wired alongside summarize_item
+    assert len(tools) == 31  # 11 collection tools + 20 W5 workflow-module tools
     assert names[:4] == ["list_sources", "add_source", "run_collection", "search_items"]
     by_name = {t["name"]: t for t in tools}
     assert by_name["add_source"]["http"] == "POST /sources"
@@ -24,6 +24,10 @@ def test_health_and_tools(settings):
     assert by_name["summarize_item"]["status"] == "wired"
     assert by_name["digest_item"]["http"] == "POST /tools/digest_item"
     assert "arxiv" in by_name["add_source"]["args"]["kind"]
+    # the W5 tools ride the same list, generated from their registry
+    assert by_name["run_workflow"]["mutating"] is False  # dry-run only
+    assert by_name["create_workflow"]["mutating"] is True
+    assert names[-1] == "run_workflow"
 
 
 def test_api_collect_and_search_flow(settings, energy_feed):

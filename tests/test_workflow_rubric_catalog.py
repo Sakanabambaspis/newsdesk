@@ -15,9 +15,10 @@ import pytest
 from newsdesk.core.models import Rubric, RubricVersion
 from newsdesk.storage.repo import LogRepo
 from newsdesk.workflow.catalog import CatalogError
-from newsdesk.workflow.rubric import (RUBRIC_FORMAT_VERSION, RubricError,
+from newsdesk.workflow.rubric import (RUBRIC_FORMAT_VERSION,
                                       load_shipped_rubric, rubric_ref)
 from newsdesk.workflow.rubric_catalog import (RubricCatalog,
+                                              diff_rubrics,
                                               ensure_default_rubric_catalog)
 
 
@@ -183,3 +184,44 @@ def test_name_row_requires_known_name(session):
 def test_shipped_rubric_loads_validated():
     doc = load_shipped_rubric("default", 1)  # the bootstrap's source
     assert rubric_ref(doc) == "default@1"
+
+
+# -- diff + size cap (ticket 13/14: the diff core is shared, keyed on dimensions) --
+
+
+def test_diff_is_order_sensitive_on_dimensions(session):
+    """Dimension order is behavior (weights renormalize over the scored
+    sequence), so a reorder is one ``order`` entry on ``/dimensions`` —
+    the workflow diff's semantics, keyed list parameterized."""
+    catalog = RubricCatalog(session)
+    catalog.create_version(base_rubric(), actor="user")
+    v2 = base_rubric()
+    v2["version"] = 2  # same title: the only change is the dimension order
+    v2["dimensions"] = list(reversed(v2["dimensions"]))
+    catalog.create_version(v2, actor="user")
+    changes = catalog.diff("taste", 1, 2)
+    assert {(c["path"], c["kind"]) for c in changes} == \
+        {("/dimensions", "order"), ("/version", "changed")}
+    order = next(c for c in changes if c["kind"] == "order")
+    assert order["before"] == ["depth", "fit"]
+    assert order["after"] == ["fit", "depth"]
+
+    v3 = base_rubric()
+    v3["version"] = 3
+    v3["title"] = "Reweighed taste"
+    v3["dimensions"][1]["weight"] = 0.9
+    catalog.create_version(v3, actor="user")
+    assert {(c["path"], c["kind"]) for c in catalog.diff("taste", 1, 3)} == \
+        {("/title", "changed"), ("/version", "changed"),
+         ("/dimensions/fit/weight", "changed")}
+
+    with pytest.raises(CatalogError, match="one rubric"):
+        diff_rubrics(base_rubric("taste"), base_rubric("other"))
+
+
+def test_oversized_rubric_is_refused_at_save(session):
+    catalog = RubricCatalog(session)
+    bloated = base_rubric()
+    bloated["title"] = "x" * 70_000
+    with pytest.raises(CatalogError, match="cap 65536"):
+        catalog.create_version(bloated, actor="user")

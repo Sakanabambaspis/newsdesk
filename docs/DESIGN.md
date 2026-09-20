@@ -307,8 +307,15 @@ watchlist relevance, and are budgeted per day.
 
 ## 10. Agent protocol
 
-Eleven tools, harness-independent, exposed as plain HTTP and as MCP tools
-(`newsdesk mcp`):
+Thirty-one tools, harness-independent, exposed as plain HTTP and as MCP tools
+(`newsdesk mcp`). Since W5 (wayfinder tickets 13/14) the workflow-module
+tools — workflow/rubric/station catalog CRUD, `score_preview`, and
+`run_workflow` — are implemented once in `agents/tools.py` with their specs
+carried by the implementation; `TOOL_SPECS` is generated from that registry
+and one sync test (`tests/test_agent_tools_surface.py`) enforces
+spec ↔ implementation ↔ HTTP ↔ MCP. `run_workflow` is a dry run by
+construction (no publish parameter exists); every mutation is logged as
+`actor="agent"` with the adapter's `via`.
 
 | Tool | HTTP | Status |
 |---|---|---|
@@ -321,6 +328,10 @@ Eleven tools, harness-independent, exposed as plain HTTP and as MCP tools
 | `digest_item` | `POST /tools/digest_item` | wired |
 | `create_digest` | `GET /tools/daily_digest` | wired |
 | `export_log` | `GET /tools/export_log` | wired |
+| `list_workflows`, `get_workflow`, `create_workflow`, `diff_workflow`, `retire_workflow`, `unretire_workflow` | `/tools/…` | wired (W5) |
+| `list_rubrics`, `get_rubric`, `create_rubric`, `diff_rubric`, `score_preview`, `retire_rubric`, `unretire_rubric` | `/tools/…` | wired (W5) |
+| `list_stations`, `get_station`, `create_station`, `update_station`, `retire_station`, `unretire_station` | `/tools/…` | wired (W5) |
+| `run_workflow` | `POST /tools/run_workflow` | wired (W5; dry run only) |
 | `get_cluster` | — | planned (M2) |
 | `summarize_cluster` | — | planned (M3) |
 

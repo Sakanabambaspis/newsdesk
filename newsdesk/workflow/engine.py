@@ -114,6 +114,7 @@ from ..morning.script import episode_date, word_count
 from ..pipeline.digest import build_daily_digest
 from ..pipeline.runner import run_collection
 from ..storage.repo import LogRepo
+from .bindings import BINDING_REGISTRIES, validate_bindings
 from .rubric import story_key
 from .rubric_catalog import RubricCatalog, ensure_default_rubric_catalog
 from .schema import STAGE_TYPES, require_valid, validate_registration, \
@@ -496,44 +497,6 @@ def _run_fields(ctx: RunContext) -> dict[str, Any]:
 
 # -- Pre-flight -----------------------------------------------------------------
 
-# the bus artifacts each named check validates against (the check library's
-# binding guards, known statically). A check bound to a stage that runs
-# before its artifacts exist can never pass — refusing that at pre-flight
-# is what keeps strategies (and any early stage) out of a doomed repair
-# loop (ticket 08: the binding guard "refuses loudly").
-_CHECK_REQUIRES: dict[str, tuple[str, ...]] = {
-    "archive_intact": (),
-    "section_allowlist": ("script",),
-    "word_budget": ("script",),
-    "distinct_stories": ("digest", "script"),
-    "diversity_floor": ("digest", "script"),
-    "duration_band": ("audio",),
-}
-
-_PROVIDERS: dict[str, str] = {artifact: stage_type
-                              for stage_type, triple in STAGE_TYPES.items()
-                              for artifact in triple["provides"]}
-
-
-def _validate_check_bindings(ctx: RunContext) -> None:
-    """Every check's artifacts must be providable at (or before) its
-    stage; otherwise the violation fires forever and the loop policy
-    would burn bounded attempts on a stage that cannot self-heal."""
-    stages = ctx.workflow["stages"]
-    for index, spec in enumerate(stages):
-        stage = spec.get("name") or spec["type"]
-        for check in spec.get("checks") or []:
-            for artifact in _CHECK_REQUIRES[check["name"]]:
-                provider = _PROVIDERS[artifact]
-                if not any(s["type"] == provider
-                           for s in stages[:index + 1]):
-                    raise ValueError(
-                        f"stage '{stage}', check '{check['name']}': needs "
-                        f"the '{artifact}' artifact on the bus — bind it "
-                        f"at or after a '{provider}' stage (a check that "
-                        f"can never pass must not enter the repair loop)")
-
-
 def _resolve_station(ctx: RunContext) -> None:
     """Pre-flight station resolution (ticket 10): the row resolves loudly
     (missing/retired → selection failure, zero work done), the watchlist
@@ -552,13 +515,20 @@ def _resolve_station(ctx: RunContext) -> None:
 def _resolve_plugins(ctx: RunContext) -> None:
     """Pre-flight resolution (today's ``selection`` phase): every registry
     plugin resolves before any stage runs, so an unknown selection fails
-    loudly having done nothing — the station row, then plugins in the
-    orchestrator's order (render, publish, select, compose), then rubric
-    refs, then check bindings. Pinned select stages resolve their
-    ``rubric`` param here (ticket 07: by ref string, float/pin semantics,
-    loud on missing or retired); the shipped default rubric bootstraps
-    once, at first use."""
+    loudly having done nothing — the station row, then the static binding
+    validation (:func:`~newsdesk.workflow.bindings.validate_bindings`, the
+    one implementation the catalog's save gate shares), then the plugins
+    the settings knobs pick, then rubric refs. Pinned select stages
+    resolve their ``rubric`` param through the rubric catalog (ticket 07:
+    by ref string, float/pin semantics, loud on missing or retired); the
+    shipped default rubric bootstraps once, at first use."""
     _resolve_station(ctx)
+    errors = validate_bindings(
+        ctx.workflow, BINDING_REGISTRIES,
+        defaults={"render": ctx.settings.morning_tts,
+                  "publish": ctx.settings.morning_publisher})
+    if errors:
+        raise ValueError("; ".join(errors))
     pinned = {s["type"]: s["plugin"] for s in ctx.workflow["stages"]
               if s.get("plugin")}
     if any(s["type"] == "render" for s in ctx.workflow["stages"]):
@@ -570,11 +540,6 @@ def _resolve_plugins(ctx: RunContext) -> None:
     select_stages = [s for s in ctx.workflow["stages"]
                      if s["type"] == "select" and s.get("plugin")]
     if select_stages:
-        if len({s["plugin"] for s in select_stages}) > 1:
-            raise ValueError(
-                "multiple select stages pin different strategies "
-                f"({', '.join(sorted({s['plugin'] for s in select_stages}))})"
-                " — the engine resolves one strategy per stage type")
         ctx.plugins["select"] = SELECT_STRATEGIES.resolve(
             select_stages[0]["plugin"])
     if any(s["type"] == "compose" for s in ctx.workflow["stages"]):
@@ -584,48 +549,12 @@ def _resolve_plugins(ctx: RunContext) -> None:
         for spec in select_stages:
             stage = spec.get("name") or "select"
             ref = (spec.get("params") or {}).get("rubric")
-            if not isinstance(ref, str) or not ref.strip():
-                raise ValueError(
-                    f"stage '{stage}': select strategy '{spec['plugin']}' "
-                    f"requires a 'rubric' param (a rubric ref string, "
-                    f"'name' or 'name@version')")
             ctx.rubrics[stage] = RubricCatalog(ctx.session).resolve(
                 ref.strip())
-    _validate_stage_params(ctx)
-    _validate_check_bindings(ctx)
 
 
-# engine built-ins close their own stage-params key sets; registry plugins
-# declare theirs at registration (Registry.param_keys)
-_BUILTIN_PARAM_KEYS: dict[str, frozenset[str]] = {
-    "collect": frozenset(), "select": frozenset({"hours"}),
-}
-_REGISTRY_BY_TYPE = {"compose": SCRIPTWRITERS, "render": TTS_ENGINES,
-                     "publish": PUBLISHERS, "select": SELECT_STRATEGIES}
-
-
-def _allowed_param_keys(ctx: RunContext, stage_type: str) -> frozenset[str]:
-    if stage_type in ctx.plugins:  # pinned: the plugin's own key set
-        return _REGISTRY_BY_TYPE[stage_type].param_keys(
-            ctx.plugins[stage_type][0])
-    if stage_type in _BUILTIN_PARAM_KEYS:
-        return _BUILTIN_PARAM_KEYS[stage_type]
-    return frozenset()  # notify fans out — no single plugin, no params
-
-
-def _validate_stage_params(ctx: RunContext) -> None:
-    """Registration closed each plugin's params key set; unknown keys fail
-    pre-flight (witnesses at use — zero work done, tagged ``selection``)."""
-    errors: list[str] = []
-    for spec in ctx.workflow["stages"]:
-        stype = spec["type"]
-        unknown = sorted(set(spec.get("params") or {})
-                         - _allowed_param_keys(ctx, stype))
-        if unknown:
-            errors.append(f"stage '{spec.get('name') or stype}': unknown "
-                          f"params {', '.join(unknown)}")
-    if errors:
-        raise ValueError("; ".join(errors))
+# -- dynamic per-run resolution helpers (the static half lives in
+#    workflow.bindings, shared with the catalog's save gate) -------------
 
 
 def _abort(ctx: RunContext, stage: str, exc: Exception) -> NoReturn:

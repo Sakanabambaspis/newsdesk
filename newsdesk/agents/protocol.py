@@ -6,6 +6,13 @@ and as MCP tools (see mcp_server) for harness addons — ZCode, Claude Code,
 Codex, and friends all speak MCP. Thin adapters for OpenAI Agents SDK /
 LangGraph / CrewAI / AutoGen wrap this same protocol; workflow state stays
 in the Newsdesk database, never in harness-specific memory.
+
+TOOL_SPECS is the single description of the surface. The workflow-module
+tools (W5, tickets 13/14) are *generated* from the registry in
+``agents.tools``, where each implementation carries its spec — a tool
+cannot exist without its description, and one sync test
+(``tests/test_agent_tools_surface.py``) enforces spec ↔ implementation ↔
+HTTP route ↔ MCP name for the whole list.
 """
 
 from __future__ import annotations
@@ -13,6 +20,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..core.models import SOURCE_KINDS
+from .tools import workflow_tool_specs
 
 _KINDS_ARG = "string (" + "|".join(SOURCE_KINDS) + ")"
 
@@ -100,7 +108,7 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "status": "wired",
         "http": "GET /tools/export_log",
     },
-]
+] + workflow_tool_specs()
 
 
 def tool_index() -> dict[str, dict[str, Any]]:

@@ -21,26 +21,36 @@ surface:
 - Documents are validated on save AND on load: the DB is a boundary
   channel newsdesk does not exclusively control (a hand-edited SQLite
   file, a restored backup), and failing loud beats silently running a
-  wrong document.
+  wrong document. Save-time validation is schema + static bindings
+  (``workflow.bindings.validate_bindings`` — the one implementation the
+  engine's pre-flight shares) plus a serialized-size cap (v1 documents
+  are ~1 KB; the cap protects the log, the DB and every tool result).
 - The engine stays catalog-blind: ``resolve(ref)`` is the only
   resolution path and returns a validated document copy.
 
-Import-order constraint: like the rest of this package, this module
-imports ``schema`` only — never the engine.
+Import-order constraint: this package's modules import ``schema`` and
+``bindings`` — never the engine (which imports them back).
 """
 
 from __future__ import annotations
 
 import json
 from copy import deepcopy
-from typing import Any
+from typing import Any, Callable
 
 from sqlmodel import Session, col, select
 
 from ..core.models import (ACTORS, Workflow, WorkflowVersion, iso_utc,
                            utcnow)
 from ..storage.repo import LogRepo
+from .bindings import BINDING_REGISTRIES, validate_bindings
 from .schema import DescriptorError, require_valid, workflow_descriptor_path
+
+# the boundary size for one stored document (ticket 13): v1 descriptors
+# are ~1 KB and their shape is schema-closed; anything near this cap is a
+# payload, not a descriptor, and is refused before it reaches the log,
+# the DB or a tool result.
+MAX_DOCUMENT_BYTES = 64 * 1024
 
 
 class CatalogError(Exception):
@@ -85,6 +95,86 @@ def _stage_label(stage: dict[str, Any]) -> str:
     return stage.get("name") or stage["type"]
 
 
+def _diff_document(path: str, va: Any, vb: Any, out: list[dict[str, Any]],
+                   *, list_key: str,
+                   label_of: Callable[[dict[str, Any]], str]) -> None:
+    if va == vb:  # parsed equality: structure, not bytes
+        return
+    if isinstance(va, dict) and isinstance(vb, dict):
+        for key in sorted(set(va) | set(vb)):
+            token = f"{path}/{_pointer(str(key))}"
+            if key not in va:
+                out.append({"path": token, "kind": "added",
+                            "before": None, "after": vb[key]})
+            elif key not in vb:
+                out.append({"path": token, "kind": "removed",
+                            "before": va[key], "after": None})
+            else:
+                _diff_document(token, va[key], vb[key], out,
+                               list_key=list_key, label_of=label_of)
+    elif isinstance(va, list) and isinstance(vb, list):
+        if path == f"/{list_key}":
+            _diff_keyed_list(va, vb, out, list_key=list_key, label_of=label_of)
+            return
+        for i in range(max(len(va), len(vb))):
+            token = f"{path}/{i}"
+            if i >= len(va):
+                out.append({"path": token, "kind": "added",
+                            "before": None, "after": vb[i]})
+            elif i >= len(vb):
+                out.append({"path": token, "kind": "removed",
+                            "before": va[i], "after": None})
+            else:
+                _diff_document(token, va[i], vb[i], out,
+                               list_key=list_key, label_of=label_of)
+    else:
+        out.append({"path": path or "/", "kind": "changed",
+                    "before": va, "after": vb})
+
+
+def _diff_keyed_list(a: list[Any], b: list[Any], out: list[dict[str, Any]],
+                     *, list_key: str,
+                     label_of: Callable[[dict[str, Any]], str]) -> None:
+    """The order-sensitive keyed list (workflow ``stages``, rubric
+    ``dimensions``): members compare by label (a mid-list insert does not
+    cascade "changed" onto every later member) and any sequence change is
+    one ``order`` entry on the list's path — order is meaningful (the
+    interpreter is linear; weights renormalize over the sequence)."""
+    labels_a = [label_of(s) for s in a]
+    labels_b = [label_of(s) for s in b]
+    by_a = {label_of(s): s for s in a}
+    by_b = {label_of(s): s for s in b}
+    if labels_a != labels_b:
+        out.append({"path": f"/{list_key}", "kind": "order",
+                    "before": labels_a, "after": labels_b})
+    for label in dict.fromkeys(labels_a + labels_b):  # order-stable union
+        token = f"/{list_key}/{_pointer(label)}"
+        if label not in by_a:
+            out.append({"path": token, "kind": "added",
+                        "before": None, "after": by_b[label]})
+        elif label not in by_b:
+            out.append({"path": token, "kind": "removed",
+                        "before": by_a[label], "after": None})
+        else:
+            _diff_document(token, by_a[label], by_b[label], out,
+                           list_key=list_key, label_of=label_of)
+
+
+def diff_documents(a: dict[str, Any], b: dict[str, Any], *, list_key: str,
+                   label_of: Callable[[dict[str, Any]], str]) \
+        -> list[dict[str, Any]]:
+    """Structural diff of two *already validated* documents sharing the
+    same ``name``: ``{path, kind, before, after}`` entries with RFC 6901
+    JSON-pointer paths and ``kind`` in ``added | removed | changed |
+    order``. ``list_key`` names the order-sensitive keyed list at the
+    document's top level (``stages`` for workflows, ``dimensions`` for
+    rubrics); callers validate identity and shape (ticket 13: one diff
+    core, two catalogs)."""
+    out: list[dict[str, Any]] = []
+    _diff_document("", a, b, out, list_key=list_key, label_of=label_of)
+    return out
+
+
 def diff_descriptors(a: Any, b: Any) -> list[dict[str, Any]]:
     """Structural diff of two v1 descriptors (ticket 04).
 
@@ -102,63 +192,7 @@ def diff_descriptors(a: Any, b: Any) -> list[dict[str, Any]]:
         raise CatalogError(f"cannot diff '{a['name']}' against "
                            f"'{b['name']}' — diffs compare versions of "
                            f"one workflow")
-    out: list[dict[str, Any]] = []
-    _diff_node("", a, b, out)
-    return out
-
-
-def _diff_node(path: str, va: Any, vb: Any,
-               out: list[dict[str, Any]]) -> None:
-    if va == vb:  # parsed equality: structure, not bytes
-        return
-    if isinstance(va, dict) and isinstance(vb, dict):
-        for key in sorted(set(va) | set(vb)):
-            token = f"{path}/{_pointer(str(key))}"
-            if key not in va:
-                out.append({"path": token, "kind": "added",
-                            "before": None, "after": vb[key]})
-            elif key not in vb:
-                out.append({"path": token, "kind": "removed",
-                            "before": va[key], "after": None})
-            else:
-                _diff_node(token, va[key], vb[key], out)
-    elif isinstance(va, list) and isinstance(vb, list):
-        if path == "/stages":
-            _diff_stages(va, vb, out)
-            return
-        for i in range(max(len(va), len(vb))):
-            token = f"{path}/{i}"
-            if i >= len(va):
-                out.append({"path": token, "kind": "added",
-                            "before": None, "after": vb[i]})
-            elif i >= len(vb):
-                out.append({"path": token, "kind": "removed",
-                            "before": va[i], "after": None})
-            else:
-                _diff_node(token, va[i], vb[i], out)
-    else:
-        out.append({"path": path or "/", "kind": "changed",
-                    "before": va, "after": vb})
-
-
-def _diff_stages(a: list[Any], b: list[Any], out: list[dict[str, Any]]) -> None:
-    names_a = [_stage_label(s) for s in a]
-    names_b = [_stage_label(s) for s in b]
-    by_a = {_stage_label(s): s for s in a}
-    by_b = {_stage_label(s): s for s in b}
-    if names_a != names_b:
-        out.append({"path": "/stages", "kind": "order",
-                    "before": names_a, "after": names_b})
-    for label in dict.fromkeys(names_a + names_b):  # order-stable union
-        token = f"/stages/{_pointer(label)}"
-        if label not in by_a:
-            out.append({"path": token, "kind": "added",
-                        "before": None, "after": by_b[label]})
-        elif label not in by_b:
-            out.append({"path": token, "kind": "removed",
-                        "before": by_a[label], "after": None})
-        else:
-            _diff_node(token, by_a[label], by_b[label], out)
+    return diff_documents(a, b, list_key="stages", label_of=_stage_label)
 
 
 # -- the repo ------------------------------------------------------------------
@@ -167,6 +201,19 @@ def _require_actor(actor: str) -> None:
     if actor not in ACTORS:
         raise CatalogError(f"actor must be one of {', '.join(ACTORS)}, "
                            f"got {actor!r}")
+
+
+def require_document_size(doc: Any, *, name: str | None = None) -> None:
+    """The serialized-size boundary (ticket 13): v1 documents are ~1 KB
+    and schema-closed, so anything near the cap is a payload, not a
+    document. Shared by both catalogs — every save surface (CLI, seed,
+    agent tools) inherits it identically."""
+    size = len(json.dumps(doc, ensure_ascii=False).encode("utf-8"))
+    if size > MAX_DOCUMENT_BYTES:
+        raise CatalogError(
+            f"serialized {name or 'document'} is {size} bytes "
+            f"(cap {MAX_DOCUMENT_BYTES}) — documents are bounded v1 "
+            f"descriptors, not payloads")
 
 
 def _detail(name: str, via: str | None,
@@ -287,17 +334,23 @@ class WorkflowCatalog:
         first version (one entry point; ``workflow_created`` vs
         ``workflow_version_created`` distinguish it in the log).
 
-        The document must be valid v1 — nothing invalid ever enters —
-        and its embedded ``name``/``version`` are the row's identity.
-        The version must be exactly ``max + 1`` (or 1 for a new name)
-        and must not already exist: dense, never reused, never
-        overwritten. Returns the stored version.
+        The document must be valid v1 and *runnable* — nothing invalid
+        or statically unbindable ever enters (schema + bindings here;
+        the engine's pre-flight re-checks both at run start). Its
+        embedded ``name``/``version`` are the row's identity. The
+        version must be exactly ``max + 1`` (or 1 for a new name) and
+        must not already exist: dense, never reused, never overwritten.
+        Returns the stored version.
         """
         _require_actor(actor)
         try:
             require_valid(doc)
         except DescriptorError as exc:
             raise CatalogError(str(exc)) from exc
+        errors = validate_bindings(doc, BINDING_REGISTRIES)
+        if errors:
+            raise CatalogError("workflow cannot run: " + "; ".join(errors))
+        require_document_size(doc, name=doc.get("name"))
         name, version = doc["name"], doc["version"]
         name_row = self._name_row(name)
         if name_row is not None and name_row.retired_at is not None:
