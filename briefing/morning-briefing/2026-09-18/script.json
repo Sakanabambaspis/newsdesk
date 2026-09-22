@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-18",
+  "generated_at": "2026-09-18T06:18:38.523240+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 234,
+    "est_seconds": 93
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Snapchat 'willing to implement' daily time limits for teens, boss tells BBC. Snapchat 'willing to implement' daily time limits for teens, boss tells BBC Evan Speigel says it would be \"an important step forward for the industry\" in an interview with the BBC.",
+      "item_ids": [
+        "item_8d0496066c9b340e1107"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "headline",
+      "text": "EU chief backs plan for Canada to become 'associate member'. EU chief backs plan for Canada to become 'associate member' Trump, who has frequently clashed with Canada's PM, threatens to cut trade with the European Union in response to the proposal.",
+      "item_ids": [
+        "item_25294f89a24d12522d30"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "US interest rates raised for first time in three years. US interest rates raised for first time in three years Rates were hiked in a unanimous decision despite fierce opposition from President Donald Trump, who had called for a cut.",
+      "item_ids": [
+        "item_f566869bab0224fb8694"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "Snap is launching a new Specs AI tool, and it’s coming to iOS and Mac. Snap is launching a new Specs AI tool, and it’s coming to iOS and Mac Snap is introducing \"Specs Intelligence,\" a new AI assistant that can connect other digital accounts to help you with things like work tasks and keeping track of travel information. It seems similar to AI assistants like Meta's Muse and Gemini's Spark, though Snap is pitching Specs Intelligence as an \"anticipatory AI service\" that \"helps you manage what needs attention today, so you can make progr",
+      "item_ids": [
+        "item_cb281fd96f2ff97eacb5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 38
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}

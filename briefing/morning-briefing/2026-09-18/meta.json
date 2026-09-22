@@ -1,0 +1,28 @@
+{
+  "format": "episode-archive@1",
+  "date": "2026-09-18",
+  "station": "morning-briefing",
+  "guid": "morning-briefing-2026-09-18",
+  "workflow": {
+    "name": null,
+    "version": null
+  },
+  "code_commit": "7ddb2f3df9e2f8af3a2f6677c200e42c89007f1e",
+  "digest": {
+    "method": null,
+    "verdict_method": null,
+    "items_in_window": null
+  },
+  "script": {
+    "method": "extractive",
+    "words": 234,
+    "est_seconds": 93
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "chunks": 7,
+    "duration_seconds": 89.4
+  },
+  "episode_path": "audio/2026-09-18.mp3",
+  "archived_at": "2026-09-22T17:36:41.347168+08:00"
+}
