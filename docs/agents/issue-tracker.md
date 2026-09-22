@@ -8,6 +8,32 @@ switch.
 Issues and specs (you may know a spec as a PRD) for this repo live as markdown
 files in `.scratch/`.
 
+## Program level — read before planning anything
+
+`.scratch/program/` is the repo's **single source of todo across efforts**
+(one ticket per effort window under `.scratch/program/issues/`). `AGENTS.md`
+at the repo root routes every planning session here; this section defines the
+mechanics. Program tickets use status vocabulary `open | claimed | resolved`.
+
+1. **Read** `.scratch/program/map.md` — it names the effort order, the
+   user-judged gates between windows, and the effort index.
+2. **Claim before you plan**: set the effort ticket `Status: claimed` and add
+   a `Claimed: YYYY-MM-DD — <actor/session>` line *before* opening or
+   creating any effort map. Sessions share this working tree, so a claim is
+   visible to every other session immediately; if two sessions claim the
+   same window, the first to write wins and the loser re-reads the map.
+3. **Stale claims**: a claim idle for more than 7 days with no progress
+   recorded may be taken over — note the takeover on the ticket, then
+   re-claim with a fresh `Claimed:` line.
+4. **Gates**: an effort ticket may only be marked `resolved` with (a) a
+   pointer to the deliverable and (b) the user's explicit gate verdict
+   recorded in its `## Answer`. A complete deliverable without a gate
+   verdict stays `claimed`.
+5. **No orphan efforts**: creating any new `.scratch/<effort>/` directory
+   requires a program ticket first (claim or create one under
+   `.scratch/program/issues/`). Findings docs, reviews, and research files
+   are not efforts.
+
 ## Conventions
 
 - One feature per directory: `.scratch/<feature-slug>/`

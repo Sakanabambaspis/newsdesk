@@ -308,6 +308,11 @@ def morning(
         help="Publish as this station (its scope, workflow, feed identity "
              "and path); default: NEWSDESK_STATION, else the station-less "
              "legacy run"),
+    archive_dir: Optional[Path] = typer.Option(
+        None, "--archive",
+        help="After a successful publish, archive the episode bundle "
+             "(script + version-aware meta) under this directory. A "
+             "fresh-runner re-run has no sidecar to archive."),
 ) -> None:
     """The whole morning: collect -> digest -> script -> tts -> publish -> notify."""
     from .workflow.catalog import (CatalogError, WorkflowCatalog,
@@ -343,13 +348,28 @@ def morning(
                 ref = StationRepo(session).resolve(station)["workflow_ref"]
             else:
                 ref = "default-morning"
-            report = run_workflow(session, settings,
-                                  WorkflowCatalog(session).resolve(ref),
+            descriptor = WorkflowCatalog(session).resolve(ref)
+            report = run_workflow(session, settings, descriptor,
                                   station, date=date)
         except WorkflowRunError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
         except CatalogError as exc:
+            typer.echo(f"error: {exc}")
+            raise typer.Exit(code=1)
+    # ticket 04: the run that publishes also archives the episode bundle —
+    # the sidecar is this runner's only copy, so the archive happens here
+    # or never (an already_published re-run is a fresh runner: skip)
+    if archive_dir is not None and report["outcome"] == "published":
+        from .morning.archive import ArchiveError, write_bundle
+
+        try:
+            report["archive"] = write_bundle(
+                settings, report,
+                workflow_name=descriptor["name"],
+                workflow_version=descriptor["version"],
+                archive_dir=archive_dir, station=station)
+        except ArchiveError as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
     if json_out:
@@ -382,6 +402,8 @@ def morning(
     typer.echo(mask(f"    feed:    {stages['publish']['feed_url']}"))
     typer.echo(f"  notify    {stages['notify']['outcome']} "
                f"({', '.join(stages['notify']['notifiers']) or 'none registered'})")
+    if report.get("archive"):
+        typer.echo(f"  archive   {report['archive']['path']}")
 
 
 @app.command("serve")

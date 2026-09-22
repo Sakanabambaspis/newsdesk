@@ -44,6 +44,38 @@ root feed, byte-for-byte — same URLs, same GUIDs, same identity).
   feed token, base URL and Cloudflare credentials are shared; the only
   per-station env is `NEWSDESK_STATION`.
 
+## The episode archive: the script lands in the repo (ticket 04)
+
+The feed is anonymous by design and carries **audio only** — content via
+subscription would mean transcribing audio. The exact content is the
+pre-TTS script sidecar, but it lives under `NEWSDESK_HOME` on the runner
+and evaporates with the job. So the run that publishes also archives the
+episode into the repo: each leg runs `newsdesk morning --archive briefing`,
+then the **Commit the episode archive back to main** step lands the bundle:
+
+```
+briefing/<station>/<date>/script.json   # the sidecar, byte-for-byte
+briefing/<station>/<date>/meta.json     # which version owns the podcast
+```
+
+`meta.json` is the provenance record: the workflow `name@version` that ran,
+the code commit (`GITHUB_SHA`), the digest/script/tts stage facts, the
+episode GUID, and the episode's path on the host (`audio/<date>.mp3` —
+token-free by construction; the token appears in exactly one place: the
+feed). The private repo is not the published site, so the sidecar's
+"never published" posture (morning-audio ticket 07) is untouched.
+
+- The commit step pushes `HEAD:main` after a rebase — matrix legs race on
+  push, but bundle paths are disjoint per station so the replay never
+  conflicts. Three retries, then the leg fails like any other.
+- This is why the job needs `permissions: contents: write` and a full
+  checkout (`fetch-depth: 0` — a shallow clone cannot rebase).
+- An already-published re-run is a fresh runner with no sidecar: both the
+  archive and the commit no-op (green, by design). A same-day *backfill*
+  (`--date`) archives too, because it rebuilds and re-publishes.
+- Reading it: `briefing/<station>/LATEST`-style pointers don't exist —
+  browse by date, or `git log episode/` for the daily commits.
+
 ## Schedule and deadline
 
 - Single cron `7 23 * * *` UTC = **07:07 HKT daily**. Deadline is

@@ -15,6 +15,11 @@
 # station (NEWSDESK_STATION) and stages the union of all stations'
 # archives, so no deploy ever drops another station's history. Adding a
 # station = one seed entry + one matrix entry.
+#
+# Ticket 04: each leg also archives its episode bundle (pre-TTS script +
+# version-aware meta) under briefing/ and commits it back to main — the
+# feed carries audio only, so the repo commit is the content source of
+# record (see docs/morning-actions.md).
 name: morning
 
 on:
@@ -33,7 +38,8 @@ on:
         default: false
 
 permissions:
-  contents: read
+  # ticket 04: the archive step commits episode bundles back to main
+  contents: write
 
 concurrency:
   group: morning
@@ -71,6 +77,10 @@ jobs:
       MORNING_FAIL_PROBE: ${{ inputs.fail }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the archive commit rebases onto fresh main before push (matrix
+          # legs race); a shallow clone cannot rebase
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -101,4 +111,35 @@ jobs:
           if [ -n "$MORNING_DATE" ]; then
             args+=(--date "$MORNING_DATE")
           fi
-          newsdesk morning --json "${args[@]}"
+          newsdesk morning --json --archive briefing "${args[@]}"
+
+      # Ticket 04: the repo commit is the content source of record — the
+      # feed carries audio only. Legs race on push; bundle paths are
+      # disjoint per station, so a rebase replay never conflicts.
+      - name: Commit the episode archive back to main
+        run: |
+          set -euo pipefail
+          if [ ! -d briefing ]; then
+            echo "no episode bundle this leg (already-published re-run)"
+            exit 0
+          fi
+          git add briefing
+          if git diff --cached --quiet; then
+            echo "episode archive unchanged — nothing to commit"
+            exit 0
+          fi
+          ep_date=$(git diff --cached --name-only \
+                    | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+          git -c user.name=newsdesk-bot \
+              -c user.email=newsdesk-bot@users.noreply.github.com \
+              commit -m "episode(${NEWSDESK_STATION}): archive ${ep_date:-unknown}"
+          for attempt in 1 2 3; do
+            if git fetch origin main \
+               && git rebase origin/main \
+               && git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          echo "could not push the episode archive after 3 attempts" >&2
+          exit 1

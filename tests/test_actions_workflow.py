@@ -50,9 +50,12 @@ def test_dispatch_exists_for_backfill_and_failure_probe():
 
 
 def test_minimal_permissions_and_serial_runs():
+    # contents: write is the one grant beyond checkout — ticket 04's archive
+    # step commits episode bundles back to main (docs/morning-actions.md)
     text = _text()
     assert re.search(r"^permissions:\s*$", text, re.MULTILINE)
-    assert re.search(r"^\s+contents:\s+read\s*$", text, re.MULTILINE)
+    assert re.search(r"^\s+contents:\s+write\s*$", text, re.MULTILINE)
+    assert not re.search(r"^\s+contents:\s+read\s*$", text, re.MULTILINE)
     assert re.search(r"^concurrency:\s*$", text, re.MULTILINE)
     # overlapping schedule/dispatch runs queue instead of racing the deploy
     assert re.search(r"^\s+group:\s+morning\s*$", text, re.MULTILINE)
@@ -68,6 +71,9 @@ def test_installs_audio_extra_and_runs_the_one_command():
     text = _text()
     assert "pip install .[tts]" in text, "the tts extra carries edge-tts"
     assert "newsdesk morning --json" in text
+    # ticket 04: the publishing run archives its episode bundle into the
+    # repo; the commit step below is what lands it on main
+    assert "--archive briefing" in text
     # backfill passes the dispatch date through; env indirection only —
     # every "${{ inputs." line must be a MORNING_* env mapping, never a
     # script interpolation (injection-safe)
@@ -138,3 +144,23 @@ def test_station_matrix_runs_every_seeded_station_with_isolated_legs():
     seeded = [s["name"] for s in
               json.loads(SEED.read_text(encoding="utf-8"))["stations"]]
     assert sorted(listed) == sorted(seeded)
+
+
+def test_archive_step_commits_the_bundle_back_to_main():
+    """Ticket 04: the feed carries audio only, so the repo commit is the
+    content source of record. The step must push to main (not the detached
+    checkout ref), survive the matrix push race via rebase, and no-op
+    cleanly on already-published re-runs — a green run is never optional."""
+    text = _text()
+    # a shallow clone cannot rebase, and the push race needs the rebase
+    assert re.search(r"^\s+fetch-depth:\s+0\s*$", text, re.MULTILINE)
+    commit_step = re.search(
+        r"- name: Commit the episode archive back to main\n(.*?)(?=\n      - name:|\Z)",
+        text, re.DOTALL)
+    assert commit_step, "missing the episode-archive commit step"
+    body = commit_step.group(1)
+    assert "git push origin HEAD:main" in body
+    assert "git rebase origin/main" in body
+    assert "NEWSDESK_STATION" in body, "the commit must name its station"
+    # an already-published re-run (fresh runner, no bundle) must exit 0
+    assert "no episode bundle this leg" in body
