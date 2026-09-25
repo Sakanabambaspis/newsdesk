@@ -202,23 +202,23 @@ def _publish_station_union(settings: Any, episode: dict[str, Any],
     identity). Any station's history that cannot be fetched refuses the
     deploy — the archive-intact posture, widened."""
     date = episode["date"]
-    me = {"name": episode["station"],
+    me = {"station": episode["station"],
           "path_segment": episode.get("path_segment"),
           "feed": episode.get("feed") or {}}
     stations = episode.get("stations") or [me]
-    if not any(s["name"] == me["name"] for s in stations):
+    if not any(s["station"] == me["station"] for s in stations):
         stations = [*stations, me]
     with tempfile.TemporaryDirectory(prefix="morning-cf-") as tmp:
         site = Path(tmp) / settings.feed_token
         for target in stations:
             segment = target.get("path_segment")
             public = _public_url(settings, segment)
-            label = f"station '{target['name']}'" if segment else None
+            label = f"station '{target['station']}'" if segment else None
             manifest = _fetch_manifest(public, label=label)
             root = _subtree(site, segment)
             audio_dir = root / "audio"
             audio_dir.mkdir(parents=True)
-            mine = target["name"] == me["name"]
+            mine = target["station"] == me["station"]
             if mine:
                 dest = audio_dir / f"{date}.mp3"
                 shutil.copyfile(audio_path, dest)
@@ -226,7 +226,7 @@ def _publish_station_union(settings: Any, episode: dict[str, Any],
                 entry = {"date": date, "file": f"audio/{date}.mp3",
                          "bytes": dest.stat().st_size,
                          "duration_seconds": int(episode["duration_seconds"]),
-                         "guid": episode_guid(date, station=me["name"]),
+                         "guid": episode_guid(date, station=me["station"]),
                          "published_at": (prior["published_at"] if prior else
                                           datetime.now(MORNING_TZ).isoformat())}
                 manifest = sorted(
@@ -238,7 +238,7 @@ def _publish_station_union(settings: Any, episode: dict[str, Any],
                 st, content = _http_get(f"{public}/{e['file']}")
                 if st != 200 or len(content) < _MIN_AUDIO_BYTES:
                     raise PublishError(
-                        f"station '{target['name']}' episode {e['date']} "
+                        f"station '{target['station']}' episode {e['date']} "
                         f"could not be fetched from the live site (HTTP "
                         f"{st}) — refusing to redeploy: the deployment "
                         "would drop it from the archive")

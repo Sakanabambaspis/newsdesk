@@ -20,6 +20,7 @@ from newsdesk.morning.cloudflare import (_MIN_AUDIO_BYTES, PublishError,
                                          already_published, publish_cloudflare)
 from newsdesk.morning.feed import episode_guid
 from newsdesk.morning.registries import PUBLISHERS, load_plugins
+from newsdesk.workflow.stations import publish_target
 
 TOKEN = "3f9a1c77b2d84e05a1c3f6d2b9e08417"
 CF_TOKEN = "cf-secret-token-value"
@@ -298,14 +299,19 @@ def test_published_manifest_not_json_refuses(cf, remote, monkeypatch, tmp_path):
 
 # -- W4: station legs stage the union of every station's archive ------------------
 
-PAPERS = {"name": "papers", "path_segment": "papers",
-          "feed": {"title": "Paper Trail", "author": "Paper Trail"}}
-ROOT_STATION = {"name": "morning-briefing", "path_segment": None, "feed": {}}
+# The payload is built exactly as the engine sends it (engine.py):
+# ``episode.update(publish_target(station_record))`` plus
+# ``episode["stations"] = [publish_target(row) for row in repo.list()]`` —
+# entries keyed ``station``/``path_segment``/``feed``, never hand-rolled.
+PAPERS = publish_target({"name": "papers", "path_segment": "papers",
+                         "feed_title": "Paper Trail",
+                         "feed_author": "Paper Trail"})
+ROOT_STATION = publish_target({"name": "morning-briefing",
+                               "path_segment": None})
 
 
 def _station_episode(date: str, *, duration: int = 300) -> dict:
-    return {"date": date, "duration_seconds": duration, "station": "papers",
-            "path_segment": "papers", "feed": PAPERS["feed"],
+    return {"date": date, "duration_seconds": duration, **PAPERS,
             "stations": [ROOT_STATION, PAPERS]}
 
 
