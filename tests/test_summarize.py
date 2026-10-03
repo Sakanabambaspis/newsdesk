@@ -129,3 +129,31 @@ def test_audio_transcriber_against_mock_endpoint(tmp_path):
 
     with pytest.raises(Exception):
         AudioTranscriber(Settings(home=tmp_path))  # no credentials -> clear error
+
+
+def test_bad_model_responses_degrade_as_llm_errors(tmp_path):
+    """Null content / non-JSON 200 must surface as LLMError (the contained
+    degrade path), never as a raw TypeError/ValueError that crashes the pass."""
+    from newsdesk.llm.base import LLMError
+    from newsdesk.media.transcripts import AudioTranscriber
+    from newsdesk.media.vision import VisionDescriber
+    from newsdesk.config import Settings
+
+    settings = Settings(home=tmp_path, llm_base_url="https://llm.test/v1",
+                        llm_api_key="k")
+
+    null_content = httpx.MockTransport(
+        lambda request: httpx.Response(200, json={
+            "choices": [{"message": {"content": None}}]}))
+    frame = tmp_path / "f.jpg"
+    frame.write_bytes(b"fake-jpeg")
+    with pytest.raises(LLMError, match="null or empty"):
+        VisionDescriber(settings, transport=null_content).describe_frames(
+            [frame], context="x")
+
+    not_json = httpx.MockTransport(
+        lambda request: httpx.Response(200, text="<html>proxied</html>"))
+    audio = tmp_path / "a.mp3"
+    audio.write_bytes(b"fake")
+    with pytest.raises(LLMError, match="unexpected transcription"):
+        AudioTranscriber(settings, transport=not_json).transcribe_file(audio)

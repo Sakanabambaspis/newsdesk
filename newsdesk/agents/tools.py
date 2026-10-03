@@ -692,8 +692,7 @@ def _summarize_report(report: dict[str, Any],
 def run_workflow(session, settings, ref: str, station: str | None = None,
                  date: str | None = None, verbose: bool = False) \
         -> dict[str, Any]:
-    ensure_default_catalog(session)  # the shipped default, like the CLI
-    descriptor = _catalog(session).resolve(ref)
+    descriptor = _catalog(session).resolve(ref)  # bootstraps the default
     report = _engine.run_workflow(session, settings, descriptor, station,
                                   date=date, dry_run=True)
     if verbose:

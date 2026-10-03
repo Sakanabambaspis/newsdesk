@@ -19,10 +19,6 @@ from urllib.robotparser import RobotFileParser
 from ..config import Settings
 
 
-class FetchStatusError(Exception):
-    """A retryable HTTP status (e.g. 5xx) persisted across all attempts."""
-
-
 class HttpHelper:
     def __init__(self, settings: Settings, transport: httpx.BaseTransport | None = None):
         self.settings = settings
@@ -102,7 +98,7 @@ class HttpHelper:
                     time.sleep(delay)
                     continue
                 if response.status_code >= 500 and attempt < attempts - 1:
-                    last_error = FetchStatusError(response.status_code)
+                    # the final attempt's 5xx is returned to the caller as-is
                     time.sleep(1.5 ** attempt)
                     continue
                 return response

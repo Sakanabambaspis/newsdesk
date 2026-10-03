@@ -114,7 +114,11 @@ class AudioTranscriber:
             )
         if response.status_code >= 400:
             raise LLMError(f"transcription HTTP {response.status_code}: {response.text[:200]}")
-        return response.json().get("text", "")
+        try:
+            return response.json().get("text", "")
+        except ValueError as exc:
+            # non-JSON 200 must degrade the pass as an LLMError, not crash it
+            raise LLMError(f"unexpected transcription response: {exc}") from exc
 
 
 def download_audio(url: str, dest_dir: Path, settings: Settings,

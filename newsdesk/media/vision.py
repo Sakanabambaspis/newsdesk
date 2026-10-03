@@ -95,7 +95,17 @@ class VisionDescriber:
             })
         if response.status_code >= 400:
             raise LLMError(f"vision HTTP {response.status_code}: {response.text[:200]}")
-        return response.json()["choices"][0]["message"]["content"].strip()
+        try:
+            content = response.json()["choices"][0]["message"]["content"]
+        except (ValueError, KeyError, IndexError, TypeError) as exc:
+            raise LLMError(
+                f"unexpected vision response shape: {exc}") from exc
+        # reasoning-tuned models answer with content: null — a contained
+        # LLMError degrades the vision pass; a raw TypeError would not
+        if not isinstance(content, str) or not content.strip():
+            raise LLMError("vision model returned null or empty content: "
+                           + response.text[:300])
+        return content.strip()
 
 
 def download_video(url: str, dest_dir: Path, settings: Settings,

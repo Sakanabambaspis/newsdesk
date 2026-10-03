@@ -204,7 +204,7 @@ def create_rubric_tool(document: dict) -> str:
 
 @mcp.tool(name="diff_rubric", description=_DESCRIPTIONS["diff_rubric"])
 def diff_rubric_tool(name: str, from_version: int, to_version: int) -> str:
-    return json.dumps(_run(lambda s, cfg: tools.diff_rubric_tool(
+    return json.dumps(_run(lambda s, cfg: tools.diff_rubric(
         s, cfg, name, from_version, to_version)), ensure_ascii=False)
 
 

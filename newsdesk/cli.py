@@ -7,6 +7,8 @@
     newsdesk item <item_id>       full canonical record as JSON
     newsdesk summarize <item_id>  grounded summary (extractive without an LLM)
     newsdesk digest <item_id>     watch a video: transcript + vision + summary
+    newsdesk digest-daily         the day's watchlist digest (--deep adds
+                                  LLM deep dives)
     newsdesk script               stage the spoken-briefing script (+ sidecar)
     newsdesk audio                synthesize the staged script into the day's MP3
     newsdesk morning              the whole morning: collect through notify
@@ -351,10 +353,7 @@ def morning(
             descriptor = WorkflowCatalog(session).resolve(ref)
             report = run_workflow(session, settings, descriptor,
                                   station, date=date)
-        except WorkflowRunError as exc:
-            typer.echo(f"error: {exc}")
-            raise typer.Exit(code=1)
-        except CatalogError as exc:
+        except (WorkflowRunError, CatalogError) as exc:
             typer.echo(f"error: {exc}")
             raise typer.Exit(code=1)
     # ticket 04: the run that publishes also archives the episode bundle —

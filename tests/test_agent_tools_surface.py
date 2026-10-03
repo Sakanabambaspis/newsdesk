@@ -65,6 +65,21 @@ def test_every_wired_spec_is_reachable_on_both_surfaces(client, mcp_names):
             f"tool '{spec['name']}': no MCP tool"
 
 
+def test_mcp_wrappers_delegate_to_resolvable_functions():
+    """Every ``tools.<attr>(...)`` the MCP wrappers reference must exist —
+    a wrong name (e.g. ``diff_rubric_tool`` for ``diff_rubric``) is caught
+    by the server's broad except and looks like a plausible tool error."""
+    import re
+
+    from newsdesk import mcp_server
+    source = inspect.getsource(mcp_server)
+    delegated = set(re.findall(r"\btools\.(\w+)\(", source))
+    assert delegated, "no delegation found — the regex or the server moved"
+    for attr in delegated:
+        assert hasattr(tools, attr), \
+            f"MCP wrapper delegates to tools.{attr}, which does not exist"
+
+
 def test_planned_specs_stay_unplumbed(mcp_names):
     for spec in TOOL_SPECS:
         if spec["status"].startswith("planned"):
