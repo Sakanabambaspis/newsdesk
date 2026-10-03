@@ -130,10 +130,14 @@ jobs:
           fi
           ep_date=$(git diff --cached --name-only \
                     | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
-          git -c user.name=newsdesk-bot \
-              -c user.email=newsdesk-bot@users.noreply.github.com \
-              commit -m "episode(${NEWSDESK_STATION}): archive ${ep_date:-unknown}"
+          # repo-local ident: the rebase replay needs a committer too, and
+          # -c flags on the commit alone don't reach it (the race loser
+          # replays; the race winner fast-forwards and never notices)
+          git config user.name newsdesk-bot
+          git config user.email newsdesk-bot@users.noreply.github.com
+          git commit -m "episode(${NEWSDESK_STATION}): archive ${ep_date:-unknown}"
           for attempt in 1 2 3; do
+            git rebase --abort >/dev/null 2>&1 || true  # un-poison a failed rebase
             if git fetch origin main \
                && git rebase origin/main \
                && git push origin HEAD:main; then
