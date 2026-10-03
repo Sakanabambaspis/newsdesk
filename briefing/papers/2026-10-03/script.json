@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-03",
+  "generated_at": "2026-10-03T16:29:44.177464+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 19,
+    "est_seconds": 8
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
