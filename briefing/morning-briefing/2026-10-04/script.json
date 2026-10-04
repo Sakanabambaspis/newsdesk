@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-04",
+  "generated_at": "2026-10-04T10:36:02.123249+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 135,
+    "est_seconds": 55
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "The Agent Said It Was Done. The Database Disagreed.. The Agent Said It Was Done. The Database Disagreed.",
+      "item_ids": [
+        "item_bd1136d0fcfd6f1357de"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 7
+    },
+    {
+      "type": "headline",
+      "text": "EV drivers love their cars, but some passengers feel sick - this could be why. EV drivers love their cars, but some passengers feel sick - this could be why Research shows there are several reasons people might experience motion sickness in electric vehicles.",
+      "item_ids": [
+        "item_dc8d6d541dd48e58624f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Jev估值100亿美元！创始人Diogo Almeida回答一切. Jev估值100亿美元！创始人Diogo Almeida回答一切",
+      "item_ids": [
+        "item_a496e63fa0a2bc194ad8"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "deep_dive",
+      "text": "All the AI agents that can live in your text messages. All the AI agents that can live in your text messages We created a list of the most notable AI agents that can live in your text messages, from general assistants to agents designed for families, travel, and work.",
+      "item_ids": [
+        "item_7096cbc634e5d7d26867"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
