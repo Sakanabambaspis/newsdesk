@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-05",
+  "generated_at": "2026-10-05T09:56:34.795640+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 191,
+    "est_seconds": 77
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "'Anger in the streets': Tens of thousands protest in Spain over housing crisis. 'Anger in the streets': Tens of thousands protest in Spain over housing crisis More than 50 protests took place on Saturday after the government failed to get emergency legislation through parliament.",
+      "item_ids": [
+        "item_9e19bd1f7bfc867d663d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Rare tornado whips through small Australian town. Rare tornado whips through small Australian town The twister was caught on camera in Ulladulla, New South Wales, damaging property and downing trees.",
+      "item_ids": [
+        "item_9cd7fdbacecb114ee3dc"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 12
+    },
+    {
+      "type": "headline",
+      "text": "最火AI岗位FDE：月薪5万，都干这些…. 最火AI岗位FDE：月薪5万，都干这些… 什么是FDE？它会一直存在吗？",
+      "item_ids": [
+        "item_5692f92354392dc5a3bf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "NJ’s former Lt Gov is using AI to say he’s innocent of sexual harassment. NJ’s former Lt Gov is using AI to say he’s innocent of sexual harassment Well, if AI said it, it must be true. | Bloomberg via Getty Images New Jersey's lieutenant governor Dale Caldwell was forced to resign on September 25th after an investigation found he had sexually harassed a staffer and repeatedly violated ethics rules. The now-former Lt. governor has been making the media rounds trying to clear his name. But he took a particularly odd tactic during an interview",
+      "item_ids": [
+        "item_5a1ea27ad999afed24e9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 38
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
