@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-06",
+  "generated_at": "2026-10-06T10:58:32.024568+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 215,
+    "est_seconds": 85
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "HLA-WM: Hybrid Linear Attention for Long-Horizon Video World Models. HLA-WM: Hybrid Linear Attention for Long-Horizon Video World Models Long-horizon video world models require persistent memory to preserve scene consistency over extended rollouts.",
+      "item_ids": [
+        "item_802da6afd0e5360d401c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 13
+    },
+    {
+      "type": "headline",
+      "text": "Beyond Semantic Similarity: Performance and Costs of Agentic Retrieval for Complex Tasks. Beyond Semantic Similarity: Performance and Costs of Agentic Retrieval for Complex Tasks Modern information systems, including many agentic workflows, use dense retrieval to explore large amounts of unstructured data.",
+      "item_ids": [
+        "item_cab1df2f7e237dc8b29d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "InteractionBench: A Real-Time Interaction Benchmark for Streaming Video Systems. InteractionBench: A Real-Time Interaction Benchmark for Streaming Video Systems A video assistant must speak when its instruction warrants a response and stay silent otherwise. We introduce a benchmark that evaluates this decision for the complete system of model, memory, and response controller.",
+      "item_ids": [
+        "item_7260f8b7511779592fdf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "deep_dive",
+      "text": "PACMI: Provenance-Aware Cascading Memory Invalidation for Long-Term LLM Agents. PACMI: Provenance-Aware Cascading Memory Invalidation for Long-Term LLM Agents LLM agents rely on long-term memory to retain and reuse information when performing tasks over long horizons. Existing methods provide limited support for handling memories that become outdated as new observations or domain evidence arrive. Such outdated memories may remain semantically relevant, continue to affect dependent records, and retain value as historical evidence. This calls for two capa",
+      "item_ids": [
+        "item_3dcf45ff48726e935032"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
