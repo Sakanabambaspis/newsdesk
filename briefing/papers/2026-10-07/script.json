@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-07",
+  "generated_at": "2026-10-07T10:21:05.867803+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 200,
+    "est_seconds": 80
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Self-Retrospection Distillation: Turning Post-hoc Experiences into Prior Foresight. Self-Retrospection Distillation: Turning Post-hoc Experiences into Prior Foresight Reinforcement learning with verifiable rewards (RLVR) turns agent experience into learning signals primarily through scalar outcome rewards after interaction.",
+      "item_ids": [
+        "item_7549a8719fa32572bbe9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "WorldSonus: Bringing Sound to Worlds. WorldSonus: Bringing Sound to Worlds Recent advances in world models have enabled increasingly realistic visual synthesis. However, these generated environments remain largely silent.",
+      "item_ids": [
+        "item_30705d08b84290271c9b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 11
+    },
+    {
+      "type": "headline",
+      "text": "Learning to Retrieve via Reinforcement Learning in Embedding Space. Learning to Retrieve via Reinforcement Learning in Embedding Space Dense retrieval models are typically trained with contrastive objectives that learn effective representations but do not directly optimize retrieval metrics or downstream task performance.",
+      "item_ids": [
+        "item_a5194a1359ddd4c27916"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "deep_dive",
+      "text": "TRACE: Rollout-Guided Quantization-Aware Training for FP4 Reinforcement Learning of MoE Language Models. TRACE: Rollout-Guided Quantization-Aware Training for FP4 Reinforcement Learning of MoE Language Models Reinforcement learning (RL) for post-training large language models (LLMs) incurs substantial computation and memory overhead during rollout generation, which motivates low-precision rollout for efficient RL training. However, existing FP4 RL methods suffer from a key limitation: they primarily optimize quantization accuracy on the training and rollout paths independently rather than directly redu",
+      "item_ids": [
+        "item_ead2e11977c4b3dea969"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
