@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-08",
+  "generated_at": "2026-10-08T10:43:52.819452+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 240,
+    "est_seconds": 96
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "SkillForge: Co-Evolving Skills and Agents via Dynamic Skill Lifecycles. SkillForge: Co-Evolving Skills and Agents via Dynamic Skill Lifecycles Memory-augmented reinforcement learning strengthens LLM agents' ability to solve complex long-horizon tasks. Skills are one such form of memory, pairing instructions with an applicability condition over task types.",
+      "item_ids": [
+        "item_5ae30de5c9869698f239"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Decoupling Exploration from Optimization in RLVR. Decoupling Exploration from Optimization in RLVR Modern language models undergo reinforcement learning with verifiable rewards (RLVR) on top of already-trained checkpoints. A key promise of RLVR is the discovery of new reasoning strategies. In principle, a model can sample novel ideas absent from its prior training data.",
+      "item_ids": [
+        "item_da1c4a5b6e7ad57f7caf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "headline",
+      "text": "TopoGraphRAG-Bench: Evaluating Multimodal GraphRAG on Layout-Grounded Evidence Reasoning. TopoGraphRAG-Bench: Evaluating Multimodal GraphRAG on Layout-Grounded Evidence Reasoning Real-world documents distribute evidence across text, tables, figures, and captions within complex page layouts. Answering complex questions over such documents therefore requires more than retrieving relevant passages: systems must recover the evidence topology that connects heterogeneous evidence units.",
+      "item_ids": [
+        "item_517c5cc3c619ec6b821a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "deep_dive",
+      "text": "VideoEvolve: Co-Evolving Memory and Retrieval for Long Video Understanding. VideoEvolve: Co-Evolving Memory and Retrieval for Long Video Understanding Long video understanding increasingly relies on external memory to organize massive visual streams into compact representations. However, most memory-based methods dynamically adapt how information is retrieved for different questions, while largely fixing what is remembered. This mismatch makes missing details costly to recover, whereas stored information is valuable only when it can be reliably",
+      "item_ids": [
+        "item_0017e75edd9a530e5979"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
