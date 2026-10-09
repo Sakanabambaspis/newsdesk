@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-09",
+  "generated_at": "2026-10-09T10:58:51.657287+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 204,
+    "est_seconds": 81
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "SAIL: Scientific Agentic Intelligence via a Science-Aware Loop. SAIL: Scientific Agentic Intelligence via a Science-Aware Loop We introduce SAIL, an open model with 35B total and 3B active parameters for literature research, scientific coding, and multi-step research workflows.",
+      "item_ids": [
+        "item_d5092443078a1ab330c3"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "When Should Agents Think? Adaptive Reasoning via Cross-Turn Estimation. When Should Agents Think? Adaptive Reasoning via Cross-Turn Estimation Large language model (LLM)-based agents have demonstrated strong capabilities on complex tasks. They typically perform reasoning before each action throughout an interaction trajectory.",
+      "item_ids": [
+        "item_4d24c3e9937b3555073a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Why On-Policy Distillation Sometimes Fails: Vanishing Learning Signals. Why On-Policy Distillation Sometimes Fails: Vanishing Learning Signals On-policy distillation (OPD) enables effective capability transfer between language models, yet the mechanisms underlying its failures are not fully understood.",
+      "item_ids": [
+        "item_659018ed9e538baa7ddf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "deep_dive",
+      "text": "MiMo-V2.6: Scaling Reinforcement Learning Towards Self-Improvement. MiMo-V2.6: Scaling Reinforcement Learning Towards Self-Improvement Reinforcement learning (RL) is the central training paradigm for advancing large foundation models towards self-improvement. This report introduces the MiMo-V2.6 series, an omni-modal family that pushes the frontier of model intelligence by scaling RL compute. Prior to RL, we conduct mid-training on a broad multimodal corpus to provide ample exploration space, and build a solid infrastructure on t",
+      "item_ids": [
+        "item_0c6a609fc88aeb36fc4a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 28
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
