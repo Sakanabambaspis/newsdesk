@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-10",
+  "generated_at": "2026-10-10T10:20:19.267842+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 197,
+    "est_seconds": 79
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "openJiuwen发布并开源企业级AgentOS，加速智能体规模落地企业. openJiuwen发布并开源企业级AgentOS，加速智能体规模落地企业 多Agent协同还能自我进化",
+      "item_ids": [
+        "item_fdd53ad010f53e82981c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "Asana cuts model costs 76x in browser tests with GPT-6.1 Sol. Asana cuts model costs 76x in browser tests with GPT-6.1 Sol Using GPT-6 Astra in Codex, Asana made its browser agent 76x cheaper and 5x faster in tests to offer customers more capable models.",
+      "item_ids": [
+        "item_9bf93d58cc35db9987f8"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Instinct was the buzziest AI agent around — can it survive Muse?. Instinct was the buzziest AI agent around — can it survive Muse? Instinct’s agent is always just a text away. Before there were cute little guys, there was Instinct.",
+      "item_ids": [
+        "item_3c5e66d9de6d1c79dee6"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "I expect rapid progress but not towards general superintelligence. I expect rapid progress but not towards general superintelligence I’ve often been surprised when I hear from top researchers in industry that they think AI will be better than them at their job in a few years, and I didn’t really know why I doubted it. The explanation I arrived at is that researchers are seeing this massive acceleration in the infra and engineering capabilities of the models. I fully agree that the models will be superhuman distributed GPU engin",
+      "item_ids": [
+        "item_377afb641e4cb3d675c7"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 36
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
