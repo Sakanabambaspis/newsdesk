@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-11",
+  "generated_at": "2026-10-11T09:52:42.638323+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 186,
+    "est_seconds": 75
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "AI agent makers are promising privacy — will they deliver?. AI agent makers are promising privacy — will they deliver?",
+      "item_ids": [
+        "item_c9390824224ecd5bf3e1"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 8
+    },
+    {
+      "type": "headline",
+      "text": "Here are the top AI agents that can live in your text messages. Here are the top AI agents that can live in your text messages We created a list of the most notable AI agents that can live in your text messages, from general assistants to agents designed for families, travel, and work.",
+      "item_ids": [
+        "item_2640e3ae8dcdb9be477d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Anthropic is cutting off its internal evaluations from the internet. Anthropic is cutting off its internal evaluations from the internet After a recent spate of high-profile incidents in which AI agents escaped containment, Anthropic is cutting off internet access for all internal evaluations.",
+      "item_ids": [
+        "item_818f4dcf830d117b3a34"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "deep_dive",
+      "text": "Rogue Anthropic AI agent gave police fake tip in unsolved murder case. Rogue Anthropic AI agent gave police fake tip in unsolved murder case Philadelphia police said the tip was \"flagged as spam\", but criticised the tech company for taking more than two months to detect and report the breach.",
+      "item_ids": [
+        "item_b6f002258a341b0edf72"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
