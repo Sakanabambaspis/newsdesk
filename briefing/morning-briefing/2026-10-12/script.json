@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-12",
+  "generated_at": "2026-10-12T10:22:08.473687+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 162,
+    "est_seconds": 65
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "DeepSeek Bot来了！民间版，DSH装个插件就能用. DeepSeek Bot来了！民间版，DSH装个插件就能用 Grok Bot我养不起，ds bot不得高低尝尝咸淡？",
+      "item_ids": [
+        "item_adf3e6e82e6e58df80cf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 3
+    },
+    {
+      "type": "headline",
+      "text": "US justice department investigates TV networks over Trump pool coverage. US justice department investigates TV networks over Trump pool coverage The White House had blocked access for CNN, MS Now and Politico, leading them to restrict pool coverage.",
+      "item_ids": [
+        "item_8df7a29e0c3a35025161"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "下架8个月，GPT-4o的拯救行动居然还在继续. 下架8个月，GPT-4o的拯救行动居然还在继续 初代4o的API快照进入停用倒计时",
+      "item_ids": [
+        "item_5a08641eb2b294984359"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "Learning to use local AI is exciting, overwhelming, and frustrating. Learning to use local AI is exciting, overwhelming, and frustrating Baby’s first local AI agent. | Photo: Antonio G. Di Benedetto / The Verge I'm embarking on a journey I've so far been hesitant to go on: actually using AI on the regular. Giving my most personal data to cloud services has been a major hold up for me, but it's increasingly possible to run powerful models locally to see what they're capable of. Is this tech so useful that it's worth throwing gobs of",
+      "item_ids": [
+        "item_a439fdc2654eaaf3ce0c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 38
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
