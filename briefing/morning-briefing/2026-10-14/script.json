@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-14",
+  "generated_at": "2026-10-14T09:53:27.863585+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 204,
+    "est_seconds": 82
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Google finally releases Gemini 4 Argon. Google finally releases Gemini 4 Argon After months sitting on the sidelines of the frontier AI race, Google has finally launched its long-awaited Gemini 4 Argon model, claiming it can compete with the best the industry has to offer.",
+      "item_ids": [
+        "item_f9f5ac5db3b603f4975a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Shopify opens its catalog up to more AI agents. Shopify opens its catalog up to more AI agents CANADA - 2025/07/20: In this photo illustration, the Shopify logo is seen displayed on a smartphone screen.",
+      "item_ids": [
+        "item_f1305662a1d2e7c412f2"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "魔法原子具身Agent框架拿下MolmoSpaces全球第一. 魔法原子具身Agent框架拿下MolmoSpaces全球第一 让VLA从“演示可用”逼近“产线可用”",
+      "item_ids": [
+        "item_4ed5a7aedbe4a4912c27"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "Gemini 4 Argon begins rolling out in Gemini app and Antigravity, but only if you pay. Gemini 4 Argon begins rolling out in Gemini app and Antigravity, but only if you pay Google revealed Gemini 4 Argon a few weeks ago, saying that it needed to move cautiously toward a full release because of the potential for nefarious use. Google seems to have worked all that out pretty quickly, though. Argon is beginning its wide rollout today, but it's only coming to paying users at this time, and even those on lower-tier plans won't have full access. Nothing about Gemini 4 Argo",
+      "item_ids": [
+        "item_172801b07e38eb18deb6"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 41
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
