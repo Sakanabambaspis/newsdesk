@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-15",
+  "generated_at": "2026-10-15T09:28:44.093315+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 187,
+    "est_seconds": 75
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "VideoHarness-SRSI: Structured Recursive Self-Improvement for Video Understanding Harness. VideoHarness-SRSI: Structured Recursive Self-Improvement for Video Understanding Harness LLM system capabilities depend not only on model parameters but also on the executable harnesses that organize information acquisition, tool use, reasoning, and memory.",
+      "item_ids": [
+        "item_06142773bb250fd7d850"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "ActICL: Post-Training for Agentic Multimodal In-Context Learning. ActICL: Post-Training for Agentic Multimodal In-Context Learning Multimodal in-context learning (ICL) is an important capability of multimodal large language models (MLLMs). Its performance is closely tied to the demonstrations it uses, making demonstration retrieval a core problem for ICL.",
+      "item_ids": [
+        "item_9fdd97a98e228b4dfa95"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Model What Matters: Decision-Guided Selective World Modeling for Language Agents.",
+      "item_ids": [
+        "item_2b52417dae865029211e"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "deep_dive",
+      "text": "StateCraft: Augmenting Video World Models with Abstract-State Reasoning. StateCraft: Augmenting Video World Models with Abstract-State Reasoning Video world models aim to simulate complex environments with realistic appearance and dynamics. Maintaining consistency over long interactions requires tracking past actions and understanding how those actions affect the environment. Video world models can only generate partial observations of the entire world at a time. Remembering past observations alone may not be sufficient in every scenario,",
+      "item_ids": [
+        "item_7ddc75a99e1965cdf20f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
