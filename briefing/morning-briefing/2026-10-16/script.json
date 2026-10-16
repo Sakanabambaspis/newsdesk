@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-16",
+  "generated_at": "2026-10-16T09:17:57.496471+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 229,
+    "est_seconds": 91
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "FocusOPD: Structure-Guided On-Policy Distillation for Diffusion Models. FocusOPD: Structure-Guided On-Policy Distillation for Diffusion Models Multi-teacher on-policy distillation enables rectified-flow models with diffusion-transformer architectures to combine task-specific capabilities within a single student.",
+      "item_ids": [
+        "item_c3383759d04875d22ce6"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 12
+    },
+    {
+      "type": "headline",
+      "text": "VisualTrust: Video Reasoning under On-Screen Claim Framing. VisualTrust: Video Reasoning under On-Screen Claim Framing On-screen text can describe what a video shows, or it can frame what the video is supposed to mean. Current benchmarks treat both alike, testing whether a model can read the text rather than whether it should trust it.",
+      "item_ids": [
+        "item_1ddbe76526ccfdf7f3f7"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "headline",
+      "text": "Mallea: Building, Steering, and Memorizing Worlds with Coding Agent. Mallea: Building, Steering, and Memorizing Worlds with Coding Agent Code world models represent world dynamics through explicit state and executable rules. We investigate how to coordinate object representations, behavioral revisions, and visual memory within this formulation.",
+      "item_ids": [
+        "item_92e741e46cdf617fabb7"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "deep_dive",
+      "text": "Perception or Reasoning? Diagnosing and Tackling Reinforcement Learning Bottlenecks in VLMs. Perception or Reasoning? Diagnosing and Tackling Reinforcement Learning Bottlenecks in VLMs Reinforcement learning has brought strong gains to language model reasoning, but its improvements on visual tasks remain less consistent. One difficulty is that visual task failures can arise from different sources: the same benchmark may be limited by perception for one model and by reasoning for another. We introduce Perception and Reasoning Attribution (PARA), which measures the remaining perce",
+      "item_ids": [
+        "item_c20a53091a913076ef47"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 32
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
