@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-17",
+  "generated_at": "2026-10-17T09:19:44.924349+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 182,
+    "est_seconds": 73
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Replit’s CEO says the future of work is the ‘self-driving company’. Replit’s CEO says the future of work is the ‘self-driving company’ Replit CEO Amjad Masad envisions a future of “self-driving companies,” where AI agents handle day-to-day tasks and people focus on higher-level decisions.",
+      "item_ids": [
+        "item_02f60fa99bd6fa5dfa5e"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "A week with RTX Spark: everything we’ve learned using Nvidia’s new laptops. A week with RTX Spark: everything we’ve learned using Nvidia’s new laptops Nvidia’s new SoC is available in Windows laptops from six different manufacturers. We’ve collectively tested four of them so far. | Photo: Antonio G.",
+      "item_ids": [
+        "item_54ebdfe79863725a2466"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "Elorian’s first AI model wants to reason with images, not just about them. Elorian’s first AI model wants to reason with images, not just about them According to Elorian's evaluations, Glimpse outperforms even GPT-6 Astra on scientific chart reasoning and short-form video captioning, with competitive results on other visual reasoning tasks.",
+      "item_ids": [
+        "item_75fa23d8834b88f0cdaa"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "deep_dive",
+      "text": "Scaling Indic Pretraining: 2.8 Trillion Tokens and an Open Data Generation Pipeline. Scaling Indic Pretraining: 2.8 Trillion Tokens and an Open Data Generation Pipeline",
+      "item_ids": [
+        "item_138e9b7e7d9747243aa5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 10
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
