@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-18",
+  "generated_at": "2026-10-18T08:59:07.604938+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 244,
+    "est_seconds": 97
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Websites are closing their doors to AI agents. Websites are closing their doors to AI agents Autonomous agents are the hottest thing in AI. OpenAI, Meta, Google, Instinct, and others promise their agents can scour the internet on your behalf, doing anything from booking a dinner reservation and cleaning out your inbox to buying new shoes.",
+      "item_ids": [
+        "item_b31543fcd7d1501be961"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "The uncertain future of Canada's 30 rescued belugas. The uncertain future of Canada's 30 rescued belugas An international rescue operation for the last 30 captive whales in Canada made headlines. Then five of them died.",
+      "item_ids": [
+        "item_d79c78f6d2ab4f3c4926"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "Actress Selma Blair says she 'did not intend to harm anyone' in plane altercation. Actress Selma Blair says she 'did not intend to harm anyone' in plane altercation A publicist for the actress said the incident stemmed from a \"medical emergency\" and said she has a neurological disorder that can cause out-of-control responses.",
+      "item_ids": [
+        "item_eafb736c2fca509c3972"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "deep_dive",
+      "text": "Meta shakes up the frontiers, open and closed. Meta shakes up the frontiers, open and closed This has been a week where the balance of American open-weight models took a step change back toward the frontier. Meta took the lead of this charge with Muse Spark Open, which is now the strongest American-made open model by quite some margin, but the addition of Reflection’s first model Beam is also relevant. Without these two models, there would be 20+ open-weight models built and released by C",
+      "item_ids": [
+        "item_0dd91801c3b6e8530867"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 34
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
