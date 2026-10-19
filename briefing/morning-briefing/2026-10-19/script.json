@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-19",
+  "generated_at": "2026-10-19T09:12:00.060029+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 181,
+    "est_seconds": 73
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Pope Leo XIV thanks wellwishers in first event after cancer surgery. Pope Leo XIV thanks wellwishers in first event after cancer surgery The Pope's first event since his lung cancer diagnosis and surgery saw him recite the traditional Angelus prayer from the balcony of the Apostolic Palace.",
+      "item_ids": [
+        "item_c5b3c8219f8e6c498b2e"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "European diplomats attacked by Israeli settlers in West Bank. European diplomats attacked by Israeli settlers in West Bank The Israeli military condemns the violence but the prime minister's office says it is part of a \"smear\" campaign.",
+      "item_ids": [
+        "item_95126f6d896a90b30cc5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "Search for Amelia Earhart's plane resumes after stormy weather. Search for Amelia Earhart's plane resumes after stormy weather An expedition to a remote Pacific island hoping to uncover the American aviator's wreckage was on hold for three days.",
+      "item_ids": [
+        "item_e156aa43b9b0df5e5efe"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "deep_dive",
+      "text": "Parisians wake up to protest damage and looted shops. Parisians wake up to protest damage and looted shops Violence broke out across France on Saturday during the latest day of demonstrations against conditions in schools and the cost of living.",
+      "item_ids": [
+        "item_db3d15107437b6a72d0b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
