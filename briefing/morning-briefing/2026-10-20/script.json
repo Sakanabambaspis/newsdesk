@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-20",
+  "generated_at": "2026-10-20T09:47:39.120030+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 194,
+    "est_seconds": 78
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Laplace Intelligence red-teams robots and self-driving cars before they hit the real world. Laplace Intelligence red-teams robots and self-driving cars before they hit the real world University of Michigan spinout Laplace Intelligence uses AI agents and interactive simulation to stress-test robots and self-driving vehicles before deployment.",
+      "item_ids": [
+        "item_48afd38211c9b19987c9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "A hacker broke into John Deere and SharkNinja with an army of AI agents.",
+      "item_ids": [
+        "item_c161d6bab52698d147d9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 6
+    },
+    {
+      "type": "headline",
+      "text": "Nvidia launches new open models to run agents in the enterprise and on PCs.",
+      "item_ids": [
+        "item_bfa70917f3b198d14601"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 6
+    },
+    {
+      "type": "deep_dive",
+      "text": "JB Pritzker thinks AI could help us live to 100 — or threaten us like nukes. JB Pritzker thinks AI could help us live to 100 — or threaten us like nukes Today, I’m talking with Illinois Gov. JB Pritzker, who has a lot of thoughts about AI, tech, and privacy. If you’ve been listening to the show, you know that one of my running theories is that those issues are driving a big and maybe kind of unexpected political realignment — and with the midterms coming up next month, and early voting already underway in a lot of places, the stakes are pretty hig",
+      "item_ids": [
+        "item_7bf27ea750e3c7638bdb"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 42
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
