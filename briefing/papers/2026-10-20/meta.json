@@ -1,0 +1,28 @@
+{
+  "format": "episode-archive@1",
+  "date": "2026-10-20",
+  "station": "papers",
+  "guid": "papers-2026-10-20",
+  "workflow": {
+    "name": "default-morning",
+    "version": 1
+  },
+  "code_commit": "2ab72527349de62ede0d4b4ecee76dc5f63d41d0",
+  "digest": {
+    "method": "extractive",
+    "verdict_method": "skipped:no_items",
+    "items_in_window": 0
+  },
+  "script": {
+    "method": "extractive",
+    "words": 15,
+    "est_seconds": 6
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "chunks": 2,
+    "duration_seconds": 6.5
+  },
+  "episode_path": "audio/2026-10-20.mp3",
+  "archived_at": "2026-10-20T09:44:57.586408+08:00"
+}
