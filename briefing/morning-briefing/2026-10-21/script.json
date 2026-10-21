@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-21",
+  "generated_at": "2026-10-21T09:33:41.261255+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 195,
+    "est_seconds": 78
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Active Pilot Sampling for Multi-fidelity Estimation in Stochastic Optimization. Active Pilot Sampling for Multi-fidelity Estimation in Stochastic Optimization Stochastic optimization with high-fidelity nonlinear models is often computationally prohibitive because each objective evaluation requires sampling-based uncertainty quantification inside an outer optimization loop.",
+      "item_ids": [
+        "item_58314803b324beb75125"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Ask to Learn: Query-Based Collaborative Reinforcement Learning. Ask to Learn: Query-Based Collaborative Reinforcement Learning Offline reinforcement learning is fundamentally limited by the coverage of the available data, while collecting additional trajectories through online exploration may be costly, unsafe, or infeasible. We study whether this limitation can be overcome without directly interacting with the underlying environment.",
+      "item_ids": [
+        "item_06371f1f37cb7df33da1"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Latest open artifacts (#25): DeepSeek V4.1 Flash 1017, American-made models, and new regulatory controls in the US & China.",
+      "item_ids": [
+        "item_a379ec2597bb3939186f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 8
+    },
+    {
+      "type": "deep_dive",
+      "text": "MiCLA: Mixture-to-Constituent Latent Alignment for Polyphonic Audio Representation Learning. MiCLA: Mixture-to-Constituent Latent Alignment for Polyphonic Audio Representation Learning Real-world audio typically contains concurrent sound events, yet standard self-supervised methods treat each clip as an isolated training unit without explicitly modeling mixture--constituent relationships. We propose Mixture-to-Constituent Latent Alignment (MiCLA), a two-stage self-supervised pre-training framework that uses synthetic log-mel mixing to align mixture representations with their con",
+      "item_ids": [
+        "item_3f35d750e8852e49f846"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 26
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
