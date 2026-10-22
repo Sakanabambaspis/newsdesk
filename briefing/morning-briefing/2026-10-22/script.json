@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-22",
+  "generated_at": "2026-10-22T09:30:51.483853+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 144,
+    "est_seconds": 57
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "OccJEPA: Occlusion as Masking for Amodal Video Segmentation. OccJEPA: Occlusion as Masking for Amodal Video Segmentation Amodal video segmentation asks for the complete mask of an object in every frame, including the parts hidden behind other objects.",
+      "item_ids": [
+        "item_3b946f21c6dc7ccac200"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "LocalAgent: Collaborative Agentic Verification for Fine-Grained Instance-Level Consistency.",
+      "item_ids": [
+        "item_dd1140b2b1de3b37d49c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 3
+    },
+    {
+      "type": "headline",
+      "text": "AdvFidelity: Unifying Preference Alignment and Few-Step Image Generation within Reinforcement Learning.",
+      "item_ids": [
+        "item_f72e1201faa8e5f77758"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "deep_dive",
+      "text": "CineEvolve: An Agentic Self-Evolution Framework for Cinematic Multi-Shot Video Generation. CineEvolve: An Agentic Self-Evolution Framework for Cinematic Multi-Shot Video Generation Cinematic multi-shot video generation requires both narrative planning and iterative refinement. Existing methods either lack narrative reasoning or rely on feed-forward workflows without policy updates. In this paper, we propose CineEvolve, an agentic self-evolution framework for cinematic multi-shot video generation that unifies a Director and a Critic within a single vision-language policy. Emu",
+      "item_ids": [
+        "item_8d32e6dc0ceefd7ea06d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
