@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-22",
+  "generated_at": "2026-10-22T09:30:55.712457+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 211,
+    "est_seconds": 84
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments. BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments While agentic reinforcement learning (RL) has emerged as a promising paradigm for training small language models (SLMs), existing frameworks are predominantly tool-centric and struggle with data-centric environments.",
+      "item_ids": [
+        "item_c6d204d3603c37f153fb"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Harness Scaling for Generalizable Agentic Reinforcement Learning. Harness Scaling for Generalizable Agentic Reinforcement Learning Agent harnesses have become a central component of modern agentic systems, shaping how models use tools, manage context, and coordinate long-horizon interaction.",
+      "item_ids": [
+        "item_2a2cd2f7aff9d76f0771"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "MOSAIC: An Omni-Modal Benchmark for Long-Term Memory and Cross-Modal Reasoning in Conversational Agents. MOSAIC: An Omni-Modal Benchmark for Long-Term Memory and Cross-Modal Reasoning in Conversational Agents Omni-modal assistants must remember not only what users say, but also what they show and convey.",
+      "item_ids": [
+        "item_c763b5853ce5c1437460"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "deep_dive",
+      "text": "Reasoning-Search-Augmented LLMs: An Operational Taxonomy, Benchmark Analysis and Controlled Evidence Synthesis. Reasoning-Search-Augmented LLMs: An Operational Taxonomy, Benchmark Analysis and Controlled Evidence Synthesis Large language models (LLMs) demonstrate impressive emergent reasoning capabilities, yet they remain constrained by fixed model parameters and finite context windows. Even when augmented with static retrieval, they can produce statements that are unsupported by, or even contradictory to, retrieved evidence. This leads to hallucinations, difficulty incorporating up-to-date information, and failures",
+      "item_ids": [
+        "item_580bbeff11a1a8db0885"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
