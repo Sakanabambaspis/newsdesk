@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-23",
+  "generated_at": "2026-10-23T09:32:13.349917+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 233,
+    "est_seconds": 94
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Trace2World: Reconstructing App Worlds from Real Interaction Traces for Scalable GUI Agent Training. Trace2World: Reconstructing App Worlds from Real Interaction Traces for Scalable GUI Agent Training Scaling GUI reinforcement learning requires environments that preserve real-app behavior. Yet coupling behavior inference with coding can turn partial traces into runnable mocks with incorrect state transitions.",
+      "item_ids": [
+        "item_f0de76257e099d47a604"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "headline",
+      "text": "GIFT: Gradient Informed Filtering for Distillation Augmented Reasoning RL. GIFT: Gradient Informed Filtering for Distillation Augmented Reasoning RL Training large language models for complex reasoning tasks relies on two complementary signals: sparse, outcome-grounded reinforcement learning (RL) for correctness, and dense, token-level distillation for guidance.",
+      "item_ids": [
+        "item_6d13037af68cd2027890"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "MOER: Mix-Policy Optimization under Expert Prefix Guidance with Selective Rollback. MOER: Mix-Policy Optimization under Expert Prefix Guidance with Selective Rollback Mix-policy optimization incorporates off-policy expert data into the reinforcement learning (RL) loop to transcend the capability boundary of on-policy RL.",
+      "item_ids": [
+        "item_c429c52277ff6ad8dbcd"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "Future of Time Series Anomaly Detection: From Historical Review to Unified Outlook. Future of Time Series Anomaly Detection: From Historical Review to Unified Outlook Time series anomaly detection (TSAD) is a foundational problem in data mining, aiming to identify observations that deviate significantly from nominal temporal patterns. Driven by escalating data volumes and application complexity, recent research has yielded diverse architectures, including diffusion models, state space models, and large language models (LLMs). However, existing surveys provide l",
+      "item_ids": [
+        "item_21f3a5759472013a455d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 31
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
