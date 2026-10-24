@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-24",
+  "generated_at": "2026-10-24T09:34:48.503275+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 212,
+    "est_seconds": 86
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Rapidly scaling online storage to serve over 1 billion ChatGPT users (Part II). Rapidly scaling online storage to serve over 1 billion ChatGPT users (Part II) Learn how OpenAI scaled Habitat with reliable multi-tenancy, global caching, and Azure Cosmos DB to deliver 12× faster reads for ChatGPT.",
+      "item_ids": [
+        "item_ee4c22366ef7e7abd786"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "From Toast to Bessemer: Who founders will hear from at TechCrunch Founder Summit 2026.",
+      "item_ids": [
+        "item_e8fbd857a8b6b0ff954a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 6
+    },
+    {
+      "type": "headline",
+      "text": "Uber rival inDrive eyes 2027 robotaxi tests in Central Asia with Pony AI and Nvidia. Uber rival inDrive eyes 2027 robotaxi tests in Central Asia with Pony AI and Nvidia The company plans to begin testing Pony.ai's robotaxis in Kazakhstan's capital in the first half of 2027.",
+      "item_ids": [
+        "item_ad858d5150de79be8c33"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "deep_dive",
+      "text": "OpenAI now trains its frontier AI models with no internet access. OpenAI now trains its frontier AI models with no internet access OpenAI is now training its most advanced AI models without internet access following a string of rogue hacking incidents. In a blog post on Friday, OpenAI says it built an offline testing environment where AI models can interact with indexed and cached web content \"without risk of affecting external systems.\" OpenAI paused training its frontier AI models in September, after disclosing several inci",
+      "item_ids": [
+        "item_a6d2d5fdb7657f8a34ec"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 34
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
