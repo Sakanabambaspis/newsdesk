@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-25",
+  "generated_at": "2026-10-25T09:06:54.246566+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 229,
+    "est_seconds": 92
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Here are the top AI agents that can live in your text messages. Here are the top AI agents that can live in your text messages We created a list of the most notable AI agents that can live in your text messages, from general assistants to agents designed for families, travel, and work.",
+      "item_ids": [
+        "item_f75803cafe6ee4fcd06d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Australian MP's condition improves after alleged car attack. Australian MP's condition improves after alleged car attack The independent MP is now in a serious but stable condition, according to the Melbourne hospital.",
+      "item_ids": [
+        "item_3307195b5067cd80b454"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 13
+    },
+    {
+      "type": "headline",
+      "text": "The rise of AI election ads in US midterms campaign. The rise of AI election ads in US midterms campaign BBC Verify has tracked dozens of AI ads to assess how they are being used by campaigns in the midterms.",
+      "item_ids": [
+        "item_51c48352576013fe064f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "Building Reasoning Models from the Ground Up: A Full Video Course. Building Reasoning Models from the Ground Up: A Full Video Course I have written a lot about reasoning models here over the last two years on Ahead of AI, including a recent article on mechanisms to control reasoning effort levels in contemporary LLMs. Reasoning models are still as relevant as ever. In fact, almost all current-generation LLMs today are reasoning models or offer a reasoning mode. For those who are interested in how reasoning models work, includin",
+      "item_ids": [
+        "item_da8785cc5779f5c99a94"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 35
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
