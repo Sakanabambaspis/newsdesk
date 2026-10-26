@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-26",
+  "generated_at": "2026-10-26T09:10:00.902086+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 240,
+    "est_seconds": 97
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Obama attacks Trump as he campaigns for Democrats ahead of midterm elections. Obama attacks Trump as he campaigns for Democrats ahead of midterm elections Obama said the election was \"the last best chance to at least rein in some of the foolishness of this administration\".",
+      "item_ids": [
+        "item_4b8d8b716cd10e424c26"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Israel to close West Bank crossings on election day as crackdown escalates. Israel to close West Bank crossings on election day as crackdown escalates The Israeli Defense Forces announces restrictions on the movement of Palestinian workers in the run-up to Tuesday's election.",
+      "item_ids": [
+        "item_751a393d29197e529c23"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "headline",
+      "text": "Why is Ukraine so reliant on Starlink and can Europe plug the gap?. Why is Ukraine so reliant on Starlink and can Europe plug the gap? Ukraine needs another satellite internet service, but a decent alternative to Elon Musk's network doesn't exist - yet.",
+      "item_ids": [
+        "item_6f978147a618be8a121b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "deep_dive",
+      "text": "Podcast: Kimi K3.1 Pro, the new cyber reality, and Muse musings. Podcast: Kimi K3.1 Pro, the new cyber reality, and Muse musings We — Nathan and Florian — wanted to discuss all the messy trade-offs of a busy week in AI and ask all the pressing questions like: Why did Kimi K3.1 Pro have a mixed reaction with such incredible benchmarks? Will it be adopted? Were we wrong about the risks of open-weight models and cybersecurity? Why do cyber experts discuss recent events so differently than AI experts? What comes next in the few",
+      "item_ids": [
+        "item_9c6009b025f44314e7f5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 38
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
