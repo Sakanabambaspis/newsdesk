@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-27",
+  "generated_at": "2026-10-27T10:04:28.494311+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 215,
+    "est_seconds": 86
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "From Questions to Queries to Insights: A Schema-Grounded Agentic Workflow for Natural-Language Crash Data Analysis. From Questions to Queries to Insights: A Schema-Grounded Agentic Workflow for Natural-Language Crash Data Analysis Transportation agencies maintain extensive crash databases to identify safety priorities, evaluate countermeasures, and guide resource allocation.",
+      "item_ids": [
+        "item_abb371e16425eabf852f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Collective Emergent Alignment: Measuring and Amplifying Interaction-Induced Reasoning Alignment in Multi-Agent LLMs. Collective Emergent Alignment: Measuring and Amplifying Interaction-Induced Reasoning Alignment in Multi-Agent LLMs Multi-agent large language model (LLM) systems can exhibit emergent behaviors through interaction, yet whether a similar phenomenon exists for reasoning alignment remains largely unexplored.",
+      "item_ids": [
+        "item_e3cc0a01cd7b8db84dee"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "DecoyCount: Evaluating Visual-Reasoning Misalignment in Counting. DecoyCount: Evaluating Visual-Reasoning Misalignment in Counting Visual counting benchmarks report whether vision-language models produce the correct number, but not whether errors arise from perception or reasoning.",
+      "item_ids": [
+        "item_e6cd21537eb8c214acdd"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 13
+    },
+    {
+      "type": "deep_dive",
+      "text": "DriveUniTok: A Unified Multimodal Tokenizer for Driving World-Action Models. DriveUniTok: A Unified Multimodal Tokenizer for Driving World-Action Models World models are emerging as a fundamental component of policy learning for real-world agents, enabling agents to predict future world states and plan actions within a learned representation of the dynamic environment. Existing approaches, however, often model appearance, metric geometry represented by projected LiDAR depth, and ego motion either partially or independently, overlooking the fact th",
+      "item_ids": [
+        "item_5efc3f59ee010929a266"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
