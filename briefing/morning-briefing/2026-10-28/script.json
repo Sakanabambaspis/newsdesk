@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-28",
+  "generated_at": "2026-10-28T10:12:00.282460+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 197,
+    "est_seconds": 80
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "HiLo-RD: Cross-Budget Self-Distillation for Masked Diffusion Language Models. HiLo-RD: Cross-Budget Self-Distillation for Masked Diffusion Language Models We propose HiLo-RD (High-to-Low Budget Representation Distillation) to improve masked diffusion language models (MDLMs) under a limited generation budget. Unlike autoregressive models, MDLMs choose both what to generate and where to commit it.",
+      "item_ids": [
+        "item_6bd4789f12133d6bacf2"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "PailitaoMMSearch2.0 Technical Report: Scaling Generative Retrieval to Unified End-to-End Multimodal Search. PailitaoMMSearch2.0 Technical Report: Scaling Generative Retrieval to Unified End-to-End Multimodal Search Generative retrieval models have been increasingly adopted in search and recommendation systems.",
+      "item_ids": [
+        "item_a89841ae4e4314011086"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "Vision-Language Agents Can Learn in Their Own Latent Worlds. Vision-Language Agents Can Learn in Their Own Latent Worlds Learning from experience is essential for building the next generation of agents that continually expand their capabilities.",
+      "item_ids": [
+        "item_bf3ef6c2303a073d2b55"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "deep_dive",
+      "text": "Hy-Nomas: Towards Free-form Interactive World Generation. Hy-Nomas: Towards Free-form Interactive World Generation Interactive world generation requires models to follow successive commands while preserving relevant history and action consequences. We present Hy-Nomas, a video world model with an 8B diffusion backbone that supports free-form text instructions and continuous camera control across multiple interaction turns. It generates variable-length segments conditioned on current inputs and cached history.",
+      "item_ids": [
+        "item_029601c92a457ad945df"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 26
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
