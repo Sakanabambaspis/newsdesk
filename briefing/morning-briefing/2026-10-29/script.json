@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-29",
+  "generated_at": "2026-10-29T10:26:03.309457+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 237,
+    "est_seconds": 96
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Google launches Gemini 4 Carbon with a ‘significant leap’ in cybersecurity. Google launches Gemini 4 Carbon with a ‘significant leap’ in cybersecurity Google has released its latest frontier model, Gemini 4 Carbon, offering \"significant gains\" in coding, agentic tasks, and cybersecurity.",
+      "item_ids": [
+        "item_7b5653451a244c2d34ef"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Legora is building the agentic operating system for legal work. Legora is building the agentic operating system for legal work See how Legora uses OpenAI models, ChatGPT, and Codex to accelerate legal workflows, expand contract analysis, and free lawyers to focus on higher-value work.",
+      "item_ids": [
+        "item_709cc8e2bd467b791689"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Google announces Gemini 4 Carbon, its latest frontier AI model that you can't use. Google announces Gemini 4 Carbon, its latest frontier AI model that you can't use It's almost like Google's got something to prove after taking a break from releasing new frontier AI models earlier this year.",
+      "item_ids": [
+        "item_490073e57670269a1c9c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "deep_dive",
+      "text": "Artificial Analysis v5 and the benchmarker's dilemma. Artificial Analysis v5 and the benchmarker's dilemma Housekeeping: I’m on the road so the voiceover will be late. Hill-climbing is easy, knowing what to hill-climb is hard. Making scores go up is expensive, but we have a much clearer playbook for it than we do for creating meaningful benchmarks at the true frontier of AI today. Independent evaluation of language models is under-appreciated in how hard of a task it is. These groups are not just takin",
+      "item_ids": [
+        "item_887c59818f68e469bbe9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 34
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
