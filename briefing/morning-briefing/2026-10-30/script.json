@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-30",
+  "generated_at": "2026-10-30T10:36:58.815085+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 224,
+    "est_seconds": 90
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "How we detect frontier model misalignment. How we detect frontier model misalignment OpenAI uses layered monitoring to detect frontier model misalignment and unauthorized agent behavior so responders can intervene before incidents escalate.",
+      "item_ids": [
+        "item_0f01adb2acab0a67ba71"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 13
+    },
+    {
+      "type": "headline",
+      "text": "Ex-Palantir execs launch Dream with $17M from a16z to build AI world models for construction. Ex-Palantir execs launch Dream with $17M from a16z to build AI world models for construction Dream is grounded in real physics and construction standards.",
+      "item_ids": [
+        "item_06fa0e4540548db09e4e"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "AI has come for Arizona’s water. AI has come for Arizona’s water A hulking gray giant rises from the desert. Inside, engineers create the force behind our phones and computers and appliances, our streaming services and search engines and chatbots and vibe-coded apps and websites.",
+      "item_ids": [
+        "item_d62a8f09dced3dd91988"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "deep_dive",
+      "text": "Anthropic is asking Wall Street to believe in AGI. Anthropic is asking Wall Street to believe in AGI Today on Decoder, I’m joined by Joey Brookhart, an analyst at the chip and AI research firm SemiAnalysis, to help me dig into the story inside the numbers of the Anthropic IPO filing — a document known as an S-1. Anthropic just filed its S-1 to go public on the Nasdaq, and it could start trading as soon as next month at a valuation of anywhere between $1.5 trillion and $2 trillion. That would imme",
+      "item_ids": [
+        "item_3a644431de131a7405e5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 37
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
