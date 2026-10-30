@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "generated_at": "2026-10-30T10:33:43.396037+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 15,
+    "est_seconds": 6
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
