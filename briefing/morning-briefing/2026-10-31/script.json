@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-31",
+  "generated_at": "2026-10-31T10:20:30.405943+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 237,
+    "est_seconds": 95
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "DoorDash said it’s only received ‘several hundred’ orders from AI agents. DoorDash said it’s only received ‘several hundred’ orders from AI agents DoorDash said that it is open to working with third-party agent makers.",
+      "item_ids": [
+        "item_6e71e92aae50069aef3a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "Zest’s new AI agent finds restaurants and books reservations over text. Zest’s new AI agent finds restaurants and books reservations over text Can't agree on where to eat? Zest's AI concierge can combine everyone's tastes, put restaurant options to a vote, and make the reservation.",
+      "item_ids": [
+        "item_1d48dbec944c65110d4f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Basically no one is using AI agents for their DoorDash orders. Basically no one is using AI agents for their DoorDash orders As AI tools and agents have continued their march across all aspects of digital life, many companies are trying to use LLMs to improve the experience of purchasing goods and services on the Internet.",
+      "item_ids": [
+        "item_abc5566bda42b5a9b55f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "deep_dive",
+      "text": "Was I wrong about open models & cyber risks?. Was I wrong about open models & cyber risks? Last week coined the term “Black October“ after an onslaught of critical vulnerability disclosures, including PHP2Shell and GitLab, signified the moment when the cyber risks of AI models started to materialize. It seemed like the news cycle had stabilized a bit when I started writing this, but then there was news about another major crypto security incident at Binance. The crypto industry has a ve",
+      "item_ids": [
+        "item_d4d35b3da5b2f2860dee"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 33
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
