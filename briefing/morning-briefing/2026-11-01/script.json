@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-01",
+  "generated_at": "2026-11-01T10:11:54.454575+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 142,
+    "est_seconds": 57
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "The fight to save Canadian town threatened by Trump's tariffs. The fight to save Canadian town threatened by Trump's tariffs A century-old paper mill in Témiscaming, Quebec is indefinitely closed after the US imposed 50% tariffs on its products, putting hundreds out of work.",
+      "item_ids": [
+        "item_01b0a90e14486ca10734"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Suited and booted: How Joseph Kabila went from president to rebel leader. Suited and booted: How Joseph Kabila went from president to rebel leader What does Joseph Kabila launching a new rebel movement mean for DR Congo?",
+      "item_ids": [
+        "item_9d4dbc4e483f5343cfe8"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "刚刚，Claude宣布取消5小时限制！首批Ultra用户已「解封」. 刚刚，Claude宣布取消5小时限制！首批Ultra用户已「解封」 200美元Ultra用户先用",
+      "item_ids": [
+        "item_5c23692d5af12610ddb2"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "Why North Korea's 'elite' hackers are the prime suspect in major Binance hack. Why North Korea's 'elite' hackers are the prime suspect in major Binance hack If the accusations are true, the record-making heist shows how powerful suspected North Korean hackers have become.",
+      "item_ids": [
+        "item_0315d0f2e2c3c6917d94"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
