@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-02",
+  "generated_at": "2026-11-02T10:27:15.962222+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 137,
+    "est_seconds": 55
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Watch: Heidi Klum as giant severed hand for Halloween bash. Watch: Heidi Klum as giant severed hand for Halloween bash The supermodel and TV host provided a gory new shock at her New York event.",
+      "item_ids": [
+        "item_48796b4753053523b903"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "Democrats are used to heartbreak in Texas - could Talarico turn the tide?. Democrats are used to heartbreak in Texas - could Talarico turn the tide? The state's $500m Senate race may be the most closely watched in the US midterms, and is about far more than control of Congress.",
+      "item_ids": [
+        "item_365374215f83abf2ac0f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "India's opposition holds mega rally seeking election chief's resignation. India's opposition holds mega rally seeking election chief's resignation Thousands gathered in the heart of delhi, calling for the chief election commissioner to step down.",
+      "item_ids": [
+        "item_d68bfc7b58a905cdd6e0"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "deep_dive",
+      "text": "Jev新成果，再次引爆开源. Jev新成果，再次引爆开源 再次“性价比屠夫”",
+      "item_ids": [
+        "item_b43e5028ae56ce29c465"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
