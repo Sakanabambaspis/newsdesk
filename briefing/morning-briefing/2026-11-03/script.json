@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-03",
+  "generated_at": "2026-11-03T11:58:40.777023+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 127,
+    "est_seconds": 51
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "小米开源了个150元的AI小玩意，火到配件都涨价了. 小米开源了个150元的AI小玩意，火到配件都涨价了 能指挥Agent干活，还能控制智能家居",
+      "item_ids": [
+        "item_71d58f4e198e363bf728"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "LifeVal. LifeVal Introducing LifeVal, a benchmark measuring how well AI helps people complete everyday tasks, from finding childcare to managing finances and government paperwork.",
+      "item_ids": [
+        "item_5a014341bc3fc0f1d8b6"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 10
+    },
+    {
+      "type": "headline",
+      "text": "Scaling Git at OpenAI. Scaling Git at OpenAI How OpenAI built Pando, a Git-compatible backend designed for the scale of development that Codex makes possible.",
+      "item_ids": [
+        "item_277870ffc8d71544c046"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 10
+    },
+    {
+      "type": "deep_dive",
+      "text": "42AI comes out of stealth with $62.5M and a world model that can ‘predict human behavior’. 42AI comes out of stealth with $62.5M and a world model that can ‘predict human behavior’ Here's a question straight out of sci-fi: What if AI could predict what you were going to do before you decided to, even in a completely new situation?",
+      "item_ids": [
+        "item_cfe776d783ceaa5caccc"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 24
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
