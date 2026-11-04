@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-04",
+  "generated_at": "2026-11-04T11:03:08.121156+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 239,
+    "est_seconds": 96
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Weight-Space Programming for Improving Image-Restoration Diffusion Models: Technical Conjectures and a Recursive Improvement Loop. Weight-Space Programming for Improving Image-Restoration Diffusion Models: Technical Conjectures and a Recursive Improvement Loop Can an LLM directly edit the weights of a diffusion-based image-restoration model to \\emph{improve} restoration quality---without gradients, paired data, or fine-tuning?",
+      "item_ids": [
+        "item_b9a8022fd55bae6fe527"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "Bidirectional Centered Score Matching for Discrete Diffusion Distillation. Bidirectional Centered Score Matching for Discrete Diffusion Distillation Discrete diffusion models with parallel decoding are often distilled using token-wise KL objectives. Although token-wise KL exactly matches the corresponding product-form block distributions, its probability-space optimization geometry and teacher-only candidate truncation may provide insufficient supervision under aggressive few-step distillation.",
+      "item_ids": [
+        "item_0f95289bfedeae0fabf3"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "DiMuRe: Diagnosis-Guided Multilevel Recovery for Robotic Task Execution. DiMuRe: Diagnosis-Guided Multilevel Recovery for Robotic Task Execution Disturbances can invalidate the conditions required by a robot's next action even when much of its task program remains useful. A recovery system must therefore choose a response suited to the current state.",
+      "item_ids": [
+        "item_c48b02c16d91c294000b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "deep_dive",
+      "text": "DualWorldBench: Can Agents Plan Deliveries across Symbolic and Grounded Worlds?. DualWorldBench: Can Agents Plan Deliveries across Symbolic and Grounded Worlds? Recent multimodal agents have shown promising progress in embodied planning and web interaction. However, existing evaluations often rely on simplified tasks with limited combinatorial structure, leaving it unclear whether current agents can robustly integrate perception and reasoning for multi-goal planning under temporal, physical, and multimodal constraints. We introduce DualWorldBench, a unifi",
+      "item_ids": [
+        "item_1f3645194d6b03550857"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 28
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
