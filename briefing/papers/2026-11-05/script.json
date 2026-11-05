@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-05",
+  "generated_at": "2026-11-05T11:30:47.472590+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 229,
+    "est_seconds": 91
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "CellCanon: An Agentic Cellular World Model for Prediction, Explanation, and Observation-Driven Updating. CellCanon: An Agentic Cellular World Model for Prediction, Explanation, and Observation-Driven Updating Biological discovery requires using molecular knowledge and new measurements to infer responses beyond the conditions already observed.",
+      "item_ids": [
+        "item_2314d3821ae0dc3c6782"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Graph-Mediated Large Language Model Systems in the Agentic Era: Reasoning, Knowledge, Retrieval, Execution, and Coordination. Graph-Mediated Large Language Model Systems in the Agentic Era: Reasoning, Knowledge, Retrieval, Execution, and Coordination Graphs play an increasingly important role in large language model (LLM) systems, supporting structural reasoning, knowledge grounding, retrieval, and memory.",
+      "item_ids": [
+        "item_cd6de24fceacca2ced9c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "SleuthVLM: Do We Really Need Audio-in-Video for Omni Video Understanding?. SleuthVLM: Do We Really Need Audio-in-Video for Omni Video Understanding? Omni models answer questions about videos by jointly processing sampled frames and audio in one turn, with progress driven largely by scaling model size and omni training data.",
+      "item_ids": [
+        "item_3d85e50bb3184ea9bfd7"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "deep_dive",
+      "text": "ModalSearcher: Weaving Visual Evidence into Autonomous Cross-Modal Deep Search. ModalSearcher: Weaving Visual Evidence into Autonomous Cross-Modal Deep Search Static and incomplete parametric knowledge limits the performance of multimodal large language models on novel-knowledge and knowledge-intensive tasks, especially those requiring multi-hop evidence acquisition. Existing multimodal agentic search methods often fix visual evidence at the input or a predefined trajectory position, making it difficult for agents to select search modalities as their in",
+      "item_ids": [
+        "item_a53663732b647076a709"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 28
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
