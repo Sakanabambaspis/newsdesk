@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-06",
+  "generated_at": "2026-11-06T11:26:28.284588+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 168,
+    "est_seconds": 67
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Seeing Beyond the Next Step: World-Model-Guided Human-Like Navigation in Multi-Agent Scenes.",
+      "item_ids": [
+        "item_80454dd4f78660e02e4c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Vis2State: Visual Reasoning through Executable State Abstractions. Vis2State: Visual Reasoning through Executable State Abstractions Solving visual puzzles requires both accurate interpretation of visual evidence and reliable computation under task-specific rules. Embedding visual assumptions and task constraints directly in solving code makes the represented problem difficult to inspect and revise independently.",
+      "item_ids": [
+        "item_68bce29e98b4ecbd5a19"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "Concertina: Embodying Manipulation and Cognition in One Diffusion Vision-Language Model.",
+      "item_ids": [
+        "item_d1091d647241c8d8df0f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "deep_dive",
+      "text": "PSGAgent: Enhancing MLLMs' Dynamic Visual Perception for Panoptic Scene Graph Generation via Agentic Reasoning. PSGAgent: Enhancing MLLMs' Dynamic Visual Perception for Panoptic Scene Graph Generation via Agentic Reasoning Panoptic Scene Graph generation (PSG) requires holistic yet fine-grained reasoning over complex relations among objects. However, current Multimodal Large Language Models (MLLMs) applied to PSG suffer from a perception bottleneck: they function as static observers limited by fixed-resolution views. As a result, models often overlook critical relations involving small or peripheral objects and stru",
+      "item_ids": [
+        "item_55719b1e00b0674d33a4"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 33
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
