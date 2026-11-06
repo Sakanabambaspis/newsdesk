@@ -1,0 +1,28 @@
+{
+  "format": "episode-archive@1",
+  "date": "2026-11-06",
+  "station": "morning-briefing",
+  "guid": "morning-briefing-2026-11-06",
+  "workflow": {
+    "name": "default-morning",
+    "version": 1
+  },
+  "code_commit": "45fd1fb017278274c6b9f0cd0569be361def70fb",
+  "digest": {
+    "method": "extractive",
+    "verdict_method": "skipped:llm_error:all 1 model(s) failed — glm-5.3-flash: LLM returned HTTP 429: {\"error\":{\"code\":\"1113\",\"message\":\"余额不足或无可用资源包,请充值。\"}}",
+    "items_in_window": 137
+  },
+  "script": {
+    "method": "extractive",
+    "words": 168,
+    "est_seconds": 67
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "chunks": 8,
+    "duration_seconds": 91.1
+  },
+  "episode_path": "audio/2026-11-06.mp3",
+  "archived_at": "2026-11-06T11:27:08.856840+08:00"
+}
