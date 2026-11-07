@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-07",
+  "generated_at": "2026-11-07T10:47:20.695926+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 172,
+    "est_seconds": 69
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "从RSI、Agent、Physical AI到整个系统栈，2026 奇点智能技术大会最新日程公布！. 从RSI、Agent、Physical AI到整个系统栈，2026 奇点智能技术大会最新日程公布！ 11 月 20—21 日，2026 奇点智能技术大会将在北京万达文华酒店举行。",
+      "item_ids": [
+        "item_f0f3a5086ac35a6bc977"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Protesters break into Microsoft data center site in Amsterdam. Protesters break into Microsoft data center site in Amsterdam Members of the action group Geef Tegengas put a banner on a crane during a protest. | Image: Getty Images Protesters have broken into a construction site of a new Microsoft data center in Amsterdam this morning.",
+      "item_ids": [
+        "item_980a934d66b53cbb48d9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Meta introduces Spaces, a new way to collaborate with your Muse agent. Meta introduces Spaces, a new way to collaborate with your Muse agent Meta's Muse agents continue to get new features and integrations. Spaces promises to be a new way to interact with the AI helpers.",
+      "item_ids": [
+        "item_a8fc5de6487f58f91f0a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "deep_dive",
+      "text": "Palo Alto Networks in talks to buy AI agent security startup Clutch for $500M. Palo Alto Networks in talks to buy AI agent security startup Clutch for $500M Clutch, backed by Lightspeed and SignalFire, was last valued at $85 million, according to a source.",
+      "item_ids": [
+        "item_a83a56374fd6aa91bfb5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
