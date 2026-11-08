@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-08",
+  "generated_at": "2026-11-08T10:25:00.481636+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 112,
+    "est_seconds": 45
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "AGENTS.MD，危险危险危险！！！. AGENTS.MD，危险危险危险！！！ 全新的电脑病毒",
+      "item_ids": [
+        "item_2b5cf155038f62ec3389"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "抢跑DeepSeek！硅谷华人把下一代Agent Harness造出来了！？. 抢跑DeepSeek！硅谷华人把下一代Agent Harness造出来了！？ 苦单Session久矣，两大Agent玩家不谋而合。",
+      "item_ids": [
+        "item_813d8fe200c00abc99af"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Jeff Dean李飞飞最新对谈：全是RSI非共识. Jeff Dean李飞飞最新对谈：全是RSI非共识 RSI不可能无限快",
+      "item_ids": [
+        "item_23e6475265978b5531ce"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "deep_dive",
+      "text": "AI broke the cybersecurity world. What’s next?. AI broke the cybersecurity world. What’s next? Today, I’m talking with Alex Stamos, chief security officer at Cognition and longtime cybersecurity expert, about what a mess cybersecurity is right now. This episode is part one of a special series looking at AI in real life. I’ve always enjoyed talking to Alex because he’s so direct, and you’re going to hear him say that the multibillion-dollar cybersecurity industry as we’ve known it is essenti",
+      "item_ids": [
+        "item_4b429bd7582936e31a06"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 32
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
