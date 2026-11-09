@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-09",
+  "generated_at": "2026-11-09T10:39:24.058749+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 149,
+    "est_seconds": 59
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "终端侧AI：从单点应用走向智能体体验. 终端侧AI：从单点应用走向智能体体验 高通在第九届进博会展出端侧MoE智能体",
+      "item_ids": [
+        "item_9f30941f150126f45128"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "Here’s the full text of Jensen Huang’s memo to Nvidia. Here’s the full text of Jensen Huang’s memo to Nvidia Jensen Huang, chief executive officer of Nvidia Corp., attends a media briefing following the company's \"Japan AI Ecosystem\" reception in Tokyo, Japan, on Thursday, July 16, 2026.",
+      "item_ids": [
+        "item_f0be6325bfc4dec9fdd9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "资本正在撤离“世界模型”. 资本正在撤离“世界模型” 没有永远的夏天",
+      "item_ids": [
+        "item_aacddc96d056d7d3ed6d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "Apple is racing to make Siri more agentic. Apple is racing to make Siri more agentic Bloomberg's Mark Gurman says CEO John Ternus is pressuring AI czar Craig Federighi to accelerate the Siri roadmap and deliver a powerful AI agent that can compete with OpenAI's Dots or Meta's Muse. While Federighi has delivered a functional version of Siri AI on an incredibly short timeline, the company has no illusions that it's keeping pace with its rivals. Two significant improvements are expec",
+      "item_ids": [
+        "item_b9c0dd474c98ba84113b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 32
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
