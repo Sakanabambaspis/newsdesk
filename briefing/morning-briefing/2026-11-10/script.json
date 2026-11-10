@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-10",
+  "generated_at": "2026-11-10T12:39:29.407615+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 112,
+    "est_seconds": 44
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Anthropic launches new Claude Fable and Mythos 5.2 models. Anthropic launches new Claude Fable and Mythos 5.2 models Anthropic is announcing two new models today: Claude Fable 5.2 and Claude Mythos 5.2, which it says are designed to take on \"daunting\" technical challenges.",
+      "item_ids": [
+        "item_ea9e2270122931419f9b"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "headline",
+      "text": "基元律动发布NeoHorse-1.5-Flash Preview，Agent模型RSI进入第二轮迭代. 基元律动发布NeoHorse-1.5-Flash Preview，Agent模型RSI进入第二轮迭代 11月5日，基元律动（TokenRhythm）发布Agent原生模型NeoHorse-1.5-Flash Preview。",
+      "item_ids": [
+        "item_da5717d7f399b8ea98c9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "AI接管一家8万Star开源公司，写代码、派任务、查Bug全包了. AI接管一家8万Star开源公司，写代码、派任务、查Bug全包了 Worker不够了主管Agent还能自己招！",
+      "item_ids": [
+        "item_f70bff34c8e83460079c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "deep_dive",
+      "text": "CodeRabbit scales agentic software development and ships 20x more. CodeRabbit scales agentic software development and ships 20x more CodeRabbit uses OpenAI models to govern and trust AI-generated code and Codex to ship 20 times more software with the same engineering team.",
+      "item_ids": [
+        "item_02e9abf47eaf3fa01f98"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
