@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-11",
+  "generated_at": "2026-11-11T10:47:53.341706+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 170,
+    "est_seconds": 69
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Dark Matters: VAE-Aware HDR Encoding for SDR-to-HDR Video Reconstruction. Dark Matters: VAE-Aware HDR Encoding for SDR-to-HDR Video Reconstruction SDR-to-HDR reconstruction is an ill-posed problem in which clipped highlights, crushed shadows, and quantization artifacts must be recovered while preserving the original content.",
+      "item_ids": [
+        "item_a2724c601f31710704d1"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Mobile AI Factory: Building Specialized Language Models for Your Mobile Device. Mobile AI Factory: Building Specialized Language Models for Your Mobile Device Small language models (SLMs) running on mobile devices can keep user data private and work without connectivity.",
+      "item_ids": [
+        "item_ec63b3d8b3a96f13a7eb"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Hand-Object Contact Transition Detection in Egocentric Video.",
+      "item_ids": [
+        "item_c736b7a4c73eb1809454"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 3
+    },
+    {
+      "type": "deep_dive",
+      "text": "Reasoning-Aware Relational Representation Learning for Open-Vocabulary Scene Graph Generation. Reasoning-Aware Relational Representation Learning for Open-Vocabulary Scene Graph Generation Open-Vocabulary Scene Graph Generation (OV-SGG) requires models to recognize visual relationships beyond the training vocabulary, yet existing methods often rely on dataset-specific object--predicate co-occurrence patterns. Under long-tailed distributions and noisy object localization, such reliance leads to biased, entangled relation representations, limiting both rare-relation recognition and ge",
+      "item_ids": [
+        "item_d0c622943b0ad31b93db"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 26
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
