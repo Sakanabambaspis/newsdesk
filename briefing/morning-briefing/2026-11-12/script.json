@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-12",
+  "generated_at": "2026-11-12T11:49:47.983610+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 192,
+    "est_seconds": 77
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Google DeepMind just mathematically verified key parts of Signal. Google DeepMind just mathematically verified key parts of Signal Google DeepMind researchers used agentic AI to mathematically prove, or “formally verify,” a number of the Signal protocol’s key cryptographic guarantees—a landmark development for the widely used cryptography and AI itself.",
+      "item_ids": [
+        "item_7db3dbf05615c3ed6508"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "headline",
+      "text": "Plurai wants to help AI agents work better using the same approach that helped get self-driving cars to roads. Plurai wants to help AI agents work better using the same approach that helped get self-driving cars to roads Like the end-to-end models trained to drive cars, AI agents are probabilistic systems operating in unpredictable environments.",
+      "item_ids": [
+        "item_87209848417b63cfc532"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Databricks’ new AI agent tells CEO Ali Ghodsi the unvarnished truth. Databricks’ new AI agent tells CEO Ali Ghodsi the unvarnished truth With Databricks at 12,000 employees, AI Ghodsi is the first to admit that he can't know everyone and that they are unlikely to confess the things that go wrong to him.",
+      "item_ids": [
+        "item_34b5b4703a4ee2901b19"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "deep_dive",
+      "text": "BotPsy: On-Device Personal Assistant with a Sub-Billion-Parameter Agentic Language Model. BotPsy: On-Device Personal Assistant with a Sub-Billion-Parameter Agentic Language Model",
+      "item_ids": [
+        "item_19b4fcb1faac9c9bdbcc"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 8
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
