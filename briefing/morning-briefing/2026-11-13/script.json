@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-13",
+  "generated_at": "2026-11-13T11:26:03.095215+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 228,
+    "est_seconds": 92
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "United Airlines blocks AI agents from booking flights, citing cybersecurity risks. United Airlines blocks AI agents from booking flights, citing cybersecurity risks The airline said it will not allow customers to use AI agents to book flights and manage reservations.",
+      "item_ids": [
+        "item_039c74dda2a3b52c28a0"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "Nectar launches an AI agent to automate creator discovery and outreach for brands. Nectar launches an AI agent to automate creator discovery and outreach for brands Nectar's new AI agent automates influencer marketing, helping brands discover creators, manage outreach and partnerships, and track campaign results.",
+      "item_ids": [
+        "item_d77c24751633c8701525"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Google rolls out Gemini 4 Hydrogen, finally replacing 3.8 Flash. Google rolls out Gemini 4 Hydrogen, finally replacing 3.8 Flash Google is continuing its elemental AI naming scheme with the new Gemini 4 Hydrogen.",
+      "item_ids": [
+        "item_d458704933992cfaa859"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "deep_dive",
+      "text": "Jensen Huang is out. What did China want from him?. Jensen Huang is out. What did China want from him? Today, we’re talking about the Jensen Huang scandal at Nvidia, which is developing so quickly that we had to do an emergency update of this intro minutes before publishing this episode. Huang just resigned from his position as CEO of Nvidia as news of his affairs, including with an alleged Chinese spy, threatened to engulf the company. We’ll have more on that story as things develop and we learn h",
+      "item_ids": [
+        "item_d533790e4d2bd7ed50cf"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 36
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
