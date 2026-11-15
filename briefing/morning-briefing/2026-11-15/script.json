@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-15",
+  "generated_at": "2026-11-15T10:37:58.573560+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 162,
+    "est_seconds": 65
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "突发！DeepSeek开放全家桶API. 突发！DeepSeek开放全家桶API 官方App功能均可自由组合调用",
+      "item_ids": [
+        "item_47fd92794b58970c6ef7"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "中专生拍出《哈利·波特》爆款！欧美明星、好莱坞制片人集体点赞. 中专生拍出《哈利·波特》爆款！欧美明星、好莱坞制片人集体点赞 狂揽3000万播放量",
+      "item_ids": [
+        "item_f42fc98312a5f46c011c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "Microsoft says services fully restored after day-long global outage. Microsoft says services fully restored after day-long global outage Efforts to address the underlying problem with Outlook, Teams and Copilot are complete, the tech firm says.",
+      "item_ids": [
+        "item_5884cd8d4a8bcc5a9d89"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "deep_dive",
+      "text": "The OpenAI board member who fired Sam Altman says we still can’t trust AI CEOs. The OpenAI board member who fired Sam Altman says we still can’t trust AI CEOs Today, I’m talking with Helen Toner, the executive director of the Center for Security and Emerging Technology at Georgetown University. This episode is part two of our series on AI in real life. Helen is a well-known figure in the AI safety and policy community, though she is perhaps best known for having served on the board of OpenAI, when she was one of four board members who voted to fire Sam",
+      "item_ids": [
+        "item_6c2539c06ead4df20530"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 41
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
