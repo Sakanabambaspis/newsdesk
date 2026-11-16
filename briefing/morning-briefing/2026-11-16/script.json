@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-16",
+  "generated_at": "2026-11-16T10:45:18.411196+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 214,
+    "est_seconds": 85
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Three men sentenced to death in Jordan over fatal church mass shooting. Three men sentenced to death in Jordan over fatal church mass shooting The attack on funeral at a Greek Orthodox church killed nine and injured 34 others last month.",
+      "item_ids": [
+        "item_76dcb0ac8408d8bf0c06"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "headline",
+      "text": "An overview of Jensen Huang’s messy days. An overview of Jensen Huang’s messy days This is The Stepback, a weekly newsletter breaking down one essential story from the tech world. For more on Jensen Huang's resignation and the fallout from Nvidia's leadership crisis, follow Terrence O'Brien.",
+      "item_ids": [
+        "item_13482003797f2776b71c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "South Korea's top scorer in tax accountancy exam admits cheating. South Korea's top scorer in tax accountancy exam admits cheating Han Won-seok, 34, confessed to using a hidden camera and AI to get a near-perfect mark on the significant test.",
+      "item_ids": [
+        "item_d4ef7c11dabf8dcf9bd4"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "Understanding Positional Embeddings in Modern LLMs. Understanding Positional Embeddings in Modern LLMs This article explains how LLMs encode and process token position information by covering classic and contemporary methods like RoPE. It’s essentially a comprehensive journey where we will work through the mechanisms with visual examples, a little math, and a small PyTorch implementation. And, of course, we will then also look at how modern architectures adapt or omit explicit positional encodings.",
+      "item_ids": [
+        "item_eba8c0480eb85e20e492"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
