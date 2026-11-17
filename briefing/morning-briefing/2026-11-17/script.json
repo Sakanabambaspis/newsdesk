@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-17",
+  "generated_at": "2026-11-17T13:06:14.761562+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 160,
+    "est_seconds": 64
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Advancing computer-use agents for healthcare teams. Advancing computer-use agents for healthcare teams",
+      "item_ids": [
+        "item_21b4758ab52123ac78ff"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 5
+    },
+    {
+      "type": "headline",
+      "text": "Our first phase of embedded assessments. Our first phase of embedded assessments OpenAI begins embedded assessments with Apollo Research, METR, and Transluce, and Goodfire to independently evaluate model alignment, safeguards, and monitoring systems.",
+      "item_ids": [
+        "item_9fe6d2ae73e55f52b807"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 13
+    },
+    {
+      "type": "headline",
+      "text": "FBI says Artex AI open source hacking tool used to breach networks in ‘under three hours’. FBI says Artex AI open source hacking tool used to breach networks in ‘under three hours’ The FBI says that the open source hacking tool was used in cyberattacks targeting a U.S. IT giant and the South Korean financial industry.",
+      "item_ids": [
+        "item_474a91e84ee7b824ce9f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "deep_dive",
+      "text": "More ways to move care forward with ChatGPT for Healthcare. More ways to move care forward with ChatGPT for Healthcare Introducing computer-use agents, improved clinical answers, and new healthcare plugins that work across healthcare software to get real work done.",
+      "item_ids": [
+        "item_21e886491b30cfff0403"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
