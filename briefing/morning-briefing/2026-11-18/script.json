@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-18",
+  "generated_at": "2026-11-18T12:14:44.006683+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 236,
+    "est_seconds": 94
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Think Once, Act Fast: Cost-Effective Recursive Self-Improvement for Decision Model Harness. Think Once, Act Fast: Cost-Effective Recursive Self-Improvement for Decision Model Harness Fast System-1 models enable responsive actions but struggle with complex or unfamiliar tasks. Large language model (LLM)-based System-2 provides strong reasoning capabilities, yet repeated invocation incurs substantial latency and computational costs.",
+      "item_ids": [
+        "item_1ae72ca74db5484dc061"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "headline",
+      "text": "RAG in a Trenchcoat: When Minimal Memory Is Enough for Agentic Systems, and When It Isn't. RAG in a Trenchcoat: When Minimal Memory Is Enough for Agentic Systems, and When It Isn't Agentic memory research has accumulated extraction, supersession, reflection, and graph synthesis on top of retrieval-augmented generation.",
+      "item_ids": [
+        "item_b5b4149c2e9dc13a5ff6"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "Eyes in the Update? Learning Where Rewards Land in Multimodal Reasoning. Eyes in the Update? Learning Where Rewards Land in Multimodal Reasoning Multimodal post-training has moved from broad instruction tuning toward reinforcement learning for image and video reasoning, where outcome rewards can improve final-answer accuracy.",
+      "item_ids": [
+        "item_bc583a393adf1ff442f9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "deep_dive",
+      "text": "EviDARL: Evidence-Centric Dual-Agent Reasoning via Alternating Reinforcement Learning for Multi-Table Question Answering. EviDARL: Evidence-Centric Dual-Agent Reasoning via Alternating Reinforcement Learning for Multi-Table Question Answering Despite advances in LLM-based table reasoning, most studies focus on single-table settings. Multi-table QA requires multi-hop reasoning over complex table relationships and evidence dispersed across long contexts, often without verifiable intermediate traces. To address these challenges, we introduce EviDA, an evidence-centric dual-agent framework comprising an Evidence Construction Agent and a Re",
+      "item_ids": [
+        "item_bce01493565778da33a5"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
