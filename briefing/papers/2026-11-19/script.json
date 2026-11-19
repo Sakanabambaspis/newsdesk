@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-19",
+  "generated_at": "2026-11-19T12:10:12.952847+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 240,
+    "est_seconds": 96
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "KnowledgeClaw: Towards Agentic Knowledge Engineering via Omnimodal Hypergraphs. KnowledgeClaw: Towards Agentic Knowledge Engineering via Omnimodal Hypergraphs Knowledge engineering (KE) turns raw files into a reasoning-ready knowledge base, a task now within reach of LLM agents. KE has progressed from chunk and graph retrieval-augmented generation (RAG) to memory agents, agentic KE and multimodal KE.",
+      "item_ids": [
+        "item_a64b3feb429db8797d62"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "headline",
+      "text": "Replay, Don't Resample: Off-Policy Consolidation of Long-Horizon RL Experts. Replay, Don't Resample: Off-Policy Consolidation of Long-Horizon RL Experts Frontier post-training follows a common recipe: train one expert per domain with reinforcement learning (RL), then consolidate the experts into one model via multi-teacher on-policy distillation (MOPD).",
+      "item_ids": [
+        "item_0cfa88d8797a5542fe83"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "headline",
+      "text": "Benchmarking Reasoning Reliability,Prior_Evidence Contrast,and Spectral Discrimination in Remote-Sensing Geological Image Interpretation. Benchmarking Reasoning Reliability,Prior_Evidence Contrast,and Spectral Discrimination in Remote-Sensing Geological Image Interpretation Reliable lithology interpretation requires accurate geological recognition and reasoning grounded in visual evidence. Although Multimodal Large Language Models show promise in remote sensing, their reliability in geological interpretation remains unclear.",
+      "item_ids": [
+        "item_f8701256b1f3db01db30"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 21
+    },
+    {
+      "type": "deep_dive",
+      "text": "ViStep-RL: Stepwise Reinforcement Learning for Long-Horizon Visual Agents. ViStep-RL: Stepwise Reinforcement Learning for Long-Horizon Visual Agents Long-horizon visual agents must do more than inspect images: they must turn observations into evidence that remains usable as a task unfolds. Existing active-perception methods teach agents where and how to look, while a final-answer reward gives little structure for deciding which observations satisfy dependent subgoals or should be retained for later use. We present ViStep-RL (Visual Stepwise Re",
+      "item_ids": [
+        "item_27d17b7442b7c01f0df0"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
