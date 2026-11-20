@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-20",
+  "generated_at": "2026-11-20T12:00:40.795846+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 223,
+    "est_seconds": 89
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Beyond Entity Recognition: Vision-Centric Knowledge Visual Question Answering. Beyond Entity Recognition: Vision-Centric Knowledge Visual Question Answering We propose VC-VQA, a large-scale benchmark for vision-centric knowledge reasoning, aiming to systematically evaluate the capabilities of Multimodal Large Language Models (MLLMs) in fine-grained visual knowledge acquisition and complex multi-stage reasoning.",
+      "item_ids": [
+        "item_83bae541c862963f4ee0"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "ContextRenderer: Dynamic-Context Video Generation for Interactive Game Worlds. ContextRenderer: Dynamic-Context Video Generation for Interactive Game Worlds Interactive game world models separate executable world evolution from visual generation, using video models to render engine-provided scene representations into detailed observations.",
+      "item_ids": [
+        "item_5cb8fe621e3e6ec9a12f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "headline",
+      "text": "SpatialMem: Building Quantitative Spatial Reasoning Agents with Hierarchical Memory. SpatialMem: Building Quantitative Spatial Reasoning Agents with Hierarchical Memory Vision Language Models (VLMs) have shown remarkable capabilities in qualitative spatial reasoning, but remain limited in quantitative spatial reasoning. Current work leverages the VLM agent to invoke external vision tools to perform computation.",
+      "item_ids": [
+        "item_a6d883c5ebf296b8729c"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 20
+    },
+    {
+      "type": "deep_dive",
+      "text": "EvoMem: Self-Evolving Skills for Time-Aware Long Video Memory Agents. EvoMem: Self-Evolving Skills for Time-Aware Long Video Memory Agents Although memory-augmented architectures have expanded the ability of large vision-language models (LVLMs) to process long videos, existing retrieval processes still largely rely on global semantic matching and lack state-driven temporal control, often returning fragmented or redundant evidence and failing to maintain a coherent evidence chain. To address this challenge, we propose EvoMem, a time-a",
+      "item_ids": [
+        "item_06f3c255c8f3382cf2db"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 29
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
