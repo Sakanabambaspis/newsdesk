@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-21",
+  "generated_at": "2026-11-21T11:59:10.613347+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 138,
+    "est_seconds": 56
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "双系统决策+双层自进化，Agnes让Agent效率最高提速14倍，成本骤降至1/27！. 双系统决策+双层自进化，Agnes让Agent效率最高提速14倍，成本骤降至1/27！ 已开源Agnes Harness",
+      "item_ids": [
+        "item_f3aa16032ced0a1f94f0"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Combatting adversarial distillation. Combatting adversarial distillation OpenAI’s layered approach to adversarial distillation combines model training, safeguards, detection, and enforcement to protect against capability extraction.",
+      "item_ids": [
+        "item_7ad44f990f0c53ef2e2a"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 10
+    },
+    {
+      "type": "headline",
+      "text": "新浪新闻·2026探索大会在京举行 虚实交融共探智能时代共生新图景. 新浪新闻·2026探索大会在京举行 虚实交融共探智能时代共生新图景 11月19日，由微博与新浪新闻联合主办的“新浪新闻·2026探索大会”在北京举办。",
+      "item_ids": [
+        "item_998f2f78cf870f491746"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "deep_dive",
+      "text": "Signal is blocking Gemini and Siri AI from reading your screen. Signal is blocking Gemini and Siri AI from reading your screen Signal users on iOS will see this option to toggle blocking screenshots and preventing Siri AI from scanning on-screen content. | Image: Signal Signal is restricting the ability to take screenshots on Android and iOS devices in an effort to prevent AI agents from reading users' messages and other data. The agentic AI capabilities built into operating systems that analyze on-screen information to l",
+      "item_ids": [
+        "item_af7d30f58230f92314a9"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 34
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
