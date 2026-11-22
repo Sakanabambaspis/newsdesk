@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-22",
+  "generated_at": "2026-11-22T11:04:39.206510+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 197,
+    "est_seconds": 80
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "刚刚，DeepSeek V1作者创业项目曝光：开源Agent. 刚刚，DeepSeek V1作者创业项目曝光：开源Agent 专为本地部署而生",
+      "item_ids": [
+        "item_95b30ca62b42d4ff5c10"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Here are the top AI agents that can live in your text messages. Here are the top AI agents that can live in your text messages We created a list of the most notable AI agents that can live in your text messages, from general assistants to agents designed for families, travel, and work.",
+      "item_ids": [
+        "item_f52216bdae320c5247f4"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Man convicted of starting Palisades fire in Los Angeles. Man convicted of starting Palisades fire in Los Angeles The 30-year-old LA resident was convicted of arson leading to wildfires that killed 12 people and destroyed more than 6,800 buildings.",
+      "item_ids": [
+        "item_b13dfbfb1e69a8e3592d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 16
+    },
+    {
+      "type": "deep_dive",
+      "text": "Can Anthropic afford to put safety first?. Can Anthropic afford to put safety first? Today, I’m talking with Hayden Field, The Verge’s senior AI reporter, about the Anthropic IPO for the third and final episode in our series about AI in real life. The AI lab behind Claude went public on the Nasdaq last Thursday. The numbers are gigantic, but not really that important for this conversation, except to say that Anthropic has become one of the most valuable companies on the planet. Th",
+      "item_ids": [
+        "item_3298713995b153167b47"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 34
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
