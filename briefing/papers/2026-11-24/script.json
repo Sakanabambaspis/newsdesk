@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-24",
+  "generated_at": "2026-11-24T14:59:00.913553+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 220,
+    "est_seconds": 87
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Your morning briefing is ready.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "Composing Independently Distilled Memory and Retrieval Policies for Long-Term Agents. Composing Independently Distilled Memory and Retrieval Policies for Long-Term Agents Long-lived Web assistants require effective memory and retrieval mechanisms to access information from past user interactions.",
+      "item_ids": [
+        "item_3424d3b8b4fcbe3ce0cd"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 14
+    },
+    {
+      "type": "headline",
+      "text": "Seeing Together, Acting Apart: Shared Environmental Understanding for Multi-Robot Navigation. Seeing Together, Acting Apart: Shared Environmental Understanding for Multi-Robot Navigation Multi-robot embodied systems are typically designed to collaborate by coordinating actions, sharing trajectories, or learning joint policies. We ask a complementary question: can collaboration emerge before decision-making, by first building a shared understanding of the environment?",
+      "item_ids": [
+        "item_ef7700a6ced7be242252"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "Verifiable On-Policy Distillation. Verifiable On-Policy Distillation Reinforcement learning with verifiable rewards (RLVR) has become a powerful approach for improving language-model reasoning, but its supervision is inherently sparse: a sequence-level verifier reward is propagated only through sampled trajectories and provides no direct signal for alternative actions.",
+      "item_ids": [
+        "item_aaf49f9d7e6380619054"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 18
+    },
+    {
+      "type": "deep_dive",
+      "text": "MMMem: Self-Improving Agents with Task-Aware Multimodal Experience Consolidation. MMMem: Self-Improving Agents with Task-Aware Multimodal Experience Consolidation AI agents accumulate conversations, images, and documents through long-term interactions with users. Answering later questions often requires connecting evidence across these records, yet the resulting understanding is rarely retained, allowing mistakes to recur on related questions. Existing multimodal memory methods largely focus on storing and retrieving records, with limited mechanisms for lea",
+      "item_ids": [
+        "item_4f3ff372a6235c6f0c83"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 27
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
