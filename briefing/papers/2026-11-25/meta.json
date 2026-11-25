@@ -1,0 +1,28 @@
+{
+  "format": "episode-archive@1",
+  "date": "2026-11-25",
+  "station": "papers",
+  "guid": "papers-2026-11-25",
+  "workflow": {
+    "name": "default-morning",
+    "version": 1
+  },
+  "code_commit": "ee28f8de266fa681942776d85b2027aafbab9ced",
+  "digest": {
+    "method": "extractive",
+    "verdict_method": "skipped:llm_error:all 1 model(s) failed — glm-5.3-flash: LLM returned HTTP 429: {\"error\":{\"code\":\"1113\",\"message\":\"余额不足或无可用资源包,请充值。\"}}",
+    "items_in_window": 293
+  },
+  "script": {
+    "method": "extractive",
+    "words": 253,
+    "est_seconds": 101
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "chunks": 10,
+    "duration_seconds": 134.4
+  },
+  "episode_path": "audio/2026-11-25.mp3",
+  "archived_at": "2026-11-25T13:28:27.513328+08:00"
+}
