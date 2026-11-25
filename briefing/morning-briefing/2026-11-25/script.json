@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-25",
+  "generated_at": "2026-11-25T13:27:41.031916+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 253,
+    "est_seconds": 101
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Here is your morning briefing.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "headline",
+      "text": "ARS-VLM: Visually Aligned Augmented Random Search for Vision-Language Models. ARS-VLM: Visually Aligned Augmented Random Search for Vision-Language Models First-order reinforcement learning, such as Group Relative Policy Optimization (GRPO), is widely used to post-train Vision-Language Models (VLMs) for multimodal reasoning. However, it incurs heavy memory and system overhead from backpropagation, optimizer states, and a reference model.",
+      "item_ids": [
+        "item_b512074650e7fd7fef1d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "headline",
+      "text": "VC-OPD: Learning to See What Matters via Visual Cue On-Policy Self-Distillation. VC-OPD: Learning to See What Matters via Visual Cue On-Policy Self-Distillation Visual On-Policy Distillation (OPD) commonly uses cropped or zoomed-in image regions as teacher-side privileged information to improve fine-grained perception in small Multimodal Large Language Models (MLLMs).",
+      "item_ids": [
+        "item_b7db3bdccc8c43015a4d"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 19
+    },
+    {
+      "type": "headline",
+      "text": "Relational Bottleneck Models. Relational Bottleneck Models Achieving both interpretable and high-performance inference is a key challenge in deep learning. While Concept Bottleneck Models (CBMs) provide inherent interpretability, they are constrained by task-specific training and rely on isolated visual concepts that fail to capture higher-order visual semantic relationships. Conversely, Large Vision Language Models (LVLMs) demonstrate zero-shot capabilit",
+      "item_ids": [
+        "item_29ebf9530de8af40e545"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 22
+    },
+    {
+      "type": "deep_dive",
+      "text": "Rethinking Reasoning Effort Training in Large Language Models: On-Policy Distillation or Reinforcement Learning?. Rethinking Reasoning Effort Training in Large Language Models: On-Policy Distillation or Reinforcement Learning? Large language models have shown strong capabilities on complex tasks, yet how to control their reasoning effort remains a significant challenge for practical deployment. This paper provides a systematic investigation of reasoning-effort training, contrasting reinforcement learning (RL) with on-policy distillation (OPD). We find that compressing reasoning and separating effort tiers are governed b",
+      "item_ids": [
+        "item_b4e6d64c883d92346f09"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 32
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
