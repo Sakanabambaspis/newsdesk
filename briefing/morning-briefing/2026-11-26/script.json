@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-26",
+  "generated_at": "2026-11-26T13:01:05.458718+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 205,
+    "est_seconds": 83
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "Navigent: A Geometry-Grounded Agentic Framework for Vision Language Navigation. Navigent: A Geometry-Grounded Agentic Framework for Vision Language Navigation Vision-and-Language Navigation (VLN) with general-purpose multimodal large language models (MLLMs) offers a flexible alternative to task-specific navigation policies, while reliable long-horizon execution remains challenging.",
+      "item_ids": [
+        "item_b4e04936c28d4bf68177"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "headline",
+      "text": "Sage-Med: Scaling Medical Multimodal Intelligence. Sage-Med: Scaling Medical Multimodal Intelligence Establishing effective scaling laws for medical multimodal large language models (MLLMs) remains a persistent and fundamental challenge.",
+      "item_ids": [
+        "item_ad586db4b1874d79f345"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 11
+    },
+    {
+      "type": "headline",
+      "text": "Maco-RL: Scaling Agent Capabilities with Mixed-Task Reinforcement Learning. Maco-RL: Scaling Agent Capabilities with Mixed-Task Reinforcement Learning Mixed-task reinforcement learning (MixRL) directly trains a unified policy across domains to continually expand agent capabilities without training separate specialists or requiring an extra distillation stage.",
+      "item_ids": [
+        "item_cf7cecdd7288ba32eb83"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "deep_dive",
+      "text": "Do We Still Need Reinforcement Learning When We Can Read the World Model?. Do We Still Need Reinforcement Learning When We Can Read the World Model? Reinforcement learning has achieved remarkable success in sequential decision-making, but learning effective policies often requires substantial interaction experience. Model-based reinforcement learning alleviates this dependence by leveraging world models, which are typically used to support planning or policy optimization. In this paper, we investigate an alternative paradigm in which autonomou",
+      "item_ids": [
+        "item_e2d960f6278a61d05d52"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 30
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
