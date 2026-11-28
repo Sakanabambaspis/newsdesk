@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-28",
+  "generated_at": "2026-11-28T12:45:39.910448+08:00",
+  "method": "extractive",
+  "stats": {
+    "words": 107,
+    "est_seconds": 43
+  },
+  "sections": [
+    {
+      "type": "cold_open",
+      "text": "Good morning. Here is what is worth knowing today.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    },
+    {
+      "type": "headline",
+      "text": "刚刚，首个带跨任务空间记忆的原生基模开源！机器人端侧就能跑. 刚刚，首个带跨任务空间记忆的原生基模开源！机器人端侧就能跑 地图能随时修，记忆能跨任务用",
+      "item_ids": [
+        "item_efc4d8bbad49c23c1b4e"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 1
+    },
+    {
+      "type": "headline",
+      "text": "Italy's former police chief rejected mafia inquiry allegations before death. Italy's former police chief rejected mafia inquiry allegations before death The contents of an eight-page letter by Gianni De Gennaro have been revealed days after his body was found at his Tuscany home.",
+      "item_ids": [
+        "item_86e51561acb5dc96e923"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 17
+    },
+    {
+      "type": "headline",
+      "text": "DeepSeek APP突然更新账单，网友：要收费了？. DeepSeek APP突然更新账单，网友：要收费了？ 网页App双端亮出聊天账单",
+      "item_ids": [
+        "item_2b19d6bdf1e543e4980f"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 2
+    },
+    {
+      "type": "deep_dive",
+      "text": "'It's impossible': Spain's young people on housing ahead of Sunday's election. 'It's impossible': Spain's young people on housing ahead of Sunday's election Europe correspondent Nick Beake speaks to one couple kept apart by high rents in Valencia.",
+      "item_ids": [
+        "item_6d694547ace81be5ffcc"
+      ],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 15
+    },
+    {
+      "type": "close",
+      "text": "That's the briefing — the full digest has the details.",
+      "item_ids": [],
+      "voice": "en-US-AriaNeural",
+      "est_seconds": 4
+    }
+  ]
+}
